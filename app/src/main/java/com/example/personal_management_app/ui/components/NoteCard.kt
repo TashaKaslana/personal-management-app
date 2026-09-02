@@ -36,6 +36,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 
 fun click() {
     print("Clicked!")
@@ -49,6 +50,7 @@ fun NoteCard(
     contentStyle: TextStyle = MaterialTheme.typography.bodySmall,
     theme: String = "",
     imgSrc: String = "",
+    navController: NavController,
     modifier: Modifier
 ) {
     Card(
@@ -62,7 +64,7 @@ fun NoteCard(
                 .padding(8.dp),
         ) {
             NoteCardActionsTop(
-                onBackClick = { click() },
+                onBackClick = { navController.navigate("home") },
                 onPinClick = { click() },
                 onSetNotificationClick = { click() },
                 onSetArchived = { click() }

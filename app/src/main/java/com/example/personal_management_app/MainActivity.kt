@@ -4,14 +4,8 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.example.personal_management_app.ui.components.NoteCard
 import com.example.personal_management_app.ui.theme.PersonalManagementAppTheme
 
 class MainActivity : ComponentActivity() {
@@ -19,31 +13,15 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            PersonalManagementAppTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Home(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
-            }
+            PersonalManagementApp()
         }
     }
-}
-
-@Composable
-fun Home(name: String, modifier: Modifier = Modifier) {
-    NoteCard(
-        title = "Changing Resolution to Mobile Size",
-        content = "I am going to do it. I have made up my mind. These are the first few words of the new… the best … the Longest Text In The Entire History Of The Known Universe! This Has To Have Over 35,000 words the beat the current world record set by that person who made that flaming chicken handbooky thingy. I might just be saying random things the whole time I type in this so you might get confused a lot. I just discovered something terrible. autocorrect is on!! no!!! this has to be crazy, so I will have to break all the English language rules and the basic knowledge of the average human being. I am not an average human being, however I am special. no no no, not THAT kind of special ;). Why do people send that wink face! it always gives me nightmares! it can make a completely normal sentence creepy. imagine you are going to a friend’s house, so you text this: [ see you soon \uD83D\uDE42 ] seems normal, right? But what is you add the word semi to that colon? (Is that right? or is it the other way around) what is you add a lorry to that briquettes? (Semi-truck to that coal-on) anyway, back to the point: [ see you soon \uD83D\uDE09 ]THAT IS JUST SO CREEPY! is that really your friend, or is it a creepy stalker watching your every move? Or even worse, is it your friend who is a creepy stalker? maybe you thought it was your friend, but it was actually your fri end (let me explain: you are happily in McDonalds, getting fat while eating yummy food and some random dude walks up and blots out the sun (he looks like a regular here) you can’t see anything else than him, so you can’t try to avoid eye contact. he finishes eating his cheeseburger (more like horseburgher(I learned that word from the merchant of Venice(which is a good play(if you can understand it(I can cause I got a special book with all the words in readable English written on the side of the page(which is kinda funny because Shakespeare was supposed to be a good poet but no-one can understand him(and he’s racist in act 2 scene1 of the play too))))))) and sits down beside you , like you are old pals (you’ve never met him before but he looks like he could be in some weird cult) he clears his throat and asks you a very personal question. “can i have some French fries?” (I don’t know why there called French fries when I’ve never seen a French person eat fries! all they eat it is stuff like baguettes and crêpes and rats named ratty-two-ee which is a really fun game on the PlayStation 2) And you think {bubbly cloud thinking bubble} “Hahahahahhahahahahahahahaha!!!!!!!!!!!! Hehheheheheh…..heeeheehe..hehe… sigh. I remember that i was just about to eat one of my fries when I noticed something mushy and moist and [insert gross color like green or brown] on the end of one of my fries! now I can give it to this NERD!! ” (yes he is a nerd because all he does all day is watch the extended editions of the hobbit, lord of the rings and star wars and eat fat cakes (what the heck is a fat cake? I think it might be like a Twinkie or something)and twinkies(wow so is doesn’t really matter which is which because he eats both(i may have just done that so I didn’t have to Google what a fat cake is (right now I am typing on my iPhone 3gs anyway, which has a broken antenna so i can’t get internet anyway (it’s actually a really funny story that i’ll tell you sometime)))and sit in his man cave with his friend named Joe (an ACTUAL friend, not a fri end)and all Joe does is watch sports like football with bob and all bob does is gamble ferociously (don’t ask(it means he buys all those bags of chips that say “win a free monkey or something if you find a banana in your bag*”(if there is a little star it means there is fine print so I always check the back of the package) *flips over the package* okay, it says: “one of our workers accidentally threw a banana in the packing machine and we don’t want to get sued so we did this promotion thing” cool. Oh wow, this is salt and vinegar! my favourite! i hate cheese and onion.))and that’s pretty much his life, he lives in Jamaica with Naruto and his friends) so you give him that gross fri end he throws up all over you and me and the worker behind the counter who was still making an onion, and THAT is the story of the fri end, not a friend who somehow remembered your name and your phone number / email so he could text you saying he would come to your house soon. *finally takes a breath after typing a few hundred words about fri-ends* so what now? i know, i know, you think i ramble too much and use too many brackets (i don’t) but now i am going to talk about my amAZEing day. first i woke up, ate choco pops for breakfast even tho i always hate it when people say that cause i get jealous and super hungry. then i… umm… yea! that was my day. you know that other person i mentioned before? that flaming chicken person? WELL. i will steal something from that person but do it better. i will… drum roll please … badabadabadabadabadabadabummmmmmmmmmmchshchshchshchshbadabadboumboumpoopoopichypichypichypowpow-crash! *a drum roll was just playing in the background* that drumroll was so long i forget what i was talking about. *scrolls up to see what he was writing about* oh yea! i will make my own FLAMING CHICKEN HANDBOOK! what things do i like? instead of flaming it could be rainbow, instead of chicken it could be fluffysheep and instead of handbook it could be handbook (not very creative, i know) but the total complete name is now to rainbow fluffysheep handbook! to make life easier for you guys, instead of taking random rules out of book willy nilly, i will take them out using my favourite numbers! so, section 5040 of the rainbow fluffysheep handbook states that the king of all oddly coloured farm animals (thats me!) is allowed to tell you any part out of this book randomly or if it is his one of his favorite numbers! 5040 is a great number because it is divisible by 60 integers which i don’t know. i’m tired. it is 10:41 and i am getting sleepy… hey hey hey! an intruder! remember that from pokepals rulers of time and darkness or something like that! with piplup and sunflora and chimchar! whaoh piplup is really hard to write on a tiny qwerty keyboard! try it! i realised that asdf is actually written in order on the qwerty keyboard! (just in case you didn’t know, asdf is an amazing short video clips cartoony thing on youtube i first learned bout on flipnote hatena, which is now shut down \uD83D\uDE26 ) what if one day they get rid of the qwerty keyboard completely! i will type it out for you just in case one day they get rid of it.",
-        modifier = modifier,
-    )
 }
 
 @Preview(showBackground = true)
 @Composable
 fun GreetingPreview() {
     PersonalManagementAppTheme {
-        Home("Android")
+        PersonalManagementApp()
     }
 }
