@@ -19,7 +19,7 @@ fun PersonalManagementApp() {
         startDestination = "home"
     ) {
         composable("home") {
-            HomeScreen(navController = navController)
+            LoginScreen(navController = navController)
         }
 
         composable("login_screen") {
