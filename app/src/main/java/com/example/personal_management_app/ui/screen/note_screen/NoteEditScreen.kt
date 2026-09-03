@@ -1,4 +1,4 @@
-package com.example.personal_management_app.ui.screen
+package com.example.personal_management_app.ui.screen.note_screen
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -9,7 +9,7 @@ import androidx.navigation.NavController
 import com.example.personal_management_app.ui.components.NoteCard
 
 @Composable
-fun NoteScreen(modifier: Modifier = Modifier, navController: NavController) {
+fun NoteEditScreen(modifier: Modifier = Modifier, navController: NavController) {
     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
         NoteCard(
             title = "Changing Resolution to Mobile Size",
