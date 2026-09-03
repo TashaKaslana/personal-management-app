@@ -4,10 +4,12 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+
 import com.example.personal_management_app.ui.screen.HomeScreen
 import com.example.personal_management_app.ui.screen.LoginScreen
 import com.example.personal_management_app.ui.screen.NoteScreen
 import com.example.personal_management_app.ui.screen.RegisterScreen
+
 
 @Composable
 fun PersonalManagementApp() {
@@ -15,21 +17,19 @@ fun PersonalManagementApp() {
 
     NavHost(
         navController = navController,
-        startDestination = "home"
+        startDestination = "login_screen"
     ) {
-        composable("home") {
-            LoginScreen(navController = navController)
-        }
-
         composable("login_screen") {
             LoginScreen(navController = navController)
+        }
+        composable("home_screen") {
+            HomeScreen(navController = navController)
         }
 
         composable("register_screen") {
             RegisterScreen(navController = navController)
         }
-
-        composable("note_screen" ) {
+        composable("note_screen") {
             NoteScreen(navController = navController)
         }
     }
