@@ -1,5 +1,6 @@
 package com.example.personal_management_app.ui.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -7,9 +8,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -45,9 +46,9 @@ fun click() {
 @Composable
 fun NoteCard(
     title: String,
-    titleStyle: TextStyle = MaterialTheme.typography.titleMedium,
+    titleStyle: TextStyle = MaterialTheme.typography.titleLarge,
     content: String,
-    contentStyle: TextStyle = MaterialTheme.typography.bodySmall,
+    contentStyle: TextStyle = MaterialTheme.typography.bodyMedium,
     theme: String = "",
     imgSrc: String = "",
     navController: NavController,
@@ -56,9 +57,10 @@ fun NoteCard(
     Card(
         modifier = modifier
             .fillMaxSize()
-            .padding(8.dp)
+            .padding(8.dp),
     ) {
         Column(
+            verticalArrangement = Arrangement.spacedBy(4.dp),
             modifier = Modifier
                 .fillMaxSize()
                 .padding(8.dp),
@@ -70,7 +72,7 @@ fun NoteCard(
                 onSetArchived = { click() }
             )
 
-            NoteCardMainContent(
+            NoteCardTextEditor(
                 modifier = Modifier.weight(1f),
                 title = title,
                 titleStyle = titleStyle,
@@ -89,7 +91,47 @@ fun NoteCard(
 }
 
 @Composable
-fun NoteCardText(
+fun NoteCardTextEditor(
+    modifier: Modifier = Modifier,
+    title: String,
+    content: String,
+    titleStyle: TextStyle,
+    contentStyle: TextStyle
+) {
+    val scrollState = rememberScrollState()
+    var titleState by remember { mutableStateOf(title) }
+    var bodyState by remember { mutableStateOf(content) }
+
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.surface)
+            .verticalScroll(scrollState),
+    ) {
+        //title
+        BasicTextField(
+            value = titleState,
+            onValueChange = { titleState = it },
+            textStyle = titleStyle,
+            modifier = Modifier
+                .fillMaxWidth()
+
+        )
+
+        //body
+        BasicTextField(
+            value = bodyState,
+            onValueChange = { bodyState = it },
+            textStyle = contentStyle,
+            modifier = Modifier
+                .fillMaxWidth()
+        )
+    }
+}
+
+//for preview outside the editor
+@Composable
+fun NoteCardTextPreview(
     content: String,
     style: TextStyle = MaterialTheme.typography.bodySmall,
     overflow: TextOverflow = TextOverflow.Ellipsis
@@ -102,7 +144,7 @@ fun NoteCardText(
 }
 
 @Composable
-fun NoteCardMainContent(
+fun NoteCardPreview(
     modifier: Modifier = Modifier,
     title: String,
     titleStyle: TextStyle = MaterialTheme.typography.titleMedium,
@@ -116,12 +158,12 @@ fun NoteCardMainContent(
             .fillMaxWidth()
             .verticalScroll(rememberScrollState())
     ) {
-        NoteCardText(
+        NoteCardTextPreview(
             content = title,
             style = titleStyle,
         )
 
-        NoteCardText(
+        NoteCardTextPreview(
             content = content,
             style = contentStyle,
         )
