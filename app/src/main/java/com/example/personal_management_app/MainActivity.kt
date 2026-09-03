@@ -6,6 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.tooling.preview.Preview
+import com.example.personal_management_app.ui.navigation.PersonalManagementApp
 import com.example.personal_management_app.ui.theme.PersonalManagementAppTheme
 
 class MainActivity : ComponentActivity() {

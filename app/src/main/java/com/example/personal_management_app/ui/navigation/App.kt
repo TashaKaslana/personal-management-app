@@ -1,4 +1,4 @@
-package com.example.personal_management_app
+package com.example.personal_management_app.ui.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
