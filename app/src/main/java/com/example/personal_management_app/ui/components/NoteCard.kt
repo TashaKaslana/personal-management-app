@@ -66,7 +66,7 @@ fun NoteCard(
                 .padding(8.dp),
         ) {
             NoteCardActionsTop(
-                onBackClick = { navController.navigate("home") },
+                onBackClick = { navController.navigate("note_screen") },
                 onPinClick = { click() },
                 onSetNotificationClick = { click() },
                 onSetArchived = { click() }
@@ -133,13 +133,15 @@ fun NoteCardTextEditor(
 @Composable
 fun NoteCardTextPreview(
     content: String,
-    style: TextStyle = MaterialTheme.typography.bodySmall,
-    overflow: TextOverflow = TextOverflow.Ellipsis
+    style: TextStyle = MaterialTheme.typography.bodyMedium,
+    overflow: TextOverflow = TextOverflow.Ellipsis,
+    maxLines: Int,
 ) {
     Text(
         text = content,
         style = style,
-        overflow = overflow
+        overflow = overflow,
+        maxLines = maxLines
     )
 }
 
@@ -147,26 +149,30 @@ fun NoteCardTextPreview(
 fun NoteCardPreview(
     modifier: Modifier = Modifier,
     title: String,
-    titleStyle: TextStyle = MaterialTheme.typography.titleMedium,
+    titleStyle: TextStyle = MaterialTheme.typography.titleLarge,
     content: String,
-    contentStyle: TextStyle = MaterialTheme.typography.bodySmall,
+    contentStyle: TextStyle = MaterialTheme.typography.bodyMedium,
     theme: String = "",
     imgSrc: String = "",
 ) {
-    Column(
+    Card(
         modifier = modifier
-            .fillMaxWidth()
-            .verticalScroll(rememberScrollState())
     ) {
-        NoteCardTextPreview(
-            content = title,
-            style = titleStyle,
-        )
+        Column(
+            modifier = modifier.fillMaxWidth()
+        ) {
+            NoteCardTextPreview(
+                content = title,
+                style = titleStyle,
+                maxLines = 2
+            )
 
-        NoteCardTextPreview(
-            content = content,
-            style = contentStyle,
-        )
+            NoteCardTextPreview(
+                content = content,
+                style = contentStyle,
+                maxLines = 10
+            )
+        }
     }
 }
 
