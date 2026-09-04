@@ -22,8 +22,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.example.personal_management_app.ui.layouts.MainLayout
+import com.example.personal_management_app.viewmodel.NoteViewModel
 
 data class NoteItem(
     val title: String,
@@ -33,15 +35,8 @@ data class NoteItem(
 )
 
 @Composable
-fun NoteScreen(modifier: Modifier = Modifier, navController: NavController) {
-    val notesList = listOf(
-        NoteItem("App Idea Sketch", "Xây dựng app ghi chú với giao diện Material You đẹp mắt.", "Công việc", Color(0xFFFFF8D6)),
-        NoteItem("Danh sách tạp hóa", "• Táo hữu cơ\n• Almond Sữa\n• Sữa chua Hy Lạp", null, Color(0xFFE2F6ED)),
-        NoteItem("Du lịch itinerary", "Chi tiết lộ trình và đặt phòng cho chuyến đi Iceland.", "Du lịch", Color(0xFFE3F2FD)),
-        NoteItem("Quy tắc thiết kế M3", "Đảm bảo bo góc 12px cho thẻ và nút FAB.", null, Color(0xFFF1F8E9)),
-        NoteItem("Nhắc nhở", "Call landlord to negotiate lease renew terms.\n🕒 Ngày mai, 10:00 AM", null, Color(0xFFFCE4EC)),
-        NoteItem("Công việcout Goals", "• Giãn cơ 10 phút\n• 6k Morning Run\n• Tập thể lực", null, Color(0xFFF3E5F5))
-    )
+fun NoteScreen(modifier: Modifier = Modifier, navController: NavController, viewModel: NoteViewModel = viewModel(),) {
+    val notesList = viewModel.notes
 
     MainLayout (navController = navController) { innerPadding ->
         Column(
@@ -73,7 +68,7 @@ fun NoteScreen(modifier: Modifier = Modifier, navController: NavController) {
                         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
                         modifier = Modifier.fillMaxWidth()
                             .clickable {
-                                navController.navigate("note_edit_screen")
+                                navController.navigate("note_edit_screen/${note.id}")
                             }
                     ) {
                         Column(
@@ -100,7 +95,7 @@ fun NoteScreen(modifier: Modifier = Modifier, navController: NavController) {
                                     color = Color.White.copy(alpha = 0.6f)
                                 ) {
                                     Text(
-                                        text = note.tag,
+                                        text = note.tag!!,
                                         fontSize = 10.sp,
                                         color = Color.DarkGray,
                                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)

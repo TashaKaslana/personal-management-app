@@ -34,8 +34,10 @@ fun PersonalManagementApp() {
             NoteScreen(navController = navController)
         }
 
-        composable("note_edit_screen") {
-            NoteEditScreen(navController = navController)
+        composable("note_edit_screen/{noteId}") { backStackEntry ->
+            val noteId = backStackEntry.arguments?.getString("noteId") ?: ""
+
+            NoteEditScreen(navController = navController, noteId = noteId)
         }
     }
 }
