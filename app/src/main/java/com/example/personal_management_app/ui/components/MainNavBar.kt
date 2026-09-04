@@ -19,13 +19,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.personal_management_app.ui.theme.FabContainer
+import com.example.personal_management_app.ui.theme.NavBarBackground
 
 @Composable
 fun MainNavBar(navController: NavController) {
     var selectedTab by remember { mutableStateOf(0) }
 
     NavigationBar(
-        containerColor = Color(0xFFFCF8F2)
+        containerColor = NavBarBackground
     ) {
         NavigationBarItem(
             icon = { Icon(Icons.Outlined.Edit, contentDescription = "Ghi chú") },
@@ -62,7 +64,7 @@ fun MainNavBar(navController: NavController) {
 fun MainFloatingButton(navController: NavController) {
     FloatingActionButton(
         onClick = { navController.navigate("note_edit_screen") },
-        containerColor = Color(0xFFFFE082),
+        containerColor = FabContainer,
         contentColor = Color.Black,
         shape = RoundedCornerShape(16.dp)
     ) {
