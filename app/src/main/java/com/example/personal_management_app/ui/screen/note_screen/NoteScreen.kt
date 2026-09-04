@@ -2,45 +2,114 @@ package com.example.personal_management_app.ui.screen.note_screen
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
+import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
+import androidx.compose.foundation.lazy.staggeredgrid.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.personal_management_app.ui.components.NoteCardPreview
 import com.example.personal_management_app.ui.layouts.MainLayout
+
+data class NoteItem(
+    val title: String,
+    val content: String,
+    val tag: String? = null,
+    val backgroundColor: Color
+)
 
 @Composable
 fun NoteScreen(modifier: Modifier = Modifier, navController: NavController) {
-    val content =
-        "I am going to do it. I have made up my mind. These are the first few words of the new… the best … the Longest Text In The Entire History Of The Known Universe! This Has To Have Over 35,000 words the beat the current world record set by that person who made that flaming chicken handbooky thingy. I might just be saying random things the whole time I type in this so you might get confused a lot. I just discovered something terrible. autocorrect is on!! no!!!"
-    val list = listOf(
-        listOf("title 1", content),
-        listOf("title 2", content),
-        listOf("title 3", content),
-        listOf("title 4", content),
-        listOf("title 5", content)
+    val notesList = listOf(
+        NoteItem("App Idea Sketch", "Xây dựng app ghi chú với giao diện Material You đẹp mắt.", "Công việc", Color(0xFFFFF8D6)),
+        NoteItem("Danh sách tạp hóa", "• Táo hữu cơ\n• Almond Sữa\n• Sữa chua Hy Lạp", null, Color(0xFFE2F6ED)),
+        NoteItem("Du lịch itinerary", "Chi tiết lộ trình và đặt phòng cho chuyến đi Iceland.", "Du lịch", Color(0xFFE3F2FD)),
+        NoteItem("Quy tắc thiết kế M3", "Đảm bảo bo góc 12px cho thẻ và nút FAB.", null, Color(0xFFF1F8E9)),
+        NoteItem("Nhắc nhở", "Call landlord to negotiate lease renew terms.\n🕒 Ngày mai, 10:00 AM", null, Color(0xFFFCE4EC)),
+        NoteItem("Công việcout Goals", "• Giãn cơ 10 phút\n• 6k Morning Run\n• Tập thể lực", null, Color(0xFFF3E5F5))
     )
 
     MainLayout (navController = navController) { innerPadding ->
-        LazyColumn(
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+        Column(
             modifier = modifier
+                .fillMaxSize()
                 .padding(innerPadding)
-                .padding(12.dp)
+                .padding(horizontal = 16.dp)
         ) {
-            items(list) {
-                NoteCardPreview(
-                    title = it[0],
-                    content = it[1],
-                    modifier = Modifier.clickable(
-                        onClick = {
-                            navController.navigate("note_edit_screen")
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text(
+                text = "ĐÃ GHIM",
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.Gray,
+                modifier = Modifier.padding(bottom = 8.dp)
+            )
+
+            LazyVerticalStaggeredGrid(
+                columns = StaggeredGridCells.Fixed(2),
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                verticalItemSpacing = 10.dp,
+                modifier = Modifier.fillMaxSize()
+            ) {
+                items(notesList) { note ->
+                    Card(
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(containerColor = note.backgroundColor),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+                        modifier = Modifier.fillMaxWidth()
+                            .clickable {
+                                navController.navigate("note_edit_screen")
+                            }
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(14.dp)
+                        ) {
+                            Text(
+                                text = note.title,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 14.sp,
+                                color = Color.Black
+                            )
+                            Spacer(modifier = Modifier.height(6.dp))
+                            Text(
+                                text = note.content,
+                                fontSize = 12.sp,
+                                color = Color.DarkGray
+                            )
+                            if (note.tag != null) {
+                                Spacer(modifier = Modifier.height(10.dp))
+                                Surface(
+                                    shape = RoundedCornerShape(8.dp),
+                                    color = Color.White.copy(alpha = 0.6f)
+                                ) {
+                                    Text(
+                                        text = note.tag,
+                                        fontSize = 10.sp,
+                                        color = Color.DarkGray,
+                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                                    )
+                                }
+                            }
                         }
-                    )
-                )
+                    }
+                }
             }
         }
     }
