@@ -52,7 +52,7 @@ fun NoteCard(
     theme: String = "",
     imgSrc: String = "",
     navController: NavController,
-    modifier: Modifier
+    modifier: Modifier,
 ) {
     Card(
         modifier = modifier
