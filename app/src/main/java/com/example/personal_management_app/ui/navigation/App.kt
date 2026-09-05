@@ -10,6 +10,7 @@ import com.example.personal_management_app.ui.screen.LoginScreen
 import com.example.personal_management_app.ui.screen.note_screen.NoteScreen
 import com.example.personal_management_app.ui.screen.RegisterScreen
 import com.example.personal_management_app.ui.screen.note_screen.NoteEditScreen
+import com.example.personal_management_app.ui.screen.reminder_screen.ReminderScreen
 
 
 @Composable
@@ -32,6 +33,9 @@ fun PersonalManagementApp() {
         }
         composable("note_screen") {
             NoteScreen(navController = navController)
+        }
+        composable("reminder_screen") {
+            ReminderScreen(navController = navController)
         }
 
         composable("note_edit_screen/{noteId}") { backStackEntry ->
