@@ -28,6 +28,28 @@ class ReminderRepository {
             timeText = "🕒 T6day, 4:00 PM",
             backgroundColor = ReminderBlue,
             isCheckList = true
+        ),
+        ReminderEntity(
+            id = "4",
+            title = "Gọi chủ nhà",
+            content = "Negotiate lease terms on rent increase.",
+            timeText = "🕒 Ngày mai, 10:00 AM",
+            backgroundColor = ReminderPink
+
+        ),
+        ReminderEntity(
+            id = "5",
+            title = "Gọi mẹ nhà",
+            content = "Negotiate lease terms on rent increase.",
+            timeText = "🕒 Ngày mai, 10:00 AM",
+            backgroundColor = ReminderPink
+        ),
+        ReminderEntity(
+            id = "6",
+            title = "Gọi bạn bè",
+            content = "Organize weekend trip planning.",
+            timeText = "🕒 Ngày mai, 2:00 PM",
+            backgroundColor = ReminderBlue
         )
     )
 

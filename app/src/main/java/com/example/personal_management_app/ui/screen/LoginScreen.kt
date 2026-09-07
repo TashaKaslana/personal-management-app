@@ -18,6 +18,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.personal_management_app.ui.theme.Loginblue
 
 @Composable
 fun LoginScreen(modifier: Modifier = Modifier, navController: NavController) {
@@ -36,92 +37,93 @@ fun LoginScreen(modifier: Modifier = Modifier, navController: NavController) {
                 .fillMaxSize()
                 .verticalScroll(scrollState)
                 .padding(24.dp),
-            verticalArrangement = Arrangement.Center,
+            verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Text(
-                text = "Đăng nhập",
-                fontSize = 24.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.Black
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = "Ứng dụng ghi chú của bạn",
-                fontSize = 14.sp,
-                color = Color.Gray
-            )
-
-            Spacer(modifier = Modifier.height(32.dp))
-
-
-            OutlinedTextField(
-                value = email,
-                onValueChange = { email = it },
-                label = { Text("Email") },
-                placeholder = { Text("Email") },
-                singleLine = true,
-                shape = RoundedCornerShape(12.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = Color.White,
-                    unfocusedContainerColor = Color.White,
-                    focusedBorderColor = Color(0xFF1A73E8),
-                    unfocusedBorderColor = Color(0xFFE0E0E0)
-                ),
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-
-            OutlinedTextField(
-                value = password,
-                onValueChange = { password = it },
-                label = { Text("Mật khẩu") },
-                placeholder = { Text("Mật khẩu") },
-                singleLine = true,
-                visualTransformation = PasswordVisualTransformation(),
-                shape = RoundedCornerShape(12.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = Color.White,
-                    unfocusedContainerColor = Color.White,
-                    focusedBorderColor = Color(0xFF1A73E8),
-                    unfocusedBorderColor = Color(0xFFE0E0E0)
-                ),
-                modifier = Modifier.fillMaxWidth()
-            )
-
-
-            Spacer(modifier = Modifier.height(8.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.Start
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
-                TextButton(
-                    onClick = {  },
-                    contentPadding = PaddingValues(0.dp)
-                ) {
-                    Text("Quên mật khẩu?", color = Color(0xFF1A73E8), fontSize = 14.sp)
-                }
-            }
-
-            if (errorMessage.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(4.dp))
                 Text(
-                    text = errorMessage,
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodySmall
+                    text = "Đăng nhập",
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black
+                )
+                Text(
+                    text = "Ứng dụng ghi chú của bạn",
+                    fontSize = 14.sp,
+                    color = Color.Gray
                 )
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Column(
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                OutlinedTextField(
+                    value = email,
+                    onValueChange = { email = it },
+                    label = { Text("Email") },
+                    placeholder = { Text("Email") },
+                    singleLine = true,
+                    shape = RoundedCornerShape(12.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedContainerColor = Color.White,
+                        unfocusedContainerColor = Color.White,
+                        focusedBorderColor = Color(0xFF1A73E8),
+                        unfocusedBorderColor = Color(0xFFE0E0E0)
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                )
 
+                OutlinedTextField(
+                    value = password,
+                    onValueChange = { password = it },
+                    label = { Text("Mật khẩu") },
+                    placeholder = { Text("Mật khẩu") },
+                    singleLine = true,
+                    visualTransformation = PasswordVisualTransformation(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedContainerColor = Color.White,
+                        unfocusedContainerColor = Color.White,
+                        focusedBorderColor = Color(0xFF1A73E8),
+                        unfocusedBorderColor = Color(0xFFE0E0E0)
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
+            Column(
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Start
+                ) {
+                    TextButton(
+                        onClick = { navController.navigate("forgot_password_screen") },
+                        contentPadding = PaddingValues(0.dp)
+                    ) {
+                        Text("Quên mật khẩu?", color = Loginblue, fontSize = 14.sp)
+                    }
+                }
+
+                if (errorMessage.isNotEmpty()) {
+                    Text(
+                        text = errorMessage,
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
+            }
 
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
@@ -153,7 +155,7 @@ fun LoginScreen(modifier: Modifier = Modifier, navController: NavController) {
                 ) {
                     Text(
                         text = "Chưa có tài khoản? Đăng ký",
-                        color = Color(0xFF1A73E8),
+                        color = Loginblue,
                         fontSize = 13.sp
                     )
                 }

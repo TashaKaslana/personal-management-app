@@ -31,6 +31,23 @@ class ArchiveRepository {
             tag = null,
             timeOrStatusText = "Đã lưu trữ",
             backgroundColor = ArchivePurple
+        ),
+
+        ArchiveEntity(
+            id = "4",
+            title = "Q4 Reflection Ghi chú",
+            content = "Felt good about app development. Need more practice with Material 3 spacing dynamics.",
+            tag = null,
+            timeOrStatusText = "Đã lưu trữ",
+            backgroundColor = ArchivePurple
+        ),
+        ArchiveEntity(
+            id = "5",
+            title = "Q4 Reflection Ghi chú",
+            content = "Felt good about app development. Need more practice with Material 3 spacing dynamics.",
+            tag = null,
+            timeOrStatusText = "Đã lưu trữ",
+            backgroundColor = ArchivePurple
         )
     )
 

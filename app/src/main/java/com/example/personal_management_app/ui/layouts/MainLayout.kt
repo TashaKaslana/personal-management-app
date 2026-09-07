@@ -14,7 +14,7 @@ import com.example.personal_management_app.ui.components.MainTopBar
 fun MainLayout(
     navController: NavController,
     currentTab: Int = 0,
-    topBar: @Composable () -> Unit = { MainTopBar() },
+    topBar: @Composable () -> Unit = { MainTopBar(navController = navController) },
     content: @Composable (PaddingValues) -> Unit
 ) {
     Scaffold(

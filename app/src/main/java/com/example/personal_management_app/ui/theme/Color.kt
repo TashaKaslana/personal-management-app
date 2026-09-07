@@ -18,3 +18,5 @@ val ReminderBlue = Color(0xFFE3F2FD)
 val ArchiveBlue = Color(0xFFE3F2FD)
 val ArchiveGreen = Color(0xFFE2F6ED)
 val ArchivePurple = Color(0xFFF3E5F5)
+
+val Loginblue = Color(0xFF1A73E8)

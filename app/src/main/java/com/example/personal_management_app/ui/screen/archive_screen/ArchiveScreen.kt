@@ -18,7 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.example.personal_management_app.repositories.ArchiveRepository
 import com.example.personal_management_app.ui.components.ArchiveCard
-import com.example.personal_management_app.ui.components.ArchiveSearchBar // Sử dụng component mới tách riêng
+import com.example.personal_management_app.ui.components.ArchiveSearchBar
 import com.example.personal_management_app.ui.layouts.MainLayout
 
 @Composable
@@ -40,7 +40,7 @@ fun ArchiveScreen(modifier: Modifier = Modifier, navController: NavController) {
                 .padding(innerPadding)
                 .padding(horizontal = 16.dp, vertical = 12.dp)
         ) {
-            // Gọi component search bar dành riêng cho Lưu trữ
+
             ArchiveSearchBar(
                 value = searchQuery,
                 onValueChange = { searchQuery = it },
