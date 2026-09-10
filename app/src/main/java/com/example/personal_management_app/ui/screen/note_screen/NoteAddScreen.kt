@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Card
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -15,29 +14,15 @@ import androidx.navigation.NavController
 import com.example.personal_management_app.ui.components.note.NoteCardActionsBottom
 import com.example.personal_management_app.ui.components.note.NoteCardActionsTop
 import com.example.personal_management_app.ui.components.note.NoteCardTextEditor
-import com.example.personal_management_app.ui.components.utils.ShowToastMessage
-import com.example.personal_management_app.viewmodel.NoteEditViewModel
-
-fun click() {
-    print("Clicked!")
-}
+import com.example.personal_management_app.viewmodel.NoteAddViewModel
 
 @Composable
-fun NoteEditScreen(
+fun NoteAddScreen(
     modifier: Modifier = Modifier,
     navController: NavController,
-    viewModel: NoteEditViewModel = hiltViewModel()
+    viewModel: NoteAddViewModel = hiltViewModel()
 ) {
     val note = viewModel.note
-
-    if (note == null) {
-        ShowToastMessage(message = "Ghi chú không có sẵn, vui lòng thử lại")
-
-        LaunchedEffect(Unit) {
-            navController.navigate("note_screen")
-        }
-        return
-    }
 
     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
         Card(
@@ -54,7 +39,7 @@ fun NoteEditScreen(
             ) {
                 NoteCardActionsTop(
                     onBackClick = {
-                        viewModel.updateNote()
+                        viewModel.addNote()
                         navController.navigate("note_screen")
                     },
                     onPinClick = {

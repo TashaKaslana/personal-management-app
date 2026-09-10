@@ -1,5 +1,7 @@
 package com.example.personal_management_app.ui.screen.note_screen
 
+import android.content.ContentValues.TAG
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -22,21 +24,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.example.personal_management_app.ui.layouts.MainLayout
+import com.example.personal_management_app.utils.toComposeColor
 import com.example.personal_management_app.viewmodel.NoteViewModel
 
-data class NoteItem(
-    val title: String,
-    val content: String,
-    val tag: String? = null,
-    val backgroundColor: Color
-)
-
 @Composable
-fun NoteScreen(modifier: Modifier = Modifier, navController: NavController, viewModel: NoteViewModel = viewModel(),) {
-    val notesList = viewModel.notes
+fun NoteScreen(modifier: Modifier = Modifier, navController: NavController, viewModel: NoteViewModel = hiltViewModel(),) {
+    val notesList = viewModel.notes.collectAsStateWithLifecycle().value
 
     MainLayout (navController = navController) { innerPadding ->
         Column(
@@ -64,10 +61,12 @@ fun NoteScreen(modifier: Modifier = Modifier, navController: NavController, view
                 items(notesList) { note ->
                     Card(
                         shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = note.backgroundColor),
+                        colors = CardDefaults.cardColors(containerColor = note.backgroundColor.toComposeColor()),
                         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier
+                            .fillMaxWidth()
                             .clickable {
+                                Log.d(TAG, "NoteScreen: ${note.id}")
                                 navController.navigate("note_edit_screen/${note.id}")
                             }
                     ) {
@@ -95,7 +94,7 @@ fun NoteScreen(modifier: Modifier = Modifier, navController: NavController, view
                                     color = Color.White.copy(alpha = 0.6f)
                                 ) {
                                     Text(
-                                        text = note.tag!!,
+                                        text = note.tag,
                                         fontSize = 10.sp,
                                         color = Color.DarkGray,
                                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)

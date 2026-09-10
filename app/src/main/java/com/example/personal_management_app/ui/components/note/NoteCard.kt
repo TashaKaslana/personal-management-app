@@ -1,11 +1,10 @@
-package com.example.personal_management_app.ui.components
+package com.example.personal_management_app.ui.components.note
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -19,12 +18,11 @@ import androidx.compose.material.icons.filled.Archive
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.NotificationAdd
 import androidx.compose.material.icons.filled.Palette
-import androidx.compose.material3.Card
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilledIconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -34,73 +32,20 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
-
-fun click() {
-    print("Clicked!")
-}
-
-@Composable
-fun NoteCard(
-    title: String,
-    titleStyle: TextStyle = MaterialTheme.typography.titleLarge,
-    content: String,
-    contentStyle: TextStyle = MaterialTheme.typography.bodyMedium,
-    theme: String = "",
-    imgSrc: String = "",
-    navController: NavController,
-    modifier: Modifier,
-) {
-    Card(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(8.dp),
-    ) {
-        Column(
-            verticalArrangement = Arrangement.spacedBy(4.dp),
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(8.dp),
-        ) {
-            NoteCardActionsTop(
-                onBackClick = { navController.navigate("note_screen") },
-                onPinClick = { click() },
-                onSetNotificationClick = { click() },
-                onSetArchived = { click() }
-            )
-
-            NoteCardTextEditor(
-                modifier = Modifier.weight(1f),
-                title = title,
-                titleStyle = titleStyle,
-                content = content,
-                contentStyle = contentStyle
-            )
-
-            NoteCardActionsBottom(
-                onAddClick = { click() },
-                onMenuClick = { click() },
-                onThemeClick = { click() },
-                onStyleClick = { click() }
-            )
-        }
-    }
-}
+import com.example.personal_management_app.dtos.NoteEditDto
+import com.example.personal_management_app.dtos.toCompose
 
 @Composable
 fun NoteCardTextEditor(
     modifier: Modifier = Modifier,
-    title: String,
-    content: String,
-    titleStyle: TextStyle,
-    contentStyle: TextStyle
+    note: NoteEditDto,
+    onTitleUpdate: (String) -> Unit,
+    onContentUpdate: (String) -> Unit,
 ) {
     val scrollState = rememberScrollState()
-    var titleState by remember { mutableStateOf(title) }
-    var bodyState by remember { mutableStateOf(content) }
+    var titleState by remember { mutableStateOf(note.title) }
+    var bodyState by remember { mutableStateOf(note.content) }
 
     Column(
         modifier = modifier
@@ -111,68 +56,26 @@ fun NoteCardTextEditor(
         //title
         BasicTextField(
             value = titleState,
-            onValueChange = { titleState = it },
-            textStyle = titleStyle,
+            onValueChange = {
+                titleState = it
+                onTitleUpdate(it)
+            },
+            textStyle = note.titleStyle.toCompose(),
             modifier = Modifier
                 .fillMaxWidth()
-
         )
 
         //body
         BasicTextField(
             value = bodyState,
-            onValueChange = { bodyState = it },
-            textStyle = contentStyle,
+            onValueChange = {
+                bodyState = it
+                onContentUpdate(it)
+            },
+            textStyle = note.contentStyle.toCompose(),
             modifier = Modifier
                 .fillMaxWidth()
         )
-    }
-}
-
-//for preview outside the editor
-@Composable
-fun NoteCardTextPreview(
-    content: String,
-    style: TextStyle = MaterialTheme.typography.bodyMedium,
-    overflow: TextOverflow = TextOverflow.Ellipsis,
-    maxLines: Int,
-) {
-    Text(
-        text = content,
-        style = style,
-        overflow = overflow,
-        maxLines = maxLines
-    )
-}
-
-@Composable
-fun NoteCardPreview(
-    modifier: Modifier = Modifier,
-    title: String,
-    titleStyle: TextStyle = MaterialTheme.typography.titleLarge,
-    content: String,
-    contentStyle: TextStyle = MaterialTheme.typography.bodyMedium,
-    theme: String = "",
-    imgSrc: String = "",
-) {
-    Card(
-        modifier = modifier
-    ) {
-        Column(
-            modifier = modifier.fillMaxWidth()
-        ) {
-            NoteCardTextPreview(
-                content = title,
-                style = titleStyle,
-                maxLines = 2
-            )
-
-            NoteCardTextPreview(
-                content = content,
-                style = contentStyle,
-                maxLines = 10
-            )
-        }
     }
 }
 
@@ -180,15 +83,17 @@ fun NoteCardPreview(
 @Composable
 fun NoteCardActionsTop(
     modifier: Modifier = Modifier,
-    onBackClick: ()-> Unit,
-    onPinClick: ()-> Unit,
+    onBackClick: () -> Unit,
+    onPinClick: () -> Unit,
     onSetNotificationClick: () -> Unit,
     onSetArchived: () -> Unit
 ) {
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier.fillMaxWidth().padding(vertical = 4.dp)
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp)
     ) {
         NoteCardActionIconButton(
             onClick = onBackClick,
@@ -222,7 +127,7 @@ fun NoteCardActionsTop(
 
 @Composable
 fun NoteCardActionIconButton(
-    onClick: ()-> Unit,
+    onClick: () -> Unit,
     icon: ImageVector,
     description: String,
     modifier: Modifier = Modifier
@@ -287,9 +192,9 @@ fun NoteCardActionDropdown(
     icon: ImageVector,
     iconDesc: String,
     dropdownMenu: @Composable (
-                Boolean,
-                (Boolean) -> Unit
-            ) -> Unit,
+        Boolean,
+        (Boolean) -> Unit
+    ) -> Unit,
 ) {
     var isExpanded by remember { mutableStateOf(false) }
 
