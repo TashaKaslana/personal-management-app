@@ -33,16 +33,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.personal_management_app.dtos.NoteEditDto
 import com.example.personal_management_app.dtos.toCompose
-import com.example.personal_management_app.viewmodel.NoteEditViewModel
 
 @Composable
 fun NoteCardTextEditor(
     modifier: Modifier = Modifier,
     note: NoteEditDto,
-    viewModel: NoteEditViewModel = hiltViewModel()
+    onTitleUpdate: (String) -> Unit,
+    onContentUpdate: (String) -> Unit,
 ) {
     val scrollState = rememberScrollState()
     var titleState by remember { mutableStateOf(note.title) }
@@ -59,7 +58,7 @@ fun NoteCardTextEditor(
             value = titleState,
             onValueChange = {
                 titleState = it
-                viewModel.updateTitle(it)
+                onTitleUpdate(it)
             },
             textStyle = note.titleStyle.toCompose(),
             modifier = Modifier
@@ -71,7 +70,7 @@ fun NoteCardTextEditor(
             value = bodyState,
             onValueChange = {
                 bodyState = it
-                viewModel.updateContent(it)
+                onContentUpdate(it)
             },
             textStyle = note.contentStyle.toCompose(),
             modifier = Modifier

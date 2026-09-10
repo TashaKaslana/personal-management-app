@@ -10,7 +10,7 @@ data class NoteEntity(
     val content: String,
     val contentStyle: NoteTextStyle,
     val tag: String? = null,
-    val backgroundColor: Long,
+    val backgroundColor: String,
     val isPinned: Boolean = false,
     val isArchived: Boolean = false,
     val isNotification: Boolean = false,

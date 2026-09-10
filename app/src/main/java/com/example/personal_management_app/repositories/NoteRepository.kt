@@ -20,7 +20,7 @@ class NoteRepository @Inject constructor() {
                 fontSize = 16f
             ),
             tag = "Công việc",
-            backgroundColor = 0xFFFFF8D6,
+            backgroundColor = "0xFFFFF8D6",
             isPinned = true
         ),
 
@@ -34,7 +34,7 @@ class NoteRepository @Inject constructor() {
             contentStyle = NoteTextStyle(
                 fontSize = 16f
             ),
-            backgroundColor = 0xFFE2F6ED
+            backgroundColor = "0xFFE2F6ED"
         ),
 
         NoteEntity(
@@ -49,7 +49,7 @@ class NoteRepository @Inject constructor() {
                 fontSize = 16f
             ),
             tag = "Du lịch",
-            backgroundColor = 0xFFE3F2FD,
+            backgroundColor = "0xFFE3F2FD",
             isNotification = true,
             notificationCron = "0 0 8 * * ?"
         ),
@@ -66,7 +66,7 @@ class NoteRepository @Inject constructor() {
                 fontSize = 16f,
                 italic = true
             ),
-            backgroundColor = 0xFFF1F8E9,
+            backgroundColor = "0xFFF1F8E9",
             isPinned = true
         ),
 
@@ -81,7 +81,7 @@ class NoteRepository @Inject constructor() {
             contentStyle = NoteTextStyle(
                 fontSize = 16f
             ),
-            backgroundColor = 0xFFFCE4EC,
+            backgroundColor = "0xFFFCE4EC",
             isNotification = true,
             notificationCron = "0 0 10 * * ?"
         ),
@@ -97,7 +97,7 @@ class NoteRepository @Inject constructor() {
             contentStyle = NoteTextStyle(
                 fontSize = 16f
             ),
-            backgroundColor = 0xFFF3E5F5,
+            backgroundColor = "0xFFF3E5F5",
             isArchived = true
         )
     )
@@ -128,27 +128,30 @@ class NoteRepository @Inject constructor() {
 
     fun pin(noteId: String, status: Boolean) {
         val index = getItem(noteId)
-
-        notes[index] = notes[index].copy(
-            isPinned = status
-        )
+        if (index != -1) {
+            notes[index] = notes[index].copy(
+                isPinned = status
+            )
+        }
     }
 
     fun setNotification(noteId: String, status: Boolean, cron: String) {
         val index = getItem(noteId)
-
-        notes[index] = notes[index].copy(
-            isNotification = status,
-            notificationCron = cron
-        )
+        if (index != -1) {
+            notes[index] = notes[index].copy(
+                isNotification = status,
+                notificationCron = cron
+            )
+        }
     }
 
     fun setArchived(noteId: String, status: Boolean) {
         val index = getItem(noteId)
-
-        notes[index] = notes[index].copy(
-            isArchived = status
-        )
+        if (index != -1) {
+            notes[index] = notes[index].copy(
+                isArchived = status
+            )
+        }
     }
 
     private fun getItem(note: NoteEntity): Int {

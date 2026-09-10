@@ -28,6 +28,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.example.personal_management_app.ui.layouts.MainLayout
+import com.example.personal_management_app.utils.toComposeColor
 import com.example.personal_management_app.viewmodel.NoteViewModel
 
 @Composable
@@ -60,7 +61,7 @@ fun NoteScreen(modifier: Modifier = Modifier, navController: NavController, view
                 items(notesList) { note ->
                     Card(
                         shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = Color(note.backgroundColor)),
+                        colors = CardDefaults.cardColors(containerColor = note.backgroundColor.toComposeColor()),
                         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
                         modifier = Modifier
                             .fillMaxWidth()
