@@ -1,13 +1,13 @@
 package com.example.personal_management_app.ui.components
 
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
@@ -28,9 +28,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 
 @Composable
-fun MainTopBar() {
+fun MainTopBar(navController: NavController) {
     var searchQuery by remember { mutableStateOf("") }
 
     OutlinedTextField(
@@ -41,15 +42,19 @@ fun MainTopBar() {
         trailingIcon = {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier.padding(end = 8.dp)
             ) {
                 Icon(Icons.Default.Search, contentDescription = "Grid/List", tint = Color.DarkGray)
-                Spacer(modifier = Modifier.width(8.dp))
 
                 Surface(
                     shape = RoundedCornerShape(50),
                     color = Color(0xFFD7CCC8),
-                    modifier = Modifier.size(32.dp)
+                    modifier = Modifier
+                        .size(32.dp)
+                        .clickable {
+                            navController.navigate("profile_screen")
+                        }
                 ) {
                     Box(contentAlignment = Alignment.Center) {
                         Text("NMD", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color.DarkGray)
