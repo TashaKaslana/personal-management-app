@@ -2,8 +2,11 @@ package com.example.personal_management_app.repositories
 
 import com.example.personal_management_app.dtos.NoteTextStyle
 import com.example.personal_management_app.entites.NoteEntity
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class NoteRepository {
+@Singleton
+class NoteRepository @Inject constructor() {
     private var notes = mutableListOf(
         NoteEntity(
             id = "1",

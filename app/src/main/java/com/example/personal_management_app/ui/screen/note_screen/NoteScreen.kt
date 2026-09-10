@@ -29,13 +29,6 @@ import androidx.navigation.NavController
 import com.example.personal_management_app.ui.layouts.MainLayout
 import com.example.personal_management_app.viewmodel.NoteViewModel
 
-data class NoteItem(
-    val title: String,
-    val content: String,
-    val tag: String? = null,
-    val backgroundColor: Color
-)
-
 @Composable
 fun NoteScreen(modifier: Modifier = Modifier, navController: NavController, viewModel: NoteViewModel = viewModel(),) {
     val notesList = viewModel.getList()

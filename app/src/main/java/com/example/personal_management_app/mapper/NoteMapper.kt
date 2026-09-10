@@ -2,8 +2,11 @@ package com.example.personal_management_app.mapper
 
 import com.example.personal_management_app.dtos.NoteEditDto
 import com.example.personal_management_app.entites.NoteEntity
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class NoteMapper {
+@Singleton
+class NoteMapper @Inject constructor() {
     fun toEditDto(note: NoteEntity?): NoteEditDto? {
         return note?.let {
             NoteEditDto(
