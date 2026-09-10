@@ -1,5 +1,7 @@
 package com.example.personal_management_app.ui.screen.note_screen
 
+import android.content.ContentValues.TAG
+import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -36,7 +38,7 @@ data class NoteItem(
 
 @Composable
 fun NoteScreen(modifier: Modifier = Modifier, navController: NavController, viewModel: NoteViewModel = viewModel(),) {
-    val notesList = viewModel.notes
+    val notesList = viewModel.getList()
 
     MainLayout (navController = navController) { innerPadding ->
         Column(
@@ -64,10 +66,12 @@ fun NoteScreen(modifier: Modifier = Modifier, navController: NavController, view
                 items(notesList) { note ->
                     Card(
                         shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = note.backgroundColor),
+                        colors = CardDefaults.cardColors(containerColor = Color(note.backgroundColor)),
                         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier
+                            .fillMaxWidth()
                             .clickable {
+                                Log.d(TAG, "NoteScreen: ${note.id}")
                                 navController.navigate("note_edit_screen/${note.id}")
                             }
                     ) {
@@ -95,7 +99,7 @@ fun NoteScreen(modifier: Modifier = Modifier, navController: NavController, view
                                     color = Color.White.copy(alpha = 0.6f)
                                 ) {
                                     Text(
-                                        text = note.tag!!,
+                                        text = note.tag,
                                         fontSize = 10.sp,
                                         color = Color.DarkGray,
                                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)

@@ -1,6 +1,7 @@
 package com.example.personal_management_app.viewmodel
 
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.ViewModel
 import com.example.personal_management_app.entites.NoteEntity
 import com.example.personal_management_app.repositories.NoteRepository
@@ -13,6 +14,11 @@ class NoteViewModel : ViewModel() {
         field = mutableStateListOf<NoteEntity>().apply {
             addAll(repository.getList())
         }
+
+
+    fun getList(): SnapshotStateList<NoteEntity> {
+        return notes
+    }
 
     fun getNote(noteId: String): NoteEntity? {
         return repository.get(noteId)

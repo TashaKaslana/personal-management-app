@@ -1,9 +1,8 @@
-package com.example.personal_management_app.entites
+package com.example.personal_management_app.dtos
 
-import com.example.personal_management_app.dtos.NoteTextStyle
+import kotlin.String
 
-
-data class NoteEntity(
+data class NoteEditDto(
     val id: String,
     val title: String,
     val titleStyle: NoteTextStyle,

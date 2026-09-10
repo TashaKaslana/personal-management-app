@@ -49,10 +49,8 @@ fun PersonalManagementApp() {
         composable("forgot_password_screen") {
             ForgotPasswordScreen(navController = navController)
         }
-        composable("note_edit_screen/{noteId}") { backStackEntry ->
-            val noteId = backStackEntry.arguments?.getString("noteId") ?: ""
-
-            NoteEditScreen(navController = navController, noteId = noteId)
+        composable("note_edit_screen/{noteId}") {
+            NoteEditScreen(navController = navController)
         }
     }
 }
