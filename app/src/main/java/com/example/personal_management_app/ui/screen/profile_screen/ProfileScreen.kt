@@ -1,18 +1,13 @@
 package com.example.personal_management_app.ui.screen.profile_screen
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -20,7 +15,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.personal_management_app.repositories.ProfileRepository
-import com.example.personal_management_app.ui.theme.FabContainer
+import com.example.personal_management_app.ui.components.ProfileCard
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -30,17 +25,17 @@ fun ProfileScreen(
 ) {
     val profile = profileRepository.getProfile()
 
-    // Trạng thái form chỉnh sửa thông tin
+
     var nameInput by remember { mutableStateOf(profile.name) }
     var usernameInput by remember { mutableStateOf(profile.username) }
     var avatarInput by remember { mutableStateOf(profile.avatar ?: "") }
 
-    // Trạng thái đổi mật khẩu
+
     var currentPasswordInput by remember { mutableStateOf("") }
     var newPasswordInput by remember { mutableStateOf("") }
-    var confirmPasswordInput by remember { mutableStateOf("") } // Thêm ô nhập lại mật khẩu mới
+    var confirmPasswordInput by remember { mutableStateOf("") }
 
-    // Trạng thái thông báo phản hồi
+
     var statusMessage by remember { mutableStateOf<String?>(null) }
     var isErrorState by remember { mutableStateOf(false) }
 
@@ -66,64 +61,17 @@ fun ProfileScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // Phần Avatar
-            Box(
-                contentAlignment = Alignment.BottomEnd,
-                modifier = Modifier
-                    .size(76.dp)
-                    .padding(top = 2.dp)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .clip(CircleShape)
-                        .background(FabContainer),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Person,
-                        contentDescription = "Avatar",
-                        modifier = Modifier.size(38.dp),
-                        tint = Color.DarkGray
-                    )
+
+            ProfileCard(
+                profile = profile,
+                onEditAvatarClick = {
+                    avatarInput = "https://example.com/avatar_${System.currentTimeMillis()}.png"
+                    statusMessage = "Đã cập nhật ảnh đại diện mới!"
+                    isErrorState = false
                 }
+            )
 
-                Surface(
-                    shape = CircleShape,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(26.dp),
-                    onClick = {
-                        avatarInput = "https://example.com/avatar_${System.currentTimeMillis()}.png"
-                        statusMessage = "Đã cập nhật ảnh đại diện mới!"
-                        isErrorState = false
-                    }
-                ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Icon(
-                            imageVector = Icons.Default.Edit,
-                            contentDescription = "Đổi ảnh",
-                            tint = Color.White,
-                            modifier = Modifier.size(12.dp)
-                        )
-                    }
-                }
-            }
 
-            // Hiển thị vai trò hệ thống
-            Surface(
-                shape = RoundedCornerShape(12.dp),
-                color = Color.LightGray.copy(alpha = 0.4f)
-            ) {
-                Text(
-                    text = "Vai trò: ${profile.role}",
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = Color.DarkGray,
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
-                )
-            }
-
-            // Form thông tin cơ bản
             OutlinedTextField(
                 value = nameInput,
                 onValueChange = { nameInput = it },
@@ -140,7 +88,7 @@ fun ProfileScreen(
                 modifier = Modifier.fillMaxWidth()
             )
 
-            // Các ô nhập mật khẩu
+
             OutlinedTextField(
                 value = currentPasswordInput,
                 onValueChange = { currentPasswordInput = it },
@@ -168,7 +116,7 @@ fun ProfileScreen(
                 modifier = Modifier.fillMaxWidth()
             )
 
-            // Thông báo trạng thái
+
             if (statusMessage != null) {
                 Text(
                     text = statusMessage!!,
@@ -178,17 +126,16 @@ fun ProfileScreen(
                 )
             }
 
-            // Co giãn đẩy các nút xuống dưới cùng
+
             Box(modifier = Modifier.weight(1f))
 
-            // Cụm nút thao tác
+
             Column(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Button(
                     onClick = {
-                        // Kiểm tra logic đổi mật khẩu
                         if (newPasswordInput.isNotEmpty() || confirmPasswordInput.isNotEmpty()) {
                             if (currentPasswordInput.isEmpty()) {
                                 statusMessage = "Vui lòng nhập mật khẩu hiện tại!"
@@ -202,7 +149,6 @@ fun ProfileScreen(
                             }
                         }
 
-                        // Thực hiện lưu thay đổi thông tin
                         profileRepository.updateProfile(nameInput, usernameInput)
                         statusMessage = "Cập nhật thông tin thành công!"
                         isErrorState = false
