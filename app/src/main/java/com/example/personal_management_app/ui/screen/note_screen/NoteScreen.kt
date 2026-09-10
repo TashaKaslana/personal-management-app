@@ -24,14 +24,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.example.personal_management_app.ui.layouts.MainLayout
 import com.example.personal_management_app.viewmodel.NoteViewModel
 
 @Composable
-fun NoteScreen(modifier: Modifier = Modifier, navController: NavController, viewModel: NoteViewModel = viewModel(),) {
-    val notesList = viewModel.getList()
+fun NoteScreen(modifier: Modifier = Modifier, navController: NavController, viewModel: NoteViewModel = hiltViewModel(),) {
+    val notesList = viewModel.notes.collectAsStateWithLifecycle().value
 
     MainLayout (navController = navController) { innerPadding ->
         Column(

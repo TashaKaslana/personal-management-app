@@ -1,23 +1,36 @@
 package com.example.personal_management_app.viewmodel
 
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.personal_management_app.entites.NoteEntity
 import com.example.personal_management_app.repositories.NoteRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class NoteViewModel : ViewModel() {
-    private val repository = NoteRepository()
+@HiltViewModel
+class NoteViewModel @Inject constructor(
+    private val repository: NoteRepository
+) : ViewModel() {
+    private val _notes = MutableStateFlow<List<NoteEntity>>(emptyList())
+    val notes = _notes.asStateFlow()
 
-    // Compose state list to automatically trigger UI redraws on change
-    val notes: List<NoteEntity>
-        field = mutableStateListOf<NoteEntity>().apply {
-            addAll(repository.getList())
+    init {
+        loadNotes()
+    }
+    fun loadNotes() {
+        viewModelScope.launch {
+            _notes.value = repository.getList()
         }
+    }
 
-
-    fun getList(): SnapshotStateList<NoteEntity> {
-        return notes
+    fun updateNote(note: NoteEntity) {
+        viewModelScope.launch {
+            repository.update(note)
+            loadNotes()
+        }
     }
 
     fun getNote(noteId: String): NoteEntity? {
@@ -25,22 +38,16 @@ class NoteViewModel : ViewModel() {
     }
 
     fun addNote(note: NoteEntity) {
-        repository.insert(note)
-        refreshNotes()
-    }
-
-    fun updateNote(note: NoteEntity) {
-        repository.update(note)
-        refreshNotes()
+        viewModelScope.launch {
+            repository.insert(note)
+            loadNotes()
+        }
     }
 
     fun deleteNote(noteId: String) {
-        repository.delete(noteId)
-        refreshNotes()
-    }
-
-    private fun refreshNotes() {
-        notes.clear()
-        notes.addAll(repository.getList())
+        viewModelScope.launch {
+            repository.delete(noteId)
+            loadNotes()
+        }
     }
 }
