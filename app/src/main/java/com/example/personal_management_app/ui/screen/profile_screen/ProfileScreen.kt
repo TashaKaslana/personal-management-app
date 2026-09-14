@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.personal_management_app.repositories.ProfileRepository
 import com.example.personal_management_app.ui.components.ProfileCard
+import com.example.personal_management_app.ui.theme.ScreenBackground
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -42,16 +43,16 @@ fun ProfileScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Trang cá nhân", fontWeight = FontWeight.Bold) },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Quay lại")
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = Color(0xFFFCF8F2))
-            )
+            title = { Text("Trang cá nhân", fontWeight = FontWeight.Bold) },
+            navigationIcon = {
+                IconButton(onClick = { navController.popBackStack() }) {
+                    Icon(imageVector = Icons.Default.ArrowBack, contentDescription = "Quay lại")
+                }
+            },
+            colors = TopAppBarDefaults.topAppBarColors(containerColor = ScreenBackground)
+        )
         },
-        containerColor = Color(0xFFFCF8F2)
+        containerColor = ScreenBackground
     ) { innerPadding ->
         Column(
             modifier = Modifier

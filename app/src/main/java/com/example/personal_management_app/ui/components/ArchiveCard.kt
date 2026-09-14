@@ -86,7 +86,7 @@ fun ArchiveCard(
                 )
             }
 
-            // Hàng hiển thị Tag hoặc trạng thái Đã lưu trữ dưới cùng
+
             Row(
                 horizontalArrangement = Arrangement.spacedBy(6.dp),
                 verticalAlignment = Alignment.CenterVertically,
