@@ -18,6 +18,7 @@ import com.example.personal_management_app.ui.screen.note_screen.NoteAddScreen
 import com.example.personal_management_app.ui.screen.note_screen.NoteEditScreen
 import com.example.personal_management_app.ui.screen.profile_screen.ProfileScreen
 import com.example.personal_management_app.ui.screen.reminder_screen.ReminderScreen
+import com.example.personal_management_app.ui.screen.trash_screen.TrashScreen
 
 
 @Composable
@@ -59,5 +60,9 @@ fun PersonalManagementApp() {
         composable ("note_add_screen") {
             NoteAddScreen(navController = navController)
         }
+        composable("trash_screen") {
+            TrashScreen(navController = navController)
+        }
     }
 }
+

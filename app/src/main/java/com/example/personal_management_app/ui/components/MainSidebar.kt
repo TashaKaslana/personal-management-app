@@ -14,6 +14,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.example.personal_management_app.ui.theme.SidebarSelectedColor
+import com.example.personal_management_app.ui.theme.SidebarTextSelected
+import com.example.personal_management_app.ui.theme.SidebarTextUnselected
 
 data class SidebarItem(
     val title: String,
@@ -26,7 +29,6 @@ fun MainSidebar(
     navController: NavController,
     onCloseDrawer: () -> Unit
 ) {
-    // Khớp 100% với các route đã khai báo trong NavHost (App.kt)
     val sidebarItems = listOf(
         SidebarItem("Ghi chú", "note_screen"),
         SidebarItem("Lời nhắc", "reminder_screen"),
@@ -53,15 +55,15 @@ fun MainSidebar(
                 text = "Tiện ích",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color.DarkGray,
+                color = SidebarTextUnselected,
                 modifier = Modifier.padding(start = 24.dp, bottom = 16.dp)
             )
 
             sidebarItems.forEach { item ->
-
                 val isSelected = currentRoute.startsWith(item.route)
-                val backgroundColor = if (isSelected) Color(0xFFE0E0E0).copy(alpha = 0.6f) else Color.Transparent
-                val textColor = if (isSelected) Color.Black else Color.DarkGray
+
+                val backgroundColor = if (isSelected) SidebarSelectedColor.copy(alpha = 0.6f) else Color.Transparent
+                val textColor = if (isSelected) SidebarTextSelected else SidebarTextUnselected
 
                 Box(
                     modifier = Modifier
@@ -72,13 +74,9 @@ fun MainSidebar(
                         .background(backgroundColor)
                         .clickable {
                             onCloseDrawer()
-
                             if (currentRoute != item.route) {
                                 navController.navigate(item.route) {
-
-                                    popUpTo("note_screen") {
-                                        saveState = true
-                                    }
+                                    popUpTo("note_screen") { saveState = true }
                                     launchSingleTop = true
                                     restoreState = true
                                 }

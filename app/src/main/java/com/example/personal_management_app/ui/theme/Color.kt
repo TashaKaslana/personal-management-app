@@ -21,3 +21,6 @@ val ArchivePurple = Color(0xFFF3E5F5)
 
 val Loginblue = Color(0xFF1A73E8)
 val ScreenBackground = Color(0xFFFCF8F2)
+val SidebarSelectedColor = Color(0xFFE0E0E0)
+val SidebarTextSelected = Color.Black
+val SidebarTextUnselected = Color.DarkGray
