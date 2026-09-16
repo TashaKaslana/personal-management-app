@@ -13,15 +13,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -31,21 +28,29 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 
 @Composable
-fun MainTopBar(navController: NavController) {
-    var searchQuery by remember { mutableStateOf("") }
-
+fun MainTopBar(
+    navController: NavController,
+    searchQuery: String = "",
+    onSearchQueryChange: (String) -> Unit = {},
+    placeholderText: String = "Tìm kiếm ghi chú",
+    onMenuClick: () -> Unit = {}
+) {
     OutlinedTextField(
         value = searchQuery,
-        onValueChange = { searchQuery = it },
-        placeholder = { Text("Tìm kiếm ghi chú", color = Color.Gray) },
-        leadingIcon = { Icon(Icons.Default.Menu, contentDescription = "Menu", tint = Color.DarkGray) },
+        onValueChange = onSearchQueryChange,
+        placeholder = { Text(placeholderText, color = Color.Gray) },
+        leadingIcon = {
+            IconButton(onClick = onMenuClick) {
+                Icon(Icons.Default.Menu, contentDescription = "Menu Drawer", tint = Color.DarkGray)
+            }
+        },
         trailingIcon = {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
                 modifier = Modifier.padding(end = 8.dp)
             ) {
-                Icon(Icons.Default.Search, contentDescription = "Grid/List", tint = Color.DarkGray)
+                Icon(Icons.Default.Search, contentDescription = "Search Icon", tint = Color.DarkGray)
 
                 Surface(
                     shape = RoundedCornerShape(50),
