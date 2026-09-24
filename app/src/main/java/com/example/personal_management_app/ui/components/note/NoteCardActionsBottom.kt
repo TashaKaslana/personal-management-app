@@ -50,7 +50,13 @@ fun NoteCardActionsBottom(
             NoteCardActionDropdown(
                 icon = Icons.Filled.AddBox,
                 iconDesc = "Add new content",
-                dropdownMenu = ::NoteCardAddingAction
+                dropdownMenu = { expanded, setExpanded ->
+                    NoteCardAddingAction(
+                        isExpanded = expanded,
+                        setIsExpanded = setExpanded,
+                        viewModel = viewModel
+                    )
+                }
             )
 
             NoteCardActionIconButton(
@@ -109,8 +115,12 @@ fun NoteCardActionDropdown(
 @Composable
 fun NoteCardAddingAction(
     isExpanded: Boolean,
-    setIsExpanded: (Boolean) -> Unit
+    setIsExpanded: (Boolean) -> Unit,
+    viewModel: NoteEditViewModel? = null,
 ) {
+    var showImageDialog by remember { mutableStateOf(false) }
+    var imageInput by remember { mutableStateOf("") }
+
     DropdownMenu(
         expanded = isExpanded,
         onDismissRequest = { setIsExpanded(false) }
@@ -120,6 +130,7 @@ fun NoteCardAddingAction(
                 Text("CheckBox")
             },
             onClick = {
+                viewModel?.addCheckbox()
                 setIsExpanded(false)
             }
         )
@@ -129,7 +140,48 @@ fun NoteCardAddingAction(
                 Text("Add Image")
             },
             onClick = {
+                imageInput = ""
+                showImageDialog = true
                 setIsExpanded(false)
+            }
+        )
+
+        DropdownMenuItem(
+            text = {
+                Text("Model box")
+            },
+            onClick = {
+                viewModel?.addModelBox()
+                setIsExpanded(false)
+            }
+        )
+    }
+
+    if (showImageDialog) {
+        AlertDialog(
+            onDismissRequest = { showImageDialog = false },
+            title = { Text("Add Image") },
+            text = {
+                OutlinedTextField(
+                    value = imageInput,
+                    onValueChange = { imageInput = it },
+                    singleLine = true
+                )
+            },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        viewModel?.addImage(imageInput)
+                        showImageDialog = false
+                    }
+                ) {
+                    Text("Add")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showImageDialog = false }) {
+                    Text("Cancel")
+                }
             }
         )
     }

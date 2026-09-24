@@ -10,6 +10,10 @@ import androidx.lifecycle.ViewModel
 import com.example.personal_management_app.dtos.NoteEditDto
 import com.example.personal_management_app.mapper.NoteMapper
 import com.example.personal_management_app.repositories.NoteRepository
+import com.example.personal_management_app.ui.screen.note_screen.NoteBlock
+import com.example.personal_management_app.ui.screen.note_screen.loadNoteContent
+import com.example.personal_management_app.ui.screen.note_screen.newNoteBlockId
+import com.example.personal_management_app.ui.screen.note_screen.saveNoteContent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.util.UUID
 
@@ -27,15 +31,18 @@ class NoteEditViewModel @Inject constructor(
     )
         private set
 
-    var showCheckbox by mutableStateOf(false)
+    var blocks by mutableStateOf(loadNoteContent(note?.content.orEmpty()))
         private set
+
+    val showCheckbox: Boolean
+        get() = blocks.any { it is NoteBlock.Checkbox }
 
     fun updateTitle(title: String) {
         note = note?.copy(title = title)
     }
 
     fun updateContent(content: String) {
-        note = note?.copy(content = content)
+        commit(loadNoteContent(content))
     }
 
     fun updateTag(tag: String) {
@@ -83,6 +90,86 @@ class NoteEditViewModel @Inject constructor(
     }
 
     fun toggleShowCheckbox() {
-        showCheckbox = !showCheckbox
+        val next = if (showCheckbox) {
+            blocks.map { block ->
+                if (block is NoteBlock.Checkbox) {
+                    NoteBlock.Text(block.id, block.label)
+                } else {
+                    block
+                }
+            }
+        } else {
+            blocks.flatMap { block ->
+                when (block) {
+                    is NoteBlock.Text -> block.text.lines().ifEmpty { listOf("") }.map { line ->
+                        NoteBlock.Checkbox(
+                            id = newNoteBlockId(),
+                            checked = false,
+                            label = line
+                        )
+                    }
+                    else -> listOf(block)
+                }
+            }
+        }
+        commit(next)
+    }
+
+    fun addCheckbox() {
+        commit(
+            blocks + NoteBlock.Checkbox(
+                id = newNoteBlockId(),
+                checked = false,
+                label = ""
+            )
+        )
+    }
+
+    fun addImage(uri: String) {
+        if (uri.isBlank()) return
+        commit(blocks + NoteBlock.Image(id = newNoteBlockId(), uri = uri))
+    }
+
+    fun addModelBox() {
+        commit(
+            blocks + NoteBlock.ModelBox(
+                id = newNoteBlockId(),
+                title = "",
+                body = ""
+            )
+        )
+    }
+
+    fun updateTextBlock(id: String, text: String) {
+        commit(blocks.map { block ->
+            if (block is NoteBlock.Text && block.id == id) block.copy(text = text) else block
+        })
+    }
+
+    fun setCheckboxChecked(id: String, checked: Boolean) {
+        commit(blocks.map { block ->
+            if (block is NoteBlock.Checkbox && block.id == id) block.copy(checked = checked) else block
+        })
+    }
+
+    fun updateCheckboxLabel(id: String, label: String) {
+        commit(blocks.map { block ->
+            if (block is NoteBlock.Checkbox && block.id == id) block.copy(label = label) else block
+        })
+    }
+
+    fun updateModelBox(id: String, title: String, body: String) {
+        commit(blocks.map { block ->
+            if (block is NoteBlock.ModelBox && block.id == id) {
+                block.copy(title = title, body = body)
+            } else {
+                block
+            }
+        })
+    }
+
+    private fun commit(next: List<NoteBlock>) {
+        blocks = next
+        note = note?.copy(content = saveNoteContent(next))
     }
 }

@@ -83,7 +83,7 @@ fun NoteScreen(modifier: Modifier = Modifier, navController: NavController, view
                             )
                             Spacer(modifier = Modifier.height(6.dp))
                             Text(
-                                text = note.content,
+                                text = noteContentPreview(note.content),
                                 fontSize = 12.sp,
                                 color = Color.DarkGray
                             )

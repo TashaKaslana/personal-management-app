@@ -36,6 +36,7 @@ fun NoteCardTextEditor(
     note: NoteEditDto,
     onTitleUpdate: (String) -> Unit,
     onContentUpdate: (String) -> Unit,
+    bodyContent: (@Composable () -> Unit)? = null,
 ) {
     val scrollState = rememberScrollState()
     var titleState by remember { mutableStateOf(note.title) }
@@ -59,17 +60,20 @@ fun NoteCardTextEditor(
                 .fillMaxWidth()
         )
 
-        //body
-        BasicTextField(
-            value = bodyState,
-            onValueChange = {
-                bodyState = it
-                onContentUpdate(it)
-            },
-            textStyle = note.contentStyle.toCompose(),
-            modifier = Modifier
-                .fillMaxWidth()
-        )
+        if (bodyContent != null) {
+            bodyContent()
+        } else {
+            BasicTextField(
+                value = bodyState,
+                onValueChange = {
+                    bodyState = it
+                    onContentUpdate(it)
+                },
+                textStyle = note.contentStyle.toCompose(),
+                modifier = Modifier
+                    .fillMaxWidth()
+            )
+        }
     }
 }
 
