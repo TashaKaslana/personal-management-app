@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.example.personal_management_app.dtos.toCompose
 import com.example.personal_management_app.ui.components.note.NoteCardActionsBottom
 import com.example.personal_management_app.ui.components.note.NoteCardActionsTop
 import com.example.personal_management_app.ui.components.note.NoteCardTextEditor
@@ -76,6 +77,16 @@ fun NoteEditScreen(
                     },
                     onContentUpdate = {
                         viewModel.updateContent(it)
+                    },
+                    bodyContent = {
+                        NoteRenderer(
+                            blocks = viewModel.blocks,
+                            textStyle = note.contentStyle.toCompose(),
+                            onTextChange = viewModel::updateTextBlock,
+                            onCheckboxChecked = viewModel::setCheckboxChecked,
+                            onCheckboxLabelChange = viewModel::updateCheckboxLabel,
+                            onModelBoxChange = viewModel::updateModelBox
+                        )
                     }
                 )
 
@@ -83,7 +94,8 @@ fun NoteEditScreen(
                     onAddClick = { click() },
                     onMenuClick = { click() },
                     onThemeClick = { click() },
-                    onStyleClick = { click() }
+                    onStyleClick = { click() },
+                    viewModel = viewModel
                 )
             }
         }

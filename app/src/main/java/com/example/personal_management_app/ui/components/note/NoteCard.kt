@@ -2,7 +2,6 @@ package com.example.personal_management_app.ui.components.note
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -13,17 +12,12 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.AddBox
 import androidx.compose.material.icons.filled.Archive
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.NotificationAdd
-import androidx.compose.material.icons.filled.Palette
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -42,6 +36,7 @@ fun NoteCardTextEditor(
     note: NoteEditDto,
     onTitleUpdate: (String) -> Unit,
     onContentUpdate: (String) -> Unit,
+    bodyContent: (@Composable () -> Unit)? = null,
 ) {
     val scrollState = rememberScrollState()
     var titleState by remember { mutableStateOf(note.title) }
@@ -65,17 +60,20 @@ fun NoteCardTextEditor(
                 .fillMaxWidth()
         )
 
-        //body
-        BasicTextField(
-            value = bodyState,
-            onValueChange = {
-                bodyState = it
-                onContentUpdate(it)
-            },
-            textStyle = note.contentStyle.toCompose(),
-            modifier = Modifier
-                .fillMaxWidth()
-        )
+        if (bodyContent != null) {
+            bodyContent()
+        } else {
+            BasicTextField(
+                value = bodyState,
+                onValueChange = {
+                    bodyState = it
+                    onContentUpdate(it)
+                },
+                textStyle = note.contentStyle.toCompose(),
+                modifier = Modifier
+                    .fillMaxWidth()
+            )
+        }
     }
 }
 
@@ -140,142 +138,6 @@ fun NoteCardActionIconButton(
         Icon(
             imageVector = icon,
             contentDescription = description
-        )
-    }
-}
-
-//Edit content inside
-@Composable
-fun NoteCardActionsBottom(
-    onAddClick: () -> Unit,
-    onThemeClick: () -> Unit,
-    onStyleClick: () -> Unit,
-    onMenuClick: () -> Unit,
-) {
-    Row(
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            NoteCardActionDropdown(
-                icon = Icons.Filled.AddBox,
-                iconDesc = "Add new content",
-                dropdownMenu = ::NoteCardAddingAction
-            )
-
-            NoteCardActionIconButton(
-                icon = Icons.Filled.Palette,
-                onClick = onAddClick,
-                description = "Add new theme"
-            )
-
-            NoteCardActionIconButton(
-                icon = Icons.Filled.Palette,
-                onClick = onAddClick,
-                description = "Add new theme"
-            )
-        }
-
-        NoteCardActionDropdown(
-            icon = Icons.Filled.AddBox,
-            iconDesc = "Add new content",
-            dropdownMenu = ::NoteCardMenuAction
-        )
-    }
-}
-
-@Composable
-fun NoteCardActionDropdown(
-    icon: ImageVector,
-    iconDesc: String,
-    dropdownMenu: @Composable (
-        Boolean,
-        (Boolean) -> Unit
-    ) -> Unit,
-) {
-    var isExpanded by remember { mutableStateOf(false) }
-
-    Box {
-        FilledIconButton(
-            onClick = { isExpanded = true },
-            shape = RoundedCornerShape(8.dp)
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = iconDesc
-            )
-        }
-
-        dropdownMenu(isExpanded) { isExpanded = it }
-    }
-}
-
-@Composable
-fun NoteCardAddingAction(
-    isExpanded: Boolean,
-    setIsExpanded: (Boolean) -> Unit
-) {
-    DropdownMenu(
-        expanded = isExpanded,
-        onDismissRequest = { setIsExpanded(false) }
-    ) {
-        DropdownMenuItem(
-            text = {
-                Text("CheckBox")
-            },
-            onClick = {
-                setIsExpanded(false)
-            }
-        )
-
-        DropdownMenuItem(
-            text = {
-                Text("Add Image")
-            },
-            onClick = {
-                setIsExpanded(false)
-            }
-        )
-    }
-}
-
-@Composable
-fun NoteCardMenuAction(
-    isExpanded: Boolean,
-    setIsExpanded: (Boolean) -> Unit
-) {
-    DropdownMenu(
-        expanded = isExpanded,
-        onDismissRequest = { setIsExpanded(false) }
-    ) {
-        DropdownMenuItem(
-            text = {
-                Text("Delete")
-            },
-            onClick = {
-                setIsExpanded(false)
-            }
-        )
-
-        DropdownMenuItem(
-            text = {
-                Text("Copy")
-            },
-            onClick = {
-                setIsExpanded(false)
-            }
-        )
-
-        DropdownMenuItem(
-            text = {
-                Text("Share")
-            },
-            onClick = {
-                setIsExpanded(false)
-            }
         )
     }
 }
