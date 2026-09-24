@@ -83,7 +83,8 @@ fun NoteEditScreen(
                     onAddClick = { click() },
                     onMenuClick = { click() },
                     onThemeClick = { click() },
-                    onStyleClick = { click() }
+                    onStyleClick = { click() },
+                    viewModel = viewModel
                 )
             }
         }

@@ -11,6 +11,7 @@ import com.example.personal_management_app.dtos.NoteEditDto
 import com.example.personal_management_app.mapper.NoteMapper
 import com.example.personal_management_app.repositories.NoteRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import java.util.UUID
 
 @HiltViewModel
 class NoteEditViewModel @Inject constructor(
@@ -26,12 +27,19 @@ class NoteEditViewModel @Inject constructor(
     )
         private set
 
+    var showCheckbox by mutableStateOf(false)
+        private set
+
     fun updateTitle(title: String) {
         note = note?.copy(title = title)
     }
 
     fun updateContent(content: String) {
         note = note?.copy(content = content)
+    }
+
+    fun updateTag(tag: String) {
+        note = note?.copy(tag = tag)
     }
 
     fun pin() {
@@ -58,5 +66,23 @@ class NoteEditViewModel @Inject constructor(
         if (entity != null) {
             noteRepository.update(entity)
         }
+    }
+
+    fun delete() {
+        noteRepository.delete(noteId)
+        note = null
+    }
+
+    fun copy() {
+        val currentNote = note ?: return
+        val copied = mapper.toEntity(currentNote)?.copy(
+            id = UUID.randomUUID().toString()
+        ) ?: return
+
+        noteRepository.insert(copied)
+    }
+
+    fun toggleShowCheckbox() {
+        showCheckbox = !showCheckbox
     }
 }
