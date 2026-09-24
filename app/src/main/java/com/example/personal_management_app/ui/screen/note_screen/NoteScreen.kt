@@ -82,11 +82,7 @@ fun NoteScreen(modifier: Modifier = Modifier, navController: NavController, view
                                 color = Color.Black
                             )
                             Spacer(modifier = Modifier.height(6.dp))
-                            Text(
-                                text = noteContentPreview(note.content),
-                                fontSize = 12.sp,
-                                color = Color.DarkGray
-                            )
+                            NoteContentPreview(content = note.content)
                             if (note.tag != null) {
                                 Spacer(modifier = Modifier.height(10.dp))
                                 Surface(

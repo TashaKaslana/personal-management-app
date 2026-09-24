@@ -9,8 +9,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckBox
+import androidx.compose.material.icons.filled.CheckBoxOutlineBlank
 import androidx.compose.material3.Card
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -20,9 +24,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
 import java.util.UUID
 
@@ -91,18 +99,80 @@ fun loadNoteContent(content: String): List<NoteBlock> {
     return blocks.ifEmpty { listOf(NoteBlock.Text(newNoteBlockId(), "")) }
 }
 
-fun noteContentPreview(content: String): String {
-    return loadNoteContent(content).joinToString("\n") { block ->
-        when (block) {
-            is NoteBlock.Text -> block.text
-            is NoteBlock.Checkbox -> block.label
-            is NoteBlock.Image -> "[image]"
-            is NoteBlock.ModelBox ->
-                listOf(block.title, block.body)
-                    .filter { it.isNotBlank() }
-                    .joinToString(" ")
+@Composable
+fun NoteContentPreview(
+    content: String,
+    modifier: Modifier = Modifier,
+    maxBlocks: Int = 4
+) {
+    val blocks = loadNoteContent(content)
+    val selectedBlocks = blocks.take(maxBlocks)
+    val textStyle = TextStyle(
+        fontSize = 12.sp,
+        color = Color.DarkGray
+    )
+
+    Column(
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+        modifier = modifier.fillMaxWidth()
+    ) {
+        selectedBlocks.forEach { block ->
+            when (block) {
+                is NoteBlock.Text -> {
+                    if (block.text.isNotBlank()) {
+                        Text(
+                            text = block.text,
+                            style = textStyle,
+                            maxLines = 5,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                }
+
+                is NoteBlock.Checkbox -> {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Icon(
+                            imageVector = if (block.checked) {
+                                Icons.Filled.CheckBox
+                            } else {
+                                Icons.Filled.CheckBoxOutlineBlank
+                            },
+                            contentDescription = null,
+                            tint = Color.DarkGray,
+                            modifier = Modifier.padding(end = 4.dp)
+                        )
+                        Text(
+                            text = block.label,
+                            style = textStyle,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                }
+
+                is NoteBlock.Image -> NoteImageBlock(
+                    uri = block.uri,
+                    maxHeight = 96.dp
+                )
+
+                is NoteBlock.ModelBox -> {
+                    Text(
+                        text = block.title.ifBlank { block.body },
+                        style = textStyle.copy(fontWeight = FontWeight.Medium),
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
+            }
         }
-    }.trim()
+
+        if (blocks.size > maxBlocks) {
+            Text(text = "...")
+        }
+    }
 }
 
 @Composable
@@ -183,7 +253,10 @@ fun NoteRenderer(
 }
 
 @Composable
-private fun NoteImageBlock(uri: String) {
+private fun NoteImageBlock(
+    uri: String,
+    maxHeight: Dp = 240.dp
+) {
     val context = LocalContext.current
     val bitmap = remember(uri) {
         runCatching {
@@ -204,7 +277,7 @@ private fun NoteImageBlock(uri: String) {
             contentScale = ContentScale.Fit,
             modifier = Modifier
                 .fillMaxWidth()
-                .heightIn(max = 240.dp)
+                .heightIn(max = maxHeight)
         )
     } else {
         Text(
