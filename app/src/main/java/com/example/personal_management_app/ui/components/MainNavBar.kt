@@ -86,7 +86,7 @@ fun MainNavBar(
 @Composable
 fun MainFloatingButton(navController: NavController) {
     FloatingActionButton(
-        onClick = { navController.navigate("note_add_screen") },
+        onClick = { navController.navigate("notes/add") },
         containerColor = FabContainer,
         contentColor = Color.Black,
         shape = RoundedCornerShape(16.dp)

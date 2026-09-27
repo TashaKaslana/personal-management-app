@@ -17,8 +17,8 @@ import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.NotificationAdd
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -29,35 +29,36 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import com.example.personal_management_app.dtos.NoteEditDto
 import com.example.personal_management_app.dtos.toCompose
+import com.example.personal_management_app.ui.screen.note_screen.NoteStyledField
+import com.example.personal_management_app.ui.screen.note_screen.NoteTextSpan
 
 @Composable
 fun NoteCardTextEditor(
     modifier: Modifier = Modifier,
     note: NoteEditDto,
-    onTitleUpdate: (String) -> Unit,
+    onTitleUpdate: (String, Int, Int) -> Unit,
     onContentUpdate: (String) -> Unit,
+    titleSpans: List<NoteTextSpan> = emptyList(),
+    contentColor: Color = Color.Black,
     bodyContent: (@Composable () -> Unit)? = null,
 ) {
     val scrollState = rememberScrollState()
-    var titleState by remember { mutableStateOf(note.title) }
     var bodyState by remember { mutableStateOf(note.content) }
 
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.surface)
+            .background(Color.Transparent)
             .verticalScroll(scrollState),
     ) {
         //title
-        BasicTextField(
-            value = titleState,
-            onValueChange = {
-                titleState = it
-                onTitleUpdate(it)
-            },
-            textStyle = note.titleStyle.toCompose(),
-            modifier = Modifier
-                .fillMaxWidth()
+        NoteStyledField(
+            text = note.title,
+            spans = titleSpans,
+            style = note.titleStyle.toCompose().copy(color = contentColor),
+            onEdit = onTitleUpdate,
+            fieldKey = note.id,
+            modifier = Modifier.fillMaxWidth()
         )
 
         if (bodyContent != null) {
@@ -69,7 +70,7 @@ fun NoteCardTextEditor(
                     bodyState = it
                     onContentUpdate(it)
                 },
-                textStyle = note.contentStyle.toCompose(),
+                textStyle = note.contentStyle.toCompose().copy(color = contentColor),
                 modifier = Modifier
                     .fillMaxWidth()
             )

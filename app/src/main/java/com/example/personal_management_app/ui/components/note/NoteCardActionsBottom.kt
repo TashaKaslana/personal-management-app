@@ -22,12 +22,18 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import com.example.personal_management_app.ui.screen.note_screen.NoteThemeDialog
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import android.widget.Toast
+import androidx.compose.material.icons.filled.Style
+import androidx.compose.ui.focus.focusProperties
+import androidx.compose.ui.window.PopupProperties
+import com.example.personal_management_app.ui.screen.note_screen.NoteHeading
+import com.example.personal_management_app.ui.screen.note_screen.NoteInlineStyle
 import com.example.personal_management_app.viewmodel.NoteEditViewModel
 
 
@@ -39,6 +45,9 @@ fun NoteCardActionsBottom(
     onMenuClick: () -> Unit,
     viewModel: NoteEditViewModel? = null,
 ) {
+    var showThemeDialog by remember { mutableStateOf(false) }
+    var showStyleMenu by remember { mutableStateOf(false) }
+
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
@@ -61,15 +70,35 @@ fun NoteCardActionsBottom(
 
             NoteCardActionIconButton(
                 icon = Icons.Filled.Palette,
-                onClick = onAddClick,
-                description = "Add new theme"
+                onClick = {
+                    showThemeDialog = true
+                    onThemeClick()
+                },
+                description = "Change theme"
             )
 
-            NoteCardActionIconButton(
-                icon = Icons.Filled.Palette,
-                onClick = onAddClick,
-                description = "Add new theme"
-            )
+            Box {
+                NoteCardActionIconButton(
+                    icon = Icons.Filled.Style,
+                    onClick = {
+                        showStyleMenu = true
+                        onStyleClick()
+                    },
+                    description = "Change style",
+                    modifier = Modifier.focusProperties { canFocus = false }
+                )
+                NoteStyleMenu(
+                    expanded = showStyleMenu,
+                    onDismiss = { showStyleMenu = false },
+                    heading = viewModel?.focusedHeading(),
+                    bold = viewModel?.selectionHas(NoteInlineStyle.Bold) == true,
+                    italic = viewModel?.selectionHas(NoteInlineStyle.Italic) == true,
+                    underline = viewModel?.selectionHas(NoteInlineStyle.Underline) == true,
+                    onHeading = { viewModel?.applyHeading(it) },
+                    onInline = { viewModel?.toggleInlineStyle(it) },
+                    onRemoveFormat = { viewModel?.removeFormat() }
+                )
+            }
         }
 
         NoteCardActionDropdown(
@@ -84,6 +113,57 @@ fun NoteCardActionsBottom(
             }
         )
     }
+
+    if (showThemeDialog) {
+        NoteThemeDialog(
+            selected = viewModel?.note?.backgroundColor.orEmpty(),
+            onSelect = {
+                viewModel?.updateBackground(it)
+//                showThemeDialog = false // it should be preview state instead close immediately
+            },
+            onDismiss = { showThemeDialog = false }
+        )
+    }
+}
+
+@Composable
+private fun NoteStyleMenu(
+    expanded: Boolean,
+    heading: NoteHeading?,
+    bold: Boolean,
+    italic: Boolean,
+    underline: Boolean,
+    onDismiss: () -> Unit,
+    onHeading: (NoteHeading) -> Unit,
+    onInline: (NoteInlineStyle) -> Unit,
+    onRemoveFormat: () -> Unit
+) {
+    DropdownMenu(
+        expanded = expanded,
+        onDismissRequest = onDismiss,
+        properties = PopupProperties(focusable = false)
+    ) {
+        StyleMenuItem("H1", heading == NoteHeading.H1) { onHeading(NoteHeading.H1) }
+        StyleMenuItem("H2", heading == NoteHeading.H2) { onHeading(NoteHeading.H2) }
+        StyleMenuItem("Normal", heading == NoteHeading.Normal) { onHeading(NoteHeading.Normal) }
+        StyleMenuItem("Bold", bold) { onInline(NoteInlineStyle.Bold) }
+        StyleMenuItem("Italic", italic) { onInline(NoteInlineStyle.Italic) }
+        StyleMenuItem("Underline", underline) { onInline(NoteInlineStyle.Underline) }
+        StyleMenuItem("Remove format", false, onRemoveFormat)
+    }
+}
+
+@Composable
+private fun StyleMenuItem(
+    label: String,
+    selected: Boolean,
+    onClick: () -> Unit
+) {
+    DropdownMenuItem(
+        text = { Text(if (selected) "$label  ✓" else label) },
+        onClick = onClick,
+        modifier = Modifier.focusProperties { canFocus = false }
+    )
 }
 
 @Composable
@@ -259,7 +339,7 @@ fun NoteCardMenuAction(
                 TextButton(
                     onClick = {
                         viewModel?.updateTag(tagInput)
-                        viewModel?.updateNote()
+                        viewModel?.upsertNote()
                         showTagDialog = false
                     }
                 ) {

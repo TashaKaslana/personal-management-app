@@ -9,12 +9,9 @@ import com.example.personal_management_app.ui.screen.ForgotPasswordScreen
 import com.example.personal_management_app.ui.screen.HomeScreen
 import com.example.personal_management_app.ui.screen.LoginScreen
 
-
-
 import com.example.personal_management_app.ui.screen.note_screen.NoteScreen
 import com.example.personal_management_app.ui.screen.RegisterScreen
 import com.example.personal_management_app.ui.screen.archive_screen.ArchiveScreen
-import com.example.personal_management_app.ui.screen.note_screen.NoteAddScreen
 import com.example.personal_management_app.ui.screen.note_screen.NoteEditScreen
 import com.example.personal_management_app.ui.screen.profile_screen.ProfileScreen
 import com.example.personal_management_app.ui.screen.reminder_screen.ReminderScreen
@@ -54,11 +51,11 @@ fun PersonalManagementApp() {
         composable("forgot_password_screen") {
             ForgotPasswordScreen(navController = navController)
         }
-        composable("note_edit_screen/{noteId}") {
+        composable("notes/{noteId}/edit") {
             NoteEditScreen(navController = navController)
         }
-        composable ("note_add_screen") {
-            NoteAddScreen(navController = navController)
+        composable ("notes/add") {
+            NoteEditScreen(navController = navController)
         }
         composable("trash_screen") {
             TrashScreen(navController = navController)
