@@ -64,6 +64,10 @@ class NoteEditViewModel @Inject constructor(
         note = note?.copy(tag = tag)
     }
 
+    fun updateBackground(background: String) {
+        note = note?.copy(backgroundColor = background)
+    }
+
     fun pin() {
         val currentNote = note ?: return
 

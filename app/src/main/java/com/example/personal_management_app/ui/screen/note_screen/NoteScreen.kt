@@ -2,7 +2,6 @@ package com.example.personal_management_app.ui.screen.note_screen
 
 import android.content.ContentValues.TAG
 import android.util.Log
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
@@ -14,8 +13,6 @@ import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -28,7 +25,6 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.example.personal_management_app.ui.layouts.MainLayout
-import com.example.personal_management_app.utils.toComposeColor
 import com.example.personal_management_app.viewmodel.NoteViewModel
 
 @Composable
@@ -51,7 +47,6 @@ fun NoteScreen(modifier: Modifier = Modifier, navController: NavController, view
                 color = Color.Gray,
                 modifier = Modifier.padding(bottom = 8.dp)
             )
-
             LazyVerticalStaggeredGrid(
                 columns = StaggeredGridCells.Fixed(2),
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
@@ -59,16 +54,15 @@ fun NoteScreen(modifier: Modifier = Modifier, navController: NavController, view
                 modifier = Modifier.fillMaxSize()
             ) {
                 items(notesList) { note ->
-                    Card(
-                        shape = RoundedCornerShape(16.dp),
-                        colors = CardDefaults.cardColors(containerColor = note.backgroundColor.toComposeColor()),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable {
-                                Log.d(TAG, "NoteScreen: ${note.id}")
-                                navController.navigate("notes/${note.id}/delete")
-                            }
+                    //list of notes backgrounds
+                    val contentColor = noteContentColor(note.backgroundColor)
+                    NoteThemedSurface(
+                        background = note.backgroundColor,
+                        modifier = Modifier.fillMaxWidth(),
+                        onClick = {
+                            Log.d(TAG, "NoteScreen: ${note.id}")
+                            navController.navigate("notes/${note.id}/edit")
+                        }
                     ) {
                         Column(
                             modifier = Modifier
@@ -79,10 +73,13 @@ fun NoteScreen(modifier: Modifier = Modifier, navController: NavController, view
                                 text = note.title,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 14.sp,
-                                color = Color.Black
+                                color = contentColor
                             )
                             Spacer(modifier = Modifier.height(6.dp))
-                            NoteContentPreview(content = note.content)
+                            NoteContentPreview(
+                                content = note.content,
+                                contentColor = contentColor
+                            )
                             if (note.tag != null) {
                                 Spacer(modifier = Modifier.height(10.dp))
                                 Surface(

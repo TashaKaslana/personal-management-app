@@ -13,6 +13,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckBox
 import androidx.compose.material.icons.filled.CheckBoxOutlineBlank
 import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -103,13 +104,14 @@ fun loadNoteContent(content: String): List<NoteBlock> {
 fun NoteContentPreview(
     content: String,
     modifier: Modifier = Modifier,
-    maxBlocks: Int = 4
+    maxBlocks: Int = 4,
+    contentColor: Color = Color.DarkGray
 ) {
     val blocks = loadNoteContent(content)
     val selectedBlocks = blocks.take(maxBlocks)
     val textStyle = TextStyle(
         fontSize = 12.sp,
-        color = Color.DarkGray
+        color = contentColor
     )
 
     Column(
@@ -141,7 +143,7 @@ fun NoteContentPreview(
                                 Icons.Filled.CheckBoxOutlineBlank
                             },
                             contentDescription = null,
-                            tint = Color.DarkGray,
+                            tint = contentColor,
                             modifier = Modifier.padding(end = 4.dp)
                         )
                         Text(
@@ -170,7 +172,7 @@ fun NoteContentPreview(
         }
 
         if (blocks.size > maxBlocks) {
-            Text(text = "...")
+            Text(text = "...", color = contentColor)
         }
     }
 }
@@ -221,7 +223,12 @@ fun NoteRenderer(
                 is NoteBlock.Image -> NoteImageBlock(uri = block.uri)
 
                 is NoteBlock.ModelBox -> {
-                    Card(modifier = Modifier.fillMaxWidth()) {
+                    Card(
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = CardDefaults.cardColors(
+                            containerColor = Color.White.copy(alpha = 0.55f)
+                        )
+                    ) {
                         Column(
                             verticalArrangement = Arrangement.spacedBy(4.dp),
                             modifier = Modifier

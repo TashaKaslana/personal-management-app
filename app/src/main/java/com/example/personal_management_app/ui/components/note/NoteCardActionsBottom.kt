@@ -22,12 +22,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import com.example.personal_management_app.ui.screen.note_screen.NoteThemeDialog
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import android.widget.Toast
+import androidx.compose.material.icons.filled.Style
 import com.example.personal_management_app.viewmodel.NoteEditViewModel
 
 
@@ -39,6 +41,8 @@ fun NoteCardActionsBottom(
     onMenuClick: () -> Unit,
     viewModel: NoteEditViewModel? = null,
 ) {
+    var showThemeDialog by remember { mutableStateOf(false) }
+
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
@@ -61,14 +65,17 @@ fun NoteCardActionsBottom(
 
             NoteCardActionIconButton(
                 icon = Icons.Filled.Palette,
-                onClick = onAddClick,
-                description = "Add new theme"
+                onClick = {
+                    showThemeDialog = true
+                    onThemeClick()
+                },
+                description = "Change theme"
             )
 
             NoteCardActionIconButton(
-                icon = Icons.Filled.Palette,
-                onClick = onAddClick,
-                description = "Add new theme"
+                icon = Icons.Filled.Style,
+                onClick = onStyleClick,
+                description = "Change style"
             )
         }
 
@@ -82,6 +89,17 @@ fun NoteCardActionsBottom(
                     viewModel = viewModel
                 )
             }
+        )
+    }
+
+    if (showThemeDialog) {
+        NoteThemeDialog(
+            selected = viewModel?.note?.backgroundColor.orEmpty(),
+            onSelect = {
+                viewModel?.updateBackground(it)
+//                showThemeDialog = false // it should be preview state instead close immediately
+            },
+            onDismiss = { showThemeDialog = false }
         )
     }
 }

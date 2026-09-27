@@ -4,7 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Card
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -41,11 +41,15 @@ fun NoteEditScreen(
     }
 
     Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-        Card(
+        val contentColor = noteContentColor(note.backgroundColor)
+        NoteThemedSurface(
+            background = note.backgroundColor,
             modifier = modifier
                 .fillMaxSize()
                 .padding(8.dp)
                 .padding(innerPadding),
+            shape = RoundedCornerShape(16.dp),
+            expand = true
         ) {
             Column(
                 verticalArrangement = Arrangement.spacedBy(4.dp),
@@ -78,10 +82,11 @@ fun NoteEditScreen(
                     onContentUpdate = {
                         viewModel.updateContent(it)
                     },
+                    contentColor = contentColor,
                     bodyContent = {
                         NoteRenderer(
                             blocks = viewModel.blocks,
-                            textStyle = note.contentStyle.toCompose(),
+                            textStyle = note.contentStyle.toCompose().copy(color = contentColor),
                             onTextChange = viewModel::updateTextBlock,
                             onCheckboxChecked = viewModel::setCheckboxChecked,
                             onCheckboxLabelChange = viewModel::updateCheckboxLabel,

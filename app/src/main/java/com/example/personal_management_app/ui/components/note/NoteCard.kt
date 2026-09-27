@@ -17,8 +17,8 @@ import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.NotificationAdd
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -36,6 +36,7 @@ fun NoteCardTextEditor(
     note: NoteEditDto,
     onTitleUpdate: (String) -> Unit,
     onContentUpdate: (String) -> Unit,
+    contentColor: Color = Color.Black,
     bodyContent: (@Composable () -> Unit)? = null,
 ) {
     val scrollState = rememberScrollState()
@@ -45,7 +46,7 @@ fun NoteCardTextEditor(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.surface)
+            .background(Color.Transparent)
             .verticalScroll(scrollState),
     ) {
         //title
@@ -55,7 +56,7 @@ fun NoteCardTextEditor(
                 titleState = it
                 onTitleUpdate(it)
             },
-            textStyle = note.titleStyle.toCompose(),
+            textStyle = note.titleStyle.toCompose().copy(color = contentColor),
             modifier = Modifier
                 .fillMaxWidth()
         )
@@ -69,7 +70,7 @@ fun NoteCardTextEditor(
                     bodyState = it
                     onContentUpdate(it)
                 },
-                textStyle = note.contentStyle.toCompose(),
+                textStyle = note.contentStyle.toCompose().copy(color = contentColor),
                 modifier = Modifier
                     .fillMaxWidth()
             )
