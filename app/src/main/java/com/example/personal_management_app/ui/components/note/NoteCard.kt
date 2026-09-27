@@ -29,18 +29,20 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import com.example.personal_management_app.dtos.NoteEditDto
 import com.example.personal_management_app.dtos.toCompose
+import com.example.personal_management_app.ui.screen.note_screen.NoteStyledField
+import com.example.personal_management_app.ui.screen.note_screen.NoteTextSpan
 
 @Composable
 fun NoteCardTextEditor(
     modifier: Modifier = Modifier,
     note: NoteEditDto,
-    onTitleUpdate: (String) -> Unit,
+    onTitleUpdate: (String, Int, Int) -> Unit,
     onContentUpdate: (String) -> Unit,
+    titleSpans: List<NoteTextSpan> = emptyList(),
     contentColor: Color = Color.Black,
     bodyContent: (@Composable () -> Unit)? = null,
 ) {
     val scrollState = rememberScrollState()
-    var titleState by remember { mutableStateOf(note.title) }
     var bodyState by remember { mutableStateOf(note.content) }
 
     Column(
@@ -50,15 +52,13 @@ fun NoteCardTextEditor(
             .verticalScroll(scrollState),
     ) {
         //title
-        BasicTextField(
-            value = titleState,
-            onValueChange = {
-                titleState = it
-                onTitleUpdate(it)
-            },
-            textStyle = note.titleStyle.toCompose().copy(color = contentColor),
-            modifier = Modifier
-                .fillMaxWidth()
+        NoteStyledField(
+            text = note.title,
+            spans = titleSpans,
+            style = note.titleStyle.toCompose().copy(color = contentColor),
+            onEdit = onTitleUpdate,
+            fieldKey = note.id,
+            modifier = Modifier.fillMaxWidth()
         )
 
         if (bodyContent != null) {

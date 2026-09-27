@@ -19,11 +19,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import com.example.personal_management_app.dtos.toCompose
 import com.example.personal_management_app.ui.layouts.MainLayout
 import com.example.personal_management_app.viewmodel.NoteViewModel
 
@@ -69,11 +71,20 @@ fun NoteScreen(modifier: Modifier = Modifier, navController: NavController, view
                                 .fillMaxWidth()
                                 .padding(14.dp)
                         ) {
+                            //title
                             Text(
-                                text = note.title,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 14.sp,
-                                color = contentColor
+                                text = buildStyledText(note.title, loadTitleSpans(note.content)),
+                                style = note.titleStyle.toCompose().copy(
+                                    color = contentColor,
+                                    fontSize = when {
+                                        //backwards compatibility
+                                        note.titleStyle.fontSize >= NoteHeading.H1.fontSize -> 16.sp
+                                        note.titleStyle.fontSize >= NoteHeading.H2.fontSize -> 14.sp
+                                        else -> 13.sp
+                                    }
+                                ),
+                                maxLines = 3,
+                                overflow = TextOverflow.Ellipsis
                             )
                             Spacer(modifier = Modifier.height(6.dp))
                             NoteContentPreview(

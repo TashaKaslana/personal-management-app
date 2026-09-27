@@ -76,9 +76,10 @@ fun NoteEditScreen(
                 NoteCardTextEditor(
                     modifier = Modifier.weight(1f),
                     note = note,
-                    onTitleUpdate = {
-                        viewModel.updateTitle(it)
+                    onTitleUpdate = { title, start, end ->
+                        viewModel.updateTitle(title, start, end)
                     },
+                    titleSpans = viewModel.titleSpans,
                     onContentUpdate = {
                         viewModel.updateContent(it)
                     },
@@ -99,7 +100,7 @@ fun NoteEditScreen(
                     onAddClick = { click() },
                     onMenuClick = { click() },
                     onThemeClick = { click() },
-                    onStyleClick = { click() },
+                    onStyleClick = {},
                     viewModel = viewModel
                 )
             }
