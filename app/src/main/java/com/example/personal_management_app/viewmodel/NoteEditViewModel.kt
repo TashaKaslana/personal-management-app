@@ -8,6 +8,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import com.example.personal_management_app.dtos.NoteEditDto
+import com.example.personal_management_app.dtos.NoteTextStyle
 import com.example.personal_management_app.mapper.NoteMapper
 import com.example.personal_management_app.repositories.NoteRepository
 import com.example.personal_management_app.ui.screen.note_screen.NoteBlock
@@ -23,11 +24,25 @@ class NoteEditViewModel @Inject constructor(
     private val noteRepository: NoteRepository,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
-    private val noteId: String =
-        checkNotNull(savedStateHandle["noteId"])
+    private val noteId: String? = savedStateHandle.get<String>("noteId")
+
+    var newNote: NoteEditDto = NoteEditDto(
+        id = UUID.randomUUID().toString(),
+        title = "Untitled",
+        titleStyle = NoteTextStyle(
+            fontSize = 24f,
+            bold = true
+        ),
+        content = "",
+        contentStyle = NoteTextStyle(
+            fontSize = 16f
+        ),
+        backgroundColor = "0xFFFFF8D6"
+    )
+        private set
 
     var note: NoteEditDto? by mutableStateOf(
-        mapper.toEditDto(noteRepository.get(noteId))
+        if (noteId != null) checkNotNull(mapper.toEditDto(noteRepository.get(noteId))) else newNote
     )
         private set
 
@@ -52,36 +67,60 @@ class NoteEditViewModel @Inject constructor(
     fun pin() {
         val currentNote = note ?: return
 
-        noteRepository.pin(noteId, !currentNote.isPinned)
+        note?.let { thisNote ->
+            note = thisNote.copy(isPinned = !thisNote.isPinned)
+        }
+
+        if (noteId != null) {
+            noteRepository.pin(noteId, !currentNote.isPinned)
+        }
     }
 
     fun setNotification(cron: String? = "") {
         val currentNote = note ?: return
 
-        noteRepository.setNotification(noteId, !currentNote.isNotification, cron ?: "")
+        note?.let { thisNote ->
+            note = thisNote.copy(isNotification = !thisNote.isNotification)
+            note = thisNote.copy(notificationCron = cron)
+        }
+
+        if (noteId != null) {
+            noteRepository.setNotification(noteId, !currentNote.isNotification, cron ?: "")
+        }
     }
 
     fun setArchived() {
         val currentNote = note ?: return
 
-        noteRepository.setArchived(noteId, currentNote.isArchived)
-    }
+        note?.let { thisNote ->
+            note = thisNote.copy(isArchived = !thisNote.isArchived)
+        }
 
-    fun updateNote() {
-        val entity = mapper.toEntity(note)
-
-        if (entity != null) {
-            noteRepository.update(entity)
+        if (noteId != null) {
+            noteRepository.setArchived(noteId, currentNote.isArchived)
         }
     }
 
+    fun upsertNote() {
+        val entity = mapper.toEntity(note) ?: return
+
+        if (noteId == null) {
+            noteRepository.insert(entity)
+        }
+
+        noteRepository.update(entity)
+    }
+
+
     fun delete() {
-        noteRepository.delete(noteId)
+        if (noteId != null) {
+            noteRepository.delete(noteId)
+        }
         note = null
     }
 
     fun copy() {
-        val currentNote = note ?: return
+        val currentNote = note
         val copied = mapper.toEntity(currentNote)?.copy(
             id = UUID.randomUUID().toString()
         ) ?: return
@@ -108,6 +147,7 @@ class NoteEditViewModel @Inject constructor(
                             label = line
                         )
                     }
+
                     else -> listOf(block)
                 }
             }

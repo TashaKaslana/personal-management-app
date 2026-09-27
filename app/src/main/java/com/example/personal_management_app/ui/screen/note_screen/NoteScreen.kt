@@ -67,7 +67,7 @@ fun NoteScreen(modifier: Modifier = Modifier, navController: NavController, view
                             .fillMaxWidth()
                             .clickable {
                                 Log.d(TAG, "NoteScreen: ${note.id}")
-                                navController.navigate("note_edit_screen/${note.id}")
+                                navController.navigate("notes/${note.id}/delete")
                             }
                     ) {
                         Column(

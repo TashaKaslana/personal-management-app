@@ -259,7 +259,7 @@ fun NoteCardMenuAction(
                 TextButton(
                     onClick = {
                         viewModel?.updateTag(tagInput)
-                        viewModel?.updateNote()
+                        viewModel?.upsertNote()
                         showTagDialog = false
                     }
                 ) {

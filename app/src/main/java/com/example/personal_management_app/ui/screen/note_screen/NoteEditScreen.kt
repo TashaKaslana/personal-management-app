@@ -55,7 +55,7 @@ fun NoteEditScreen(
             ) {
                 NoteCardActionsTop(
                     onBackClick = {
-                        viewModel.updateNote()
+                        viewModel.upsertNote()
                         navController.navigate("note_screen")
                     },
                     onPinClick = {
