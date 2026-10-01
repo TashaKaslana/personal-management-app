@@ -1,19 +1,38 @@
 package com.example.personal_management_app.ui.components.note
 
+import android.widget.Toast
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Label
 import androidx.compose.material.icons.filled.AddBox
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.CheckBox
+import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.Dashboard
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.FormatBold
+import androidx.compose.material.icons.filled.FormatClear
+import androidx.compose.material.icons.filled.FormatItalic
+import androidx.compose.material.icons.filled.FormatUnderlined
+import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Palette
+import androidx.compose.material.icons.filled.Style
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilledIconButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -22,27 +41,22 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import com.example.personal_management_app.ui.screen.note_screen.NoteThemeDialog
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import android.widget.Toast
-import androidx.compose.material.icons.filled.Style
-import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.window.PopupProperties
 import com.example.personal_management_app.ui.screen.note_screen.NoteHeading
 import com.example.personal_management_app.ui.screen.note_screen.NoteInlineStyle
+import com.example.personal_management_app.ui.screen.note_screen.NoteThemeDialog
 import com.example.personal_management_app.viewmodel.NoteEditViewModel
 
 
 @Composable
 fun NoteCardActionsBottom(
-    onAddClick: () -> Unit,
-    onThemeClick: () -> Unit,
-    onStyleClick: () -> Unit,
-    onMenuClick: () -> Unit,
     viewModel: NoteEditViewModel? = null,
 ) {
     var showThemeDialog by remember { mutableStateOf(false) }
@@ -72,17 +86,16 @@ fun NoteCardActionsBottom(
                 icon = Icons.Filled.Palette,
                 onClick = {
                     showThemeDialog = true
-                    onThemeClick()
                 },
                 description = "Change theme"
             )
 
+            //text style dialog
             Box {
                 NoteCardActionIconButton(
                     icon = Icons.Filled.Style,
                     onClick = {
                         showStyleMenu = true
-                        onStyleClick()
                     },
                     description = "Change style",
                     modifier = Modifier.focusProperties { canFocus = false }
@@ -138,18 +151,37 @@ private fun NoteStyleMenu(
     onInline: (NoteInlineStyle) -> Unit,
     onRemoveFormat: () -> Unit
 ) {
-    DropdownMenu(
+    NoteDropdownMenu(
         expanded = expanded,
         onDismissRequest = onDismiss,
         properties = PopupProperties(focusable = false)
     ) {
-        StyleMenuItem("H1", heading == NoteHeading.H1) { onHeading(NoteHeading.H1) }
-        StyleMenuItem("H2", heading == NoteHeading.H2) { onHeading(NoteHeading.H2) }
-        StyleMenuItem("Normal", heading == NoteHeading.Normal) { onHeading(NoteHeading.Normal) }
-        StyleMenuItem("Bold", bold) { onInline(NoteInlineStyle.Bold) }
-        StyleMenuItem("Italic", italic) { onInline(NoteInlineStyle.Italic) }
-        StyleMenuItem("Underline", underline) { onInline(NoteInlineStyle.Underline) }
-        StyleMenuItem("Remove format", false, onRemoveFormat)
+        StyleMenuItem("H1", heading == NoteHeading.H1, leading = { HeadingBadge("H1") }) {
+            onHeading(NoteHeading.H1)
+        }
+        StyleMenuItem("H2", heading == NoteHeading.H2, leading = { HeadingBadge("H2") }) {
+            onHeading(NoteHeading.H2)
+        }
+        StyleMenuItem("Normal", heading == NoteHeading.Normal, leading = { HeadingBadge("¶") }) {
+            onHeading(NoteHeading.Normal)
+        }
+        NoteMenuSeparator()
+        StyleMenuItem("Bold", bold, leading = { Icon(Icons.Filled.FormatBold, contentDescription = null) }) {
+            onInline(NoteInlineStyle.Bold)
+        }
+        StyleMenuItem("Italic", italic, leading = { Icon(Icons.Filled.FormatItalic, contentDescription = null) }) {
+            onInline(NoteInlineStyle.Italic)
+        }
+        StyleMenuItem("Underline", underline, leading = { Icon(Icons.Filled.FormatUnderlined, contentDescription = null) }) {
+            onInline(NoteInlineStyle.Underline)
+        }
+        NoteMenuSeparator()
+        StyleMenuItem(
+            "Remove format",
+            false,
+            leading = { Icon(Icons.Filled.FormatClear, contentDescription = null) },
+            onClick = onRemoveFormat
+        )
     }
 }
 
@@ -157,12 +189,93 @@ private fun NoteStyleMenu(
 private fun StyleMenuItem(
     label: String,
     selected: Boolean,
+    leading: @Composable () -> Unit,
     onClick: () -> Unit
 ) {
     DropdownMenuItem(
-        text = { Text(if (selected) "$label  ✓" else label) },
+        text = {
+            Text(
+                label,
+                fontWeight = if (selected) FontWeight.SemiBold else null
+            )
+        },
+        leadingIcon = leading,
+        trailingIcon = if (selected) {
+            {
+                Icon(
+                    Icons.Filled.Check,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            }
+        } else null,
         onClick = onClick,
         modifier = Modifier.focusProperties { canFocus = false }
+    )
+}
+
+@Composable
+private fun HeadingBadge(label: String) {
+    Box(
+        modifier = Modifier.size(24.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            label,
+            style = MaterialTheme.typography.labelMedium,
+            fontWeight = FontWeight.Bold
+        )
+    }
+}
+
+@Composable
+private fun NoteDropdownMenu(
+    expanded: Boolean,
+    onDismissRequest: () -> Unit,
+    properties: PopupProperties = PopupProperties(),
+    content: @Composable ColumnScope.() -> Unit
+) {
+    DropdownMenu(
+        expanded = expanded,
+        onDismissRequest = onDismissRequest,
+        properties = properties,
+        shape = RoundedCornerShape(12.dp),
+        shadowElevation = 6.dp,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+        content = content
+    )
+}
+
+@Composable
+private fun NoteMenuSeparator() {
+    HorizontalDivider(
+        modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
+        color = MaterialTheme.colorScheme.outlineVariant
+    )
+}
+
+@Composable
+private fun NoteDropdownItem(
+    label: String,
+    icon: ImageVector? = null,
+    destructive: Boolean = false,
+    onClick: () -> Unit
+) {
+    val contentColor = if (destructive) MaterialTheme.colorScheme.error
+    else MaterialTheme.colorScheme.onSurface
+
+    DropdownMenuItem(
+        text = { Text(label, color = contentColor) },
+        leadingIcon = if (icon != null) {
+            {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = contentColor
+                )
+            }
+        } else null,
+        onClick = onClick
     )
 }
 
@@ -201,35 +314,32 @@ fun NoteCardAddingAction(
     var showImageDialog by remember { mutableStateOf(false) }
     var imageInput by remember { mutableStateOf("") }
 
-    DropdownMenu(
+    NoteDropdownMenu(
         expanded = isExpanded,
         onDismissRequest = { setIsExpanded(false) }
     ) {
-        DropdownMenuItem(
-            text = {
-                Text("CheckBox")
-            },
+        NoteDropdownItem(
+            label = "CheckBox",
+            icon = Icons.Filled.CheckBox,
             onClick = {
                 viewModel?.addCheckbox()
                 setIsExpanded(false)
             }
         )
-
-        DropdownMenuItem(
-            text = {
-                Text("Add Image")
-            },
+        NoteMenuSeparator()
+        NoteDropdownItem(
+            label = "Add Image",
+            icon = Icons.Filled.Image,
             onClick = {
                 imageInput = ""
                 showImageDialog = true
                 setIsExpanded(false)
             }
         )
-
-        DropdownMenuItem(
-            text = {
-                Text("Model box")
-            },
+        NoteMenuSeparator()
+        NoteDropdownItem(
+            label = "Model box",
+            icon = Icons.Filled.Dashboard,
             onClick = {
                 viewModel?.addModelBox()
                 setIsExpanded(false)
@@ -277,46 +387,41 @@ fun NoteCardMenuAction(
     var showTagDialog by remember { mutableStateOf(false) }
     var tagInput by remember { mutableStateOf(viewModel?.note?.tag.orEmpty()) }
 
-    DropdownMenu(
+    NoteDropdownMenu(
         expanded = isExpanded,
         onDismissRequest = { setIsExpanded(false) }
     ) {
-        DropdownMenuItem(
-            text = {
-                Text("Delete")
-            },
+        NoteDropdownItem(
+            label = "Delete",
+            icon = Icons.Filled.Delete,
+            destructive = true,
             onClick = {
                 viewModel?.delete()
                 setIsExpanded(false)
             }
         )
-
-        DropdownMenuItem(
-            text = {
-                Text("Add Tag")
-            },
+        NoteMenuSeparator()
+        NoteDropdownItem(
+            label = "Add Tag",
+            icon = Icons.AutoMirrored.Filled.Label,
             onClick = {
                 tagInput = viewModel?.note?.tag.orEmpty()
                 showTagDialog = true
                 setIsExpanded(false)
             }
         )
-
-        DropdownMenuItem(
-            text = {
-                Text("Copy")
-            },
+        NoteDropdownItem(
+            label = "Copy",
+            icon = Icons.Filled.ContentCopy,
             onClick = {
                 viewModel?.copy()
                 Toast.makeText(context, "Đã sao chép ghi chú", Toast.LENGTH_SHORT).show()
                 setIsExpanded(false)
             }
         )
-
-        DropdownMenuItem(
-            text = {
-                Text(if (viewModel?.showCheckbox == true) "Hide checkbox" else "Show checkbox")
-            },
+        NoteDropdownItem(
+            label = if (viewModel?.showCheckbox == true) "Hide checkbox" else "Show checkbox",
+            icon = Icons.Filled.CheckBox,
             onClick = {
                 viewModel?.toggleShowCheckbox()
                 setIsExpanded(false)

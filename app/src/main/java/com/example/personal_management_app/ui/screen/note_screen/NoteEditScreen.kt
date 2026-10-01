@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -18,10 +20,6 @@ import com.example.personal_management_app.ui.components.note.NoteCardActionsTop
 import com.example.personal_management_app.ui.components.note.NoteCardTextEditor
 import com.example.personal_management_app.ui.components.utils.ShowToastMessage
 import com.example.personal_management_app.viewmodel.NoteEditViewModel
-
-fun click() {
-    print("Clicked!")
-}
 
 @Composable
 fun NoteEditScreen(
@@ -73,6 +71,11 @@ fun NoteEditScreen(
                     }
                 )
 
+                HorizontalDivider(
+                    modifier = Modifier.padding(vertical = 4.dp),
+                    color = MaterialTheme.colorScheme.outlineVariant
+                )
+
                 NoteCardTextEditor(
                     modifier = Modifier.weight(1f),
                     note = note,
@@ -96,11 +99,12 @@ fun NoteEditScreen(
                     }
                 )
 
+                HorizontalDivider(
+                    modifier = Modifier.padding(vertical = 4.dp),
+                    color = MaterialTheme.colorScheme.outlineVariant
+                )
+
                 NoteCardActionsBottom(
-                    onAddClick = { click() },
-                    onMenuClick = { click() },
-                    onThemeClick = { click() },
-                    onStyleClick = {},
                     viewModel = viewModel
                 )
             }
