@@ -318,13 +318,18 @@ class NoteEditViewModel @Inject constructor(
     }
 
     fun addCheckbox() {
-        commit(
-            blocks + NoteBlock.Checkbox(
-                id = newNoteBlockId(),
-                checked = false,
-                label = ""
-            )
+        val checkbox = NoteBlock.Checkbox(
+            id = newNoteBlockId(),
+            checked = false,
+            label = ""
         )
+        val trailingEmptyText = blocks.lastOrNull() as? NoteBlock.Text
+        val next = if (trailingEmptyText != null && trailingEmptyText.text.isEmpty()) {
+            blocks.dropLast(1) + checkbox + trailingEmptyText
+        } else {
+            blocks + checkbox + NoteBlock.Text(newNoteBlockId(), "")
+        }
+        commit(next)
     }
 
     fun addImage(uri: String) {
