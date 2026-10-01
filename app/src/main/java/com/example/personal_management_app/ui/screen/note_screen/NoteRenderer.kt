@@ -32,13 +32,17 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.net.toUri
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.Json
 import java.util.UUID
 
-private const val FORMAT_HEADER = "PMA1"
-
+@Serializable
 sealed class NoteBlock {
     abstract val id: String
 
+    @Serializable
+    @SerialName("Text")
     data class Text(
         override val id: String,
         val text: String,
@@ -46,6 +50,8 @@ sealed class NoteBlock {
         val spans: List<NoteTextSpan> = emptyList()
     ) : NoteBlock()
 
+    @Serializable
+    @SerialName("Checkbox")
     data class Checkbox(
         override val id: String,
         val checked: Boolean,
@@ -54,11 +60,15 @@ sealed class NoteBlock {
         val spans: List<NoteTextSpan> = emptyList()
     ) : NoteBlock()
 
+    @Serializable
+    @SerialName("Image")
     data class Image(
         override val id: String,
         val uri: String
     ) : NoteBlock()
 
+    @Serializable
+    @SerialName("ModelBox")
     data class ModelBox(
         override val id: String,
         val title: String,
@@ -72,55 +82,45 @@ sealed class NoteBlock {
 
 fun newNoteBlockId(): String = UUID.randomUUID().toString().take(8)
 
+@Serializable
+data class NoteContentDocument(
+    val version: Int,
+    val titleSpans: List<NoteTextSpan> = emptyList(),
+    val blocks: List<NoteBlock> = emptyList()
+)
+
+private val noteContentJson = Json {
+    ignoreUnknownKeys = true
+}
+
 fun saveNoteContent(
     blocks: List<NoteBlock>,
     titleSpans: List<NoteTextSpan> = emptyList()
 ): String {
-    return buildString {
-        append(FORMAT_HEADER)
-        if (titleSpans.isNotEmpty()) {
-            append('\n')
-            append("Y|${encodeSpans(titleSpans)}")
-        }
-        blocks.forEach { block ->
-            append('\n')
-            append(
-                when (block) {
-                    is NoteBlock.Text ->
-                        "T|${block.id}|${escape(block.text)}|${block.heading.encode()}|${encodeSpans(block.spans)}"
-                    is NoteBlock.Checkbox ->
-                        "K|${block.id}|${if (block.checked) 1 else 0}|${escape(block.label)}|${block.heading.encode()}|${encodeSpans(block.spans)}"
-                    is NoteBlock.Image -> "I|${block.id}|${escape(block.uri)}"
-                    is NoteBlock.ModelBox ->
-                        "M|${block.id}|${escape(block.title)}|${escape(block.body)}|${block.titleHeading.encode()}|${encodeSpans(block.titleSpans)}|${block.bodyHeading.encode()}|${encodeSpans(block.bodySpans)}"
-                }
-            )
-        }
-    }
+    val document = NoteContentDocument(
+        version = 1,
+        titleSpans = titleSpans,
+        blocks = blocks
+    )
+    return noteContentJson.encodeToString(NoteContentDocument.serializer(), document)
 }
 
 fun loadTitleSpans(content: String): List<NoteTextSpan> {
-    if (content.lineSequence().firstOrNull() != FORMAT_HEADER) return emptyList()
-    return content.lineSequence().drop(1).firstNotNullOfOrNull { line ->
-        val fields = splitFields(line)
-        if (fields.firstOrNull() == "Y") decodeSpans(fields.getOrElse(1) { "" }) else null
-    } ?: emptyList()
+    val document = runCatching {
+        noteContentJson.decodeFromString(NoteContentDocument.serializer(), content)
+    }.getOrNull()
+    return document?.titleSpans ?: emptyList()
 }
 
 fun loadNoteContent(content: String): List<NoteBlock> {
     if (content.isBlank()) {
         return listOf(NoteBlock.Text(newNoteBlockId(), ""))
     }
-    if (content.lineSequence().firstOrNull() != FORMAT_HEADER) {
-        return listOf(NoteBlock.Text(newNoteBlockId(), content))
-    }
-
-    val blocks = content.lineSequence()
-        .drop(1)
-        .mapNotNull(::decodeLine)
-        .toList()
-
-    return blocks.ifEmpty { listOf(NoteBlock.Text(newNoteBlockId(), "")) }
+    val document = runCatching {
+        noteContentJson.decodeFromString(NoteContentDocument.serializer(), content)
+    }.getOrNull()
+    return document?.blocks?.ifEmpty { null }
+        ?: listOf(NoteBlock.Text(newNoteBlockId(), content))
 }
 
 @Composable
@@ -345,81 +345,4 @@ private fun NoteImageBlock(
             style = MaterialTheme.typography.bodyMedium
         )
     }
-}
-
-private fun decodeLine(line: String): NoteBlock? {
-    if (line.isBlank()) return null
-    val fields = splitFields(line)
-    val type = fields.getOrNull(0) ?: return null
-    val id = fields.getOrNull(1)?.ifBlank { null } ?: newNoteBlockId()
-
-    return when (type) {
-        "T" -> NoteBlock.Text(
-            id = id,
-            text = fields.getOrElse(2) { "" },
-            heading = decodeHeading(fields.getOrNull(3)),
-            spans = decodeSpans(fields.getOrElse(4) { "" })
-        )
-        "K" -> NoteBlock.Checkbox(
-            id = id,
-            checked = fields.getOrNull(2) == "1",
-            label = fields.getOrElse(3) { "" },
-            heading = decodeHeading(fields.getOrNull(4)),
-            spans = decodeSpans(fields.getOrElse(5) { "" })
-        )
-        "I" -> NoteBlock.Image(
-            id = id,
-            uri = fields.getOrElse(2) { "" }
-        )
-        "M" -> NoteBlock.ModelBox(
-            id = id,
-            title = fields.getOrElse(2) { "" },
-            body = fields.getOrElse(3) { "" },
-            titleHeading = decodeHeading(fields.getOrNull(4)),
-            titleSpans = decodeSpans(fields.getOrElse(5) { "" }),
-            bodyHeading = decodeHeading(fields.getOrNull(6)),
-            bodySpans = decodeSpans(fields.getOrElse(7) { "" })
-        )
-        else -> null
-    }
-}
-
-private fun splitFields(line: String): List<String> {
-    val fields = mutableListOf<String>()
-    val current = StringBuilder()
-    var index = 0
-
-    while (index < line.length) {
-        when (val char = line[index]) {
-            '\\' if index + 1 < line.length -> {
-                when (line[index + 1]) {
-                    '\\' -> current.append('\\')
-                    'p' -> current.append('|')
-                    'n' -> current.append('\n')
-                    else -> current.append(line[index + 1])
-                }
-                index += 2
-            }
-            '|' -> {
-                fields.add(current.toString())
-                current.clear()
-                index++
-            }
-            else -> {
-                current.append(char)
-                index++
-            }
-        }
-    }
-
-    fields.add(current.toString())
-    return fields
-}
-
-private fun escape(value: String): String {
-    return value
-        .replace("\\", "\\\\")
-        .replace("|", "\\p")
-        .replace("\n", "\\n")
-        .replace("\r", "")
 }
