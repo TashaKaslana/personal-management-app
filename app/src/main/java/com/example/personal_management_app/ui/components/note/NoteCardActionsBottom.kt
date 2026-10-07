@@ -2,8 +2,10 @@ package com.example.personal_management_app.ui.components.note
 
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -51,7 +53,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.PopupProperties
 import com.example.personal_management_app.ui.screen.note_screen.NoteHeading
 import com.example.personal_management_app.ui.screen.note_screen.NoteInlineStyle
+import com.example.personal_management_app.ui.screen.note_screen.NotePanelType
 import com.example.personal_management_app.ui.screen.note_screen.NoteThemeDialog
+import com.example.personal_management_app.ui.screen.note_screen.notePanelTypes
 import com.example.personal_management_app.viewmodel.NoteEditViewModel
 
 
@@ -61,6 +65,7 @@ fun NoteCardActionsBottom(
 ) {
     var showThemeDialog by remember { mutableStateOf(false) }
     var showStyleMenu by remember { mutableStateOf(false) }
+    val focusedPanelId = viewModel?.focusedPanelId()
 
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -128,14 +133,23 @@ fun NoteCardActionsBottom(
     }
 
     if (showThemeDialog) {
-        NoteThemeDialog(
-            selected = viewModel?.note?.backgroundColor.orEmpty(),
-            onSelect = {
-                viewModel?.updateBackground(it)
+        if (focusedPanelId != null) {
+            NoteThemeDialog(
+                selected = viewModel.panelBackground(focusedPanelId).orEmpty(),
+                onSelect = { viewModel.updatePanelBackground(focusedPanelId, it) },
+                onInherit = { viewModel.updatePanelBackground(focusedPanelId, null) },
+                onDismiss = { showThemeDialog = false }
+            )
+        } else {
+            NoteThemeDialog(
+                selected = viewModel?.note?.backgroundColor.orEmpty(),
+                onSelect = {
+                    viewModel?.updateBackground(it)
 //                showThemeDialog = false // it should be preview state instead close immediately
-            },
-            onDismiss = { showThemeDialog = false }
-        )
+                },
+                onDismiss = { showThemeDialog = false }
+            )
+        }
     }
 }
 
@@ -338,7 +352,7 @@ fun NoteCardAddingAction(
         )
         NoteMenuSeparator()
         NoteDropdownItem(
-            label = "Model box",
+            label = "Panel",
             icon = Icons.Filled.Dashboard,
             onClick = {
                 viewModel?.addModelBox()
@@ -385,7 +399,9 @@ fun NoteCardMenuAction(
 ) {
     val context = LocalContext.current
     var showTagDialog by remember { mutableStateOf(false) }
+    var showPanelDialog by remember { mutableStateOf(false) }
     var tagInput by remember { mutableStateOf(viewModel?.note?.tag.orEmpty()) }
+    val focusedPanelId = viewModel?.focusedPanelId()
 
     NoteDropdownMenu(
         expanded = isExpanded,
@@ -427,6 +443,25 @@ fun NoteCardMenuAction(
                 setIsExpanded(false)
             }
         )
+        if (focusedPanelId != null) {
+            NoteMenuSeparator()
+            NoteDropdownItem(
+                label = "Panel type",
+                icon = Icons.Filled.Dashboard,
+                onClick = {
+                    showPanelDialog = true
+                    setIsExpanded(false)
+                }
+            )
+        }
+    }
+
+    if (showPanelDialog && focusedPanelId != null) {
+        NotePanelTypeDialog(
+            selected = viewModel.panelType(focusedPanelId) ?: NotePanelType.Inherit,
+            onSelect = { viewModel.updatePanelType(focusedPanelId, it) },
+            onDismiss = { showPanelDialog = false }
+        )
     }
 
     if (showTagDialog) {
@@ -457,5 +492,65 @@ fun NoteCardMenuAction(
                 }
             }
         )
+    }
+}
+
+@Composable
+fun NotePanelTypeDialog(
+    selected: NotePanelType,
+    onSelect: (NotePanelType) -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Panel type") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                notePanelTypes.forEach { type ->
+                    NotePanelTypeRow(
+                        label = type.label,
+                        selected = type == selected,
+                        onClick = {
+                            onSelect(type)
+                            onDismiss()
+                        }
+                    )
+                }
+            }
+        },
+        confirmButton = {},
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }
+    )
+}
+
+@Composable
+private fun NotePanelTypeRow(
+    label: String,
+    selected: Boolean,
+    onClick: () -> Unit
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(vertical = 8.dp)
+    ) {
+        Text(
+            text = label,
+            fontWeight = if (selected) FontWeight.SemiBold else null
+        )
+        if (selected) {
+            Icon(
+                imageVector = Icons.Filled.Check,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary
+            )
+        }
     }
 }

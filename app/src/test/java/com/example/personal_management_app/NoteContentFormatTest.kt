@@ -2,7 +2,13 @@ package com.example.personal_management_app
 
 import com.example.personal_management_app.ui.screen.note_screen.NoteBlock
 import com.example.personal_management_app.ui.screen.note_screen.NoteHeading
+import com.example.personal_management_app.ui.screen.note_screen.NotePanelType
 import com.example.personal_management_app.ui.screen.note_screen.NoteTextSpan
+import com.example.personal_management_app.ui.screen.note_screen.containsBlock
+import com.example.personal_management_app.ui.screen.note_screen.effectiveBackground
+import com.example.personal_management_app.ui.screen.note_screen.findBlock
+import com.example.personal_management_app.ui.screen.note_screen.flattenBlocks
+import com.example.personal_management_app.ui.screen.note_screen.isTransparent
 import com.example.personal_management_app.ui.screen.note_screen.loadNoteContent
 import com.example.personal_management_app.ui.screen.note_screen.loadTitleSpans
 import com.example.personal_management_app.ui.screen.note_screen.saveNoteContent
@@ -32,10 +38,18 @@ class NoteContentFormatTest {
             NoteBlock.ModelBox(
                 id = "m1",
                 title = "box | title",
-                body = "body \n text",
                 titleHeading = NoteHeading.H1,
                 titleSpans = listOf(NoteTextSpan(0, 3, underline = true)),
-                bodySpans = listOf(NoteTextSpan(1, 2, bold = true))
+                type = NotePanelType.Callout,
+                backgroundColor = "0xFFE2F6ED",
+                blocks = listOf(
+                    NoteBlock.Text(
+                        id = "m1t1",
+                        text = "body \n text",
+                        spans = listOf(NoteTextSpan(1, 2, bold = true))
+                    ),
+                    NoteBlock.Checkbox(id = "m1k1", checked = true, label = "inner task")
+                )
             )
         )
         val titleSpans = listOf(NoteTextSpan(0, 3, bold = true, italic = true))
@@ -44,6 +58,44 @@ class NoteContentFormatTest {
 
         assertEquals(blocks, loadNoteContent(saved))
         assertEquals(titleSpans, loadTitleSpans(saved))
+    }
+
+    @Test
+    fun panelWithoutBackgroundInheritsParent() {
+        val panel = NoteBlock.ModelBox(id = "m1")
+
+        assertEquals("0xFFFFF8D6", panel.effectiveBackground("0xFFFFF8D6"))
+        assertTrue(panel.isTransparent)
+    }
+
+    @Test
+    fun panelBackgroundOverridesParent() {
+        val panel = NoteBlock.ModelBox(id = "m1", type = NotePanelType.Plain, backgroundColor = "0xFFE3F2FD")
+
+        assertEquals("0xFFE3F2FD", panel.effectiveBackground("0xFFFFF8D6"))
+        assertTrue(!panel.isTransparent)
+    }
+
+    @Test
+    fun nestedBlocksAreFoundByIdAndFlattened() {
+        val nested = NoteBlock.ModelBox(
+            id = "outer",
+            blocks = listOf(
+                NoteBlock.Text(id = "t1", text = "one"),
+                NoteBlock.ModelBox(
+                    id = "inner",
+                    blocks = listOf(NoteBlock.Text(id = "t2", text = "two"))
+                )
+            )
+        )
+
+        assertEquals("two", (nested.findBlock("t2") as NoteBlock.Text).text)
+        assertTrue(nested.containsBlock("t1"))
+        assertTrue(!nested.containsBlock("missing"))
+        assertEquals(
+            listOf("outer", "t1", "inner", "t2"),
+            listOf(nested).flattenBlocks().map { it.id }
+        )
     }
 
     @Test

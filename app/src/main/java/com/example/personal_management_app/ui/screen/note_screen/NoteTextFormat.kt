@@ -7,6 +7,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
@@ -39,8 +41,7 @@ enum class NoteStyleTarget {
     Title,
     Text,
     Checkbox,
-    ModelTitle,
-    ModelBody
+    PanelTitle
 }
 
 data class NoteCaret(
@@ -176,7 +177,8 @@ fun NoteStyledField(
     style: TextStyle,
     onEdit: (String, Int, Int) -> Unit,
     modifier: Modifier = Modifier,
-    fieldKey: Any = Unit
+    fieldKey: Any = Unit,
+    focusRequester: FocusRequester? = null
 ) {
     var fieldValue by remember(fieldKey) {
         mutableStateOf(TextFieldValue(text, androidx.compose.ui.text.TextRange(text.length)))
@@ -192,11 +194,19 @@ fun NoteStyledField(
             onEdit(next.text, next.selection.min, next.selection.max)
         },
         textStyle = style,
-        modifier = modifier.onFocusChanged { state ->
-            if (state.isFocused) {
-                onEdit(text, fieldValue.selection.min, fieldValue.selection.max)
+        modifier = modifier
+            .then(
+                if (focusRequester != null) {
+                    Modifier.focusRequester(focusRequester)
+                } else {
+                    Modifier
+                }
+            )
+            .onFocusChanged { state ->
+                if (state.isFocused) {
+                    onEdit(text, fieldValue.selection.min, fieldValue.selection.max)
+                }
             }
-        }
     )
 }
 

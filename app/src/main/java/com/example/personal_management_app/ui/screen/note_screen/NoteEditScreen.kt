@@ -91,10 +91,13 @@ fun NoteEditScreen(
                         NoteRenderer(
                             blocks = viewModel.blocks,
                             textStyle = note.contentStyle.toCompose().copy(color = contentColor),
+                            parentBackground = note.backgroundColor,
                             onTextChange = viewModel::updateTextBlock,
                             onCheckboxChecked = viewModel::setCheckboxChecked,
                             onCheckboxLabelChange = viewModel::updateCheckboxLabel,
-                            onModelBoxChange = viewModel::updateModelBox
+                            onModelTitleChange = viewModel::updateModelTitle,
+                            pendingPanelFocusId = viewModel.pendingPanelFocusId,
+                            onPanelFocusConsumed = viewModel::consumePanelFocus
                         )
                     }
                 )
