@@ -7,6 +7,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
@@ -18,19 +20,14 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.sp
+import kotlinx.serialization.Serializable
 import kotlin.math.max
 import kotlin.math.min
 
 enum class NoteHeading(val fontSize: Float) {
     Normal(16f),
     H1(28f),
-    H2(22f);
-
-    fun encode(): String = when (this) {
-        H1 -> "h1"
-        H2 -> "h2"
-        Normal -> "n"
-    }
+    H2(22f)
 }
 
 enum class NoteInlineStyle {
@@ -44,8 +41,7 @@ enum class NoteStyleTarget {
     Title,
     Text,
     Checkbox,
-    ModelTitle,
-    ModelBody
+    PanelTitle
 }
 
 data class NoteCaret(
@@ -55,6 +51,7 @@ data class NoteCaret(
     val end: Int = 0
 )
 
+@Serializable
 data class NoteTextSpan(
     val start: Int,
     val end: Int,
@@ -62,36 +59,6 @@ data class NoteTextSpan(
     val italic: Boolean = false,
     val underline: Boolean = false
 )
-
-fun decodeHeading(raw: String?): NoteHeading = when (raw) {
-    "h1" -> NoteHeading.H1
-    "h2" -> NoteHeading.H2
-    else -> NoteHeading.Normal
-}
-
-fun encodeSpans(spans: List<NoteTextSpan>): String {
-    return spans.joinToString(",") { span ->
-        "${span.start}-${span.end}-${span.encodeFlags()}"
-    }
-}
-
-fun decodeSpans(raw: String): List<NoteTextSpan> {
-    if (raw.isBlank()) return emptyList()
-    return raw.split(',').mapNotNull { piece ->
-        val parts = piece.split('-')
-        val start = parts.getOrNull(0)?.toIntOrNull() ?: return@mapNotNull null
-        val end = parts.getOrNull(1)?.toIntOrNull() ?: return@mapNotNull null
-        val flags = parts.getOrNull(2).orEmpty()
-        if (end <= start) return@mapNotNull null
-        NoteTextSpan(
-            start = start,
-            end = end,
-            bold = 'b' in flags,
-            italic = 'i' in flags,
-            underline = 'u' in flags
-        )
-    }
-}
 
 fun TextStyle.withHeading(heading: NoteHeading): TextStyle {
     return if (heading == NoteHeading.Normal) this else copy(fontSize = heading.fontSize.sp)
@@ -210,7 +177,8 @@ fun NoteStyledField(
     style: TextStyle,
     onEdit: (String, Int, Int) -> Unit,
     modifier: Modifier = Modifier,
-    fieldKey: Any = Unit
+    fieldKey: Any = Unit,
+    focusRequester: FocusRequester? = null
 ) {
     var fieldValue by remember(fieldKey) {
         mutableStateOf(TextFieldValue(text, androidx.compose.ui.text.TextRange(text.length)))
@@ -226,11 +194,19 @@ fun NoteStyledField(
             onEdit(next.text, next.selection.min, next.selection.max)
         },
         textStyle = style,
-        modifier = modifier.onFocusChanged { state ->
-            if (state.isFocused) {
-                onEdit(text, fieldValue.selection.min, fieldValue.selection.max)
+        modifier = modifier
+            .then(
+                if (focusRequester != null) {
+                    Modifier.focusRequester(focusRequester)
+                } else {
+                    Modifier
+                }
+            )
+            .onFocusChanged { state ->
+                if (state.isFocused) {
+                    onEdit(text, fieldValue.selection.min, fieldValue.selection.max)
+                }
             }
-        }
     )
 }
 
@@ -259,12 +235,6 @@ private data class StyleFlags(
             textDecoration = if (underline) TextDecoration.Underline else null
         )
     }
-}
-
-private fun NoteTextSpan.encodeFlags(): String = buildString {
-    if (bold) append('b')
-    if (italic) append('i')
-    if (underline) append('u')
 }
 
 private fun toFlagArray(length: Int, spans: List<NoteTextSpan>): Array<StyleFlags> {

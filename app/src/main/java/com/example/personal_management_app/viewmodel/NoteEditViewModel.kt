@@ -15,9 +15,12 @@ import com.example.personal_management_app.ui.screen.note_screen.NoteBlock
 import com.example.personal_management_app.ui.screen.note_screen.NoteCaret
 import com.example.personal_management_app.ui.screen.note_screen.NoteHeading
 import com.example.personal_management_app.ui.screen.note_screen.NoteInlineStyle
+import com.example.personal_management_app.ui.screen.note_screen.NotePanelType
 import com.example.personal_management_app.ui.screen.note_screen.NoteStyleTarget
 import com.example.personal_management_app.ui.screen.note_screen.adjustSpans
 import com.example.personal_management_app.ui.screen.note_screen.clearInline
+import com.example.personal_management_app.ui.screen.note_screen.containsBlock
+import com.example.personal_management_app.ui.screen.note_screen.flattenBlocks
 import com.example.personal_management_app.ui.screen.note_screen.loadNoteContent
 import com.example.personal_management_app.ui.screen.note_screen.loadTitleSpans
 import com.example.personal_management_app.ui.screen.note_screen.newNoteBlockId
@@ -66,8 +69,35 @@ class NoteEditViewModel @Inject constructor(
     var caret by mutableStateOf(NoteCaret())
         private set
 
+    /** Panel that should grab focus once, right after it got inserted. */
+    var pendingPanelFocusId by mutableStateOf<String?>(null)
+        private set
+
+    /** Every block of the note, panels included, flattened depth first. */
+    private val allBlocks: List<NoteBlock>
+        get() = blocks.flattenBlocks()
+
     val showCheckbox: Boolean
-        get() = blocks.any { it is NoteBlock.Checkbox }
+        get() = allBlocks.any { it is NoteBlock.Checkbox }
+
+    /** Innermost panel holding the caret, null when the caret sits outside of any panel. */
+    fun focusedPanelId(): String? {
+        if (caret.blockId.isBlank()) return null
+        return allBlocks
+            .filterIsInstance<NoteBlock.ModelBox>()
+            .lastOrNull { it.containsBlock(caret.blockId) }
+            ?.id
+    }
+
+    fun panelType(id: String): NotePanelType? =
+        allBlocks.filterIsInstance<NoteBlock.ModelBox>().find { it.id == id }?.type
+
+    fun panelBackground(id: String): String? =
+        allBlocks.filterIsInstance<NoteBlock.ModelBox>().find { it.id == id }?.backgroundColor
+
+    fun consumePanelFocus() {
+        pendingPanelFocusId = null
+    }
 
     fun updateTitle(title: String, start: Int = title.length, end: Int = title.length) {
         val current = note ?: return
@@ -91,8 +121,7 @@ class NoteEditViewModel @Inject constructor(
             }
             NoteStyleTarget.Text -> updateTextHeading(currentCaret.blockId, heading)
             NoteStyleTarget.Checkbox -> updateCheckboxHeading(currentCaret.blockId, heading)
-            NoteStyleTarget.ModelTitle -> updateModelHeading(currentCaret.blockId, heading, title = true)
-            NoteStyleTarget.ModelBody -> updateModelHeading(currentCaret.blockId, heading, title = false)
+            NoteStyleTarget.PanelTitle -> updatePanelHeading(currentCaret.blockId, heading)
             NoteStyleTarget.None -> Unit
         }
     }
@@ -114,11 +143,8 @@ class NoteEditViewModel @Inject constructor(
             NoteStyleTarget.Checkbox -> mapCheckbox(currentCaret.blockId) { block ->
                 block.copy(spans = toggleInline(block.label.length, block.spans, start, end, style))
             }
-            NoteStyleTarget.ModelTitle -> mapModel(currentCaret.blockId) { block ->
+            NoteStyleTarget.PanelTitle -> mapPanel(currentCaret.blockId) { block ->
                 block.copy(titleSpans = toggleInline(block.title.length, block.titleSpans, start, end, style))
-            }
-            NoteStyleTarget.ModelBody -> mapModel(currentCaret.blockId) { block ->
-                block.copy(bodySpans = toggleInline(block.body.length, block.bodySpans, start, end, style))
             }
             NoteStyleTarget.None -> Unit
         }
@@ -151,11 +177,8 @@ class NoteEditViewModel @Inject constructor(
             NoteStyleTarget.Checkbox -> mapCheckbox(currentCaret.blockId) { block ->
                 block.copy(heading = NoteHeading.Normal, spans = emptyList())
             }
-            NoteStyleTarget.ModelTitle -> mapModel(currentCaret.blockId) { block ->
+            NoteStyleTarget.PanelTitle -> mapPanel(currentCaret.blockId) { block ->
                 block.copy(titleHeading = NoteHeading.Normal, titleSpans = emptyList())
-            }
-            NoteStyleTarget.ModelBody -> mapModel(currentCaret.blockId) { block ->
-                block.copy(bodyHeading = NoteHeading.Normal, bodySpans = emptyList())
             }
             NoteStyleTarget.None -> Unit
         }
@@ -169,14 +192,12 @@ class NoteEditViewModel @Inject constructor(
                 NoteHeading.Normal.fontSize -> NoteHeading.Normal
                 else -> null
             }
-            NoteStyleTarget.Text -> blocks.filterIsInstance<NoteBlock.Text>()
+            NoteStyleTarget.Text -> allBlocks.filterIsInstance<NoteBlock.Text>()
                 .find { it.id == caret.blockId }?.heading
-            NoteStyleTarget.Checkbox -> blocks.filterIsInstance<NoteBlock.Checkbox>()
+            NoteStyleTarget.Checkbox -> allBlocks.filterIsInstance<NoteBlock.Checkbox>()
                 .find { it.id == caret.blockId }?.heading
-            NoteStyleTarget.ModelTitle -> blocks.filterIsInstance<NoteBlock.ModelBox>()
+            NoteStyleTarget.PanelTitle -> allBlocks.filterIsInstance<NoteBlock.ModelBox>()
                 .find { it.id == caret.blockId }?.titleHeading
-            NoteStyleTarget.ModelBody -> blocks.filterIsInstance<NoteBlock.ModelBox>()
-                .find { it.id == caret.blockId }?.bodyHeading
             NoteStyleTarget.None -> null
         }
     }
@@ -186,18 +207,15 @@ class NoteEditViewModel @Inject constructor(
         val end = max(caret.start, caret.end)
         return when (caret.target) {
             NoteStyleTarget.Title -> selectionHasStyle(note?.title?.length ?: 0, titleSpans, start, end, style)
-            NoteStyleTarget.Text -> blocks.filterIsInstance<NoteBlock.Text>()
+            NoteStyleTarget.Text -> allBlocks.filterIsInstance<NoteBlock.Text>()
                 .find { it.id == caret.blockId }
                 ?.let { selectionHasStyle(it.text.length, it.spans, start, end, style) } == true
-            NoteStyleTarget.Checkbox -> blocks.filterIsInstance<NoteBlock.Checkbox>()
+            NoteStyleTarget.Checkbox -> allBlocks.filterIsInstance<NoteBlock.Checkbox>()
                 .find { it.id == caret.blockId }
                 ?.let { selectionHasStyle(it.label.length, it.spans, start, end, style) } == true
-            NoteStyleTarget.ModelTitle -> blocks.filterIsInstance<NoteBlock.ModelBox>()
+            NoteStyleTarget.PanelTitle -> allBlocks.filterIsInstance<NoteBlock.ModelBox>()
                 .find { it.id == caret.blockId }
                 ?.let { selectionHasStyle(it.title.length, it.titleSpans, start, end, style) } == true
-            NoteStyleTarget.ModelBody -> blocks.filterIsInstance<NoteBlock.ModelBox>()
-                .find { it.id == caret.blockId }
-                ?.let { selectionHasStyle(it.body.length, it.bodySpans, start, end, style) } == true
             NoteStyleTarget.None -> false
         }
     }
@@ -276,75 +294,38 @@ class NoteEditViewModel @Inject constructor(
 
     fun toggleShowCheckbox() {
         val next = if (showCheckbox) {
-            blocks.map { block ->
-                if (block is NoteBlock.Checkbox) {
-                    NoteBlock.Text(block.id, block.label, block.heading, block.spans)
-                } else {
-                    block
-                }
-            }
+            blocks.map { block -> block.toPlainText() }
         } else {
-            blocks.flatMap { block ->
-                when (block) {
-                    is NoteBlock.Text -> {
-                        val lines = block.text.lines().ifEmpty { listOf("") }
-                        var offset = 0
-                        lines.map { line ->
-                            val lineSpans = block.spans.mapNotNull { span ->
-                                val start = (span.start - offset).coerceAtLeast(0)
-                                val end = (span.end - offset).coerceAtMost(line.length)
-                                if (span.end <= offset || span.start >= offset + line.length || end <= start) {
-                                    null
-                                } else {
-                                    span.copy(start = start, end = end)
-                                }
-                            }
-                            offset += line.length + 1
-                            NoteBlock.Checkbox(
-                                id = newNoteBlockId(),
-                                checked = false,
-                                label = line,
-                                heading = block.heading,
-                                spans = lineSpans
-                            )
-                        }
-                    }
-
-                    else -> listOf(block)
-                }
-            }
+            blocks.flatMap { block -> block.toCheckboxes() }
         }
         commit(next)
     }
 
     fun addCheckbox() {
-        commit(
-            blocks + NoteBlock.Checkbox(
-                id = newNoteBlockId(),
-                checked = false,
-                label = ""
-            )
+        val checkbox = NoteBlock.Checkbox(
+            id = newNoteBlockId(),
+            checked = false,
+            label = ""
         )
+        insertAtCaret(checkbox, keepTrailingText = true)
+        caret = NoteCaret(NoteStyleTarget.Checkbox, checkbox.id, 0, 0)
     }
 
     fun addImage(uri: String) {
         if (uri.isBlank()) return
-        commit(blocks + NoteBlock.Image(id = newNoteBlockId(), uri = uri))
+        insertAtCaret(NoteBlock.Image(id = newNoteBlockId(), uri = uri))
     }
 
     fun addModelBox() {
-        commit(
-            blocks + NoteBlock.ModelBox(
-                id = newNoteBlockId(),
-                title = "",
-                body = ""
-            )
-        )
+        val panel = NoteBlock.ModelBox(id = newNoteBlockId())
+        insertAtCaret(panel)
+        caret = NoteCaret(NoteStyleTarget.PanelTitle, panel.id, 0, 0)
+        pendingPanelFocusId = panel.id
     }
 
     fun updateTextBlock(id: String, text: String, start: Int = text.length, end: Int = text.length) {
         caret = NoteCaret(NoteStyleTarget.Text, id, start, end)
-        val current = blocks.filterIsInstance<NoteBlock.Text>().find { it.id == id } ?: return
+        val current = allBlocks.filterIsInstance<NoteBlock.Text>().find { it.id == id } ?: return
         if (current.text == text) return
         mapText(id) { block ->
             block.copy(text = text, spans = adjustSpans(block.text, text, block.spans))
@@ -352,49 +333,35 @@ class NoteEditViewModel @Inject constructor(
     }
 
     fun setCheckboxChecked(id: String, checked: Boolean) {
-        commit(blocks.map { block ->
+        commit(updateBlock(id) { block ->
             if (block is NoteBlock.Checkbox && block.id == id) block.copy(checked = checked) else block
         })
     }
 
     fun updateCheckboxLabel(id: String, label: String, start: Int = label.length, end: Int = label.length) {
         caret = NoteCaret(NoteStyleTarget.Checkbox, id, start, end)
-        val current = blocks.filterIsInstance<NoteBlock.Checkbox>().find { it.id == id } ?: return
+        val current = allBlocks.filterIsInstance<NoteBlock.Checkbox>().find { it.id == id } ?: return
         if (current.label == label) return
         mapCheckbox(id) { block ->
             block.copy(label = label, spans = adjustSpans(block.label, label, block.spans))
         }
     }
 
-    fun updateModelBox(
-        id: String,
-        title: String,
-        body: String,
-        field: NoteStyleTarget = NoteStyleTarget.ModelBody,
-        start: Int = 0,
-        end: Int = 0
-    ) {
-        caret = NoteCaret(field, id, start, end)
-        val current = blocks.filterIsInstance<NoteBlock.ModelBox>().find { it.id == id } ?: return
-        val unchanged = when (field) {
-            NoteStyleTarget.ModelTitle -> current.title == title
-            NoteStyleTarget.ModelBody -> current.body == body
-            else -> current.title == title && current.body == body
+    fun updateModelTitle(id: String, title: String, start: Int = title.length, end: Int = title.length) {
+        caret = NoteCaret(NoteStyleTarget.PanelTitle, id, start, end)
+        val current = allBlocks.filterIsInstance<NoteBlock.ModelBox>().find { it.id == id } ?: return
+        if (current.title == title) return
+        mapPanel(id) { block ->
+            block.copy(title = title, titleSpans = adjustSpans(block.title, title, block.titleSpans))
         }
-        if (unchanged) return
-        mapModel(id) { block ->
-            when (field) {
-                NoteStyleTarget.ModelTitle -> block.copy(
-                    title = title,
-                    titleSpans = adjustSpans(block.title, title, block.titleSpans)
-                )
-                NoteStyleTarget.ModelBody -> block.copy(
-                    body = body,
-                    bodySpans = adjustSpans(block.body, body, block.bodySpans)
-                )
-                else -> block.copy(title = title, body = body)
-            }
-        }
+    }
+
+    fun updatePanelType(id: String, type: NotePanelType) {
+        mapPanel(id) { it.copy(type = type) }
+    }
+
+    fun updatePanelBackground(id: String, background: String?) {
+        mapPanel(id) { it.copy(backgroundColor = background?.takeIf { color -> color.isNotBlank() }) }
     }
 
     private fun updateTextHeading(id: String, heading: NoteHeading) {
@@ -405,10 +372,8 @@ class NoteEditViewModel @Inject constructor(
         mapCheckbox(id) { it.copy(heading = heading) }
     }
 
-    private fun updateModelHeading(id: String, heading: NoteHeading, title: Boolean) {
-        mapModel(id) { block ->
-            if (title) block.copy(titleHeading = heading) else block.copy(bodyHeading = heading)
-        }
+    private fun updatePanelHeading(id: String, heading: NoteHeading) {
+        mapPanel(id) { it.copy(titleHeading = heading) }
     }
 
     private fun clearSelection(currentCaret: NoteCaret, start: Int, end: Int) {
@@ -424,32 +389,108 @@ class NoteEditViewModel @Inject constructor(
             NoteStyleTarget.Checkbox -> mapCheckbox(currentCaret.blockId) { block ->
                 block.copy(spans = clearInline(block.label.length, block.spans, start, end))
             }
-            NoteStyleTarget.ModelTitle -> mapModel(currentCaret.blockId) { block ->
+            NoteStyleTarget.PanelTitle -> mapPanel(currentCaret.blockId) { block ->
                 block.copy(titleSpans = clearInline(block.title.length, block.titleSpans, start, end))
-            }
-            NoteStyleTarget.ModelBody -> mapModel(currentCaret.blockId) { block ->
-                block.copy(bodySpans = clearInline(block.body.length, block.bodySpans, start, end))
             }
             NoteStyleTarget.None -> Unit
         }
     }
 
+    /**
+     * Inserts a block right after the block holding the caret, inside that panel when the
+     * caret already sits in one, so panels can be created exactly where the user types.
+     */
+    private fun insertAtCaret(block: NoteBlock, keepTrailingText: Boolean = false) {
+        val panelId = focusedPanelId()
+        if (panelId != null) {
+            val panel = allBlocks.filterIsInstance<NoteBlock.ModelBox>().find { it.id == panelId } ?: return
+            val at = panel.blocks.indexOfFirst { it.id == caret.blockId }
+            val insertAt = if (at >= 0) at + 1 else panel.blocks.size
+            val nextBlocks = panel.blocks.toMutableList().apply { add(insertAt, block) }
+            mapPanel(panelId) { panelBlock ->
+                panelBlock.copy(blocks = nextBlocks.withTrailingText(keepTrailingText))
+            }
+        } else {
+            val at = blocks.indexOfFirst { it.id == caret.blockId }
+            val insertAt = if (at >= 0) at + 1 else blocks.size
+            val nextBlocks = blocks.toMutableList().apply { add(insertAt, block) }
+            commit(nextBlocks.withTrailingText(keepTrailingText))
+        }
+    }
+
+    private fun List<NoteBlock>.withTrailingText(enabled: Boolean): List<NoteBlock> {
+        if (!enabled) return this
+        val last = lastOrNull()
+        return if (last == null || last is NoteBlock.Text) {
+            this
+        } else {
+            this + NoteBlock.Text(newNoteBlockId(), "")
+        }
+    }
+
+    private fun NoteBlock.toPlainText(): NoteBlock = when (this) {
+        is NoteBlock.Checkbox -> NoteBlock.Text(id, label, heading, spans)
+        is NoteBlock.ModelBox -> copy(blocks = blocks.map { it.toPlainText() })
+        else -> this
+    }
+
+    private fun NoteBlock.toCheckboxes(): List<NoteBlock> = when (this) {
+        is NoteBlock.Text -> {
+            val lines = text.lines().ifEmpty { listOf("") }
+            var offset = 0
+            lines.map { line ->
+                val lineSpans = spans.mapNotNull { span ->
+                    val start = (span.start - offset).coerceAtLeast(0)
+                    val end = (span.end - offset).coerceAtMost(line.length)
+                    if (span.end <= offset || span.start >= offset + line.length || end <= start) {
+                        null
+                    } else {
+                        span.copy(start = start, end = end)
+                    }
+                }
+                offset += line.length + 1
+                NoteBlock.Checkbox(
+                    id = newNoteBlockId(),
+                    checked = false,
+                    label = line,
+                    heading = heading,
+                    spans = lineSpans
+                )
+            }
+        }
+
+        is NoteBlock.ModelBox -> listOf(copy(blocks = blocks.flatMap { it.toCheckboxes() }))
+        else -> listOf(this)
+    }
+
     private fun mapText(id: String, transform: (NoteBlock.Text) -> NoteBlock.Text) {
-        commit(blocks.map { block ->
-            if (block is NoteBlock.Text && block.id == id) transform(block) else block
+        commit(updateBlock(id) { block ->
+            if (block is NoteBlock.Text) transform(block) else block
         })
     }
 
     private fun mapCheckbox(id: String, transform: (NoteBlock.Checkbox) -> NoteBlock.Checkbox) {
-        commit(blocks.map { block ->
-            if (block is NoteBlock.Checkbox && block.id == id) transform(block) else block
+        commit(updateBlock(id) { block ->
+            if (block is NoteBlock.Checkbox) transform(block) else block
         })
     }
 
-    private fun mapModel(id: String, transform: (NoteBlock.ModelBox) -> NoteBlock.ModelBox) {
-        commit(blocks.map { block ->
-            if (block is NoteBlock.ModelBox && block.id == id) transform(block) else block
+    private fun mapPanel(id: String, transform: (NoteBlock.ModelBox) -> NoteBlock.ModelBox) {
+        commit(updateBlock(id) { block ->
+            if (block is NoteBlock.ModelBox) transform(block) else block
         })
+    }
+
+    /** Rewrites the matching block wherever it lives, top level or nested in a panel. */
+    private fun updateBlock(id: String, transform: (NoteBlock) -> NoteBlock): List<NoteBlock> =
+        blocks.map { block -> block.updateWithin(id, transform) }
+
+    private fun NoteBlock.updateWithin(id: String, transform: (NoteBlock) -> NoteBlock): NoteBlock {
+        if (this.id == id) return transform(this)
+        if (this is NoteBlock.ModelBox && containsBlock(id)) {
+            return copy(blocks = blocks.map { child -> child.updateWithin(id, transform) })
+        }
+        return this
     }
 
     private fun commit(next: List<NoteBlock>) {
