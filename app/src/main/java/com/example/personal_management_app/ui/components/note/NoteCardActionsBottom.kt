@@ -1,6 +1,9 @@
 package com.example.personal_management_app.ui.components.note
 
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -56,12 +59,12 @@ import com.example.personal_management_app.ui.screen.note_screen.NoteInlineStyle
 import com.example.personal_management_app.ui.screen.note_screen.NotePanelType
 import com.example.personal_management_app.ui.screen.note_screen.NoteThemeDialog
 import com.example.personal_management_app.ui.screen.note_screen.notePanelTypes
+import com.example.personal_management_app.utils.copyUriToNoteImageStorage
 import com.example.personal_management_app.viewmodel.NoteEditViewModel
 
 
 @Composable
-fun NoteCardActionsBottom(
-    viewModel: NoteEditViewModel? = null,
+fun NoteCardActionsBottom(    viewModel: NoteEditViewModel? = null,
 ) {
     var showThemeDialog by remember { mutableStateOf(false) }
     var showStyleMenu by remember { mutableStateOf(false) }
@@ -325,8 +328,16 @@ fun NoteCardAddingAction(
     setIsExpanded: (Boolean) -> Unit,
     viewModel: NoteEditViewModel? = null,
 ) {
-    var showImageDialog by remember { mutableStateOf(false) }
-    var imageInput by remember { mutableStateOf("") }
+    val context = LocalContext.current
+
+    val imagePicker = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia()
+    ) { uri ->
+        if (uri != null) {
+            val storedPath = copyUriToNoteImageStorage(context, uri)
+            viewModel?.addImage(storedPath ?: uri.toString())
+        }
+    }
 
     NoteDropdownMenu(
         expanded = isExpanded,
@@ -345,9 +356,10 @@ fun NoteCardAddingAction(
             label = "Add Image",
             icon = Icons.Filled.Image,
             onClick = {
-                imageInput = ""
-                showImageDialog = true
                 setIsExpanded(false)
+                imagePicker.launch(
+                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                )
             }
         )
         NoteMenuSeparator()
@@ -357,35 +369,6 @@ fun NoteCardAddingAction(
             onClick = {
                 viewModel?.addModelBox()
                 setIsExpanded(false)
-            }
-        )
-    }
-
-    if (showImageDialog) {
-        AlertDialog(
-            onDismissRequest = { showImageDialog = false },
-            title = { Text("Add Image") },
-            text = {
-                OutlinedTextField(
-                    value = imageInput,
-                    onValueChange = { imageInput = it },
-                    singleLine = true
-                )
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        viewModel?.addImage(imageInput)
-                        showImageDialog = false
-                    }
-                ) {
-                    Text("Add")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showImageDialog = false }) {
-                    Text("Cancel")
-                }
             }
         )
     }

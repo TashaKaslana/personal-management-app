@@ -1,6 +1,9 @@
 package com.example.personal_management_app.ui.screen.note_screen
 
 import android.graphics.BitmapFactory
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -22,14 +25,10 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -40,6 +39,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.core.net.toUri
+import com.example.personal_management_app.utils.copyUriToNoteImageStorage
 import com.example.personal_management_app.utils.toComposeColor
 
 const val NOTE_IMAGE_THEME_PREFIX = "image:"
@@ -127,9 +127,19 @@ fun NoteThemeDialog(
     onDismiss: () -> Unit,
     onInherit: (() -> Unit)? = null
 ) {
-    var showImage by remember { mutableStateOf(selected.toNoteImageUri() != null) }
-    var imageInput by remember { mutableStateOf(selected.toNoteImageUri().orEmpty()) }
+    val context = LocalContext.current
     val inheriting = onInherit != null && selected.isBlank()
+
+    val imagePicker = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia()
+    ) { uri ->
+        if (uri != null) {
+            val storedPath = copyUriToNoteImageStorage(context, uri)
+            if (storedPath != null) {
+                onSelect(encodeNoteImageTheme(storedPath))
+            }
+        }
+    }
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -176,32 +186,16 @@ fun NoteThemeDialog(
                         }
                     }
                 }
-                TextButton(onClick = { showImage = !showImage }) {
+                TextButton(onClick = {
+                    imagePicker.launch(
+                        PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                    )
+                }) {
                     Text("Custom image")
                 }
-                if (showImage) {
-                    OutlinedTextField(
-                        value = imageInput,
-                        onValueChange = { imageInput = it },
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                }
             }
         },
-        confirmButton = {
-            if (showImage) {
-                TextButton(
-                    onClick = {
-                        if (imageInput.isNotBlank()) {
-                            onSelect(encodeNoteImageTheme(imageInput))
-                        }
-                    }
-                ) {
-                    Text("Apply")
-                }
-            }
-        },
+        confirmButton = {},
         dismissButton = {
             TextButton(onClick = onDismiss) {
                 Text("Cancel")
