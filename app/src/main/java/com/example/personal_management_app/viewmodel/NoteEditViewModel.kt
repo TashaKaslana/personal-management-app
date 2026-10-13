@@ -268,6 +268,10 @@ class NoteEditViewModel @Inject constructor(
     fun upsertNote() {
         val entity = mapper.toEntity(note) ?: return
 
+        if (entity.title == newNote.title && entity.content == newNote.content) {
+            return
+        }
+
         if (noteId == null) {
             noteRepository.insert(entity)
         }
@@ -277,10 +281,11 @@ class NoteEditViewModel @Inject constructor(
 
 
     fun delete() {
-        if (noteId != null) {
+        if (noteId != null && noteId != newNote.id) {
             noteRepository.delete(noteId)
         }
-        note = null
+
+        note = note?.copy(isDeleted = true)
     }
 
     fun copy() {
