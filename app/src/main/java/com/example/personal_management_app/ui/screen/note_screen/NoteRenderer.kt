@@ -325,6 +325,7 @@ fun NoteRenderer(
     onModelTitleChange: (String, String, Int, Int) -> Unit,
     modifier: Modifier = Modifier,
     pendingPanelFocusId: String? = null,
+    focusedPanelId: String? = null,
     onPanelFocusConsumed: () -> Unit = {}
 ) {
     Column(
@@ -375,6 +376,7 @@ fun NoteRenderer(
                         block = block,
                         textStyle = textStyle,
                         parentBackground = parentBackground,
+                        focused = focusedPanelId == block.id,
                         autoFocusTitle = pendingPanelFocusId == block.id,
                         onTitleFocusConsumed = onPanelFocusConsumed,
                         onTitleEdit = { title, start, end ->
@@ -391,6 +393,7 @@ fun NoteRenderer(
                             onCheckboxLabelChange = onCheckboxLabelChange,
                             onModelTitleChange = onModelTitleChange,
                             pendingPanelFocusId = pendingPanelFocusId,
+                            focusedPanelId = focusedPanelId,
                             onPanelFocusConsumed = onPanelFocusConsumed
                         )
                     }
@@ -405,6 +408,7 @@ private fun NotePanel(
     block: NoteBlock.ModelBox,
     textStyle: TextStyle,
     parentBackground: String,
+    focused: Boolean,
     autoFocusTitle: Boolean,
     onTitleFocusConsumed: () -> Unit,
     onTitleEdit: (String, Int, Int) -> Unit,
@@ -431,11 +435,12 @@ private fun NotePanel(
 
     NoteThemedSurface(
         background = block.effectiveBackground(parentBackground),
-        shape = RoundedCornerShape(if (decorated) 12.dp else 0.dp),
+        shape = RoundedCornerShape(if (decorated) 12.dp else 4.dp),
         transparent = block.isTransparent,
-        border = when (block.type) {
-            NotePanelType.Plain -> BorderStroke(1.dp, Color.Gray.copy(alpha = 0.25f))
-            else -> null
+        border = when {
+            focused -> BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
+            block.isTransparent -> null
+            else -> BorderStroke(1.dp, Color.Gray.copy(alpha = 0.25f))
         },
         modifier = Modifier.fillMaxWidth()
     ) {

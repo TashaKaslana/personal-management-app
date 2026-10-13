@@ -313,12 +313,12 @@ class NoteEditViewModel @Inject constructor(
 
     fun addImage(uri: String) {
         if (uri.isBlank()) return
-        insertAtCaret(NoteBlock.Image(id = newNoteBlockId(), uri = uri))
+        insertAtCaret(NoteBlock.Image(id = newNoteBlockId(), uri = uri), keepTrailingText = true)
     }
 
     fun addModelBox() {
         val panel = NoteBlock.ModelBox(id = newNoteBlockId())
-        insertAtCaret(panel)
+        insertAtCaret(panel, keepTrailingText = true)
         caret = NoteCaret(NoteStyleTarget.PanelTitle, panel.id, 0, 0)
         pendingPanelFocusId = panel.id
     }
@@ -399,6 +399,8 @@ class NoteEditViewModel @Inject constructor(
     /**
      * Inserts a block right after the block holding the caret, inside that panel when the
      * caret already sits in one, so panels can be created exactly where the user types.
+     *
+     * @param keepTrailingText a boolean to control new text line after block being inserted, yes = true
      */
     private fun insertAtCaret(block: NoteBlock, keepTrailingText: Boolean = false) {
         val panelId = focusedPanelId()

@@ -97,6 +97,7 @@ fun NoteEditScreen(
                             onCheckboxLabelChange = viewModel::updateCheckboxLabel,
                             onModelTitleChange = viewModel::updateModelTitle,
                             pendingPanelFocusId = viewModel.pendingPanelFocusId,
+                            focusedPanelId = viewModel.focusedPanelId(),
                             onPanelFocusConsumed = viewModel::consumePanelFocus
                         )
                     }
