@@ -99,6 +99,52 @@ class NoteRepository @Inject constructor() {
             ),
             backgroundColor = "0xFFF3E5F5",
             isArchived = true
+        ),
+
+        NoteEntity(
+            id = "7",
+            title = "Nhật ký du lịch Iceland",
+            titleStyle = NoteTextStyle(
+                fontSize = 24f,
+                bold = true
+            ),
+            content = "Highlights: Skógafoss waterfall, Glacier lagoon walk. Need to backup photos.",
+            contentStyle = NoteTextStyle(
+                fontSize = 16f
+            ),
+            tag = "Du lịch",
+            backgroundColor = "0xFFE3F2FD",
+            isArchived = true
+        ),
+
+        NoteEntity(
+            id = "8",
+            title = "Danh sách tìm nhà",
+            titleStyle = NoteTextStyle(
+                fontSize = 22f,
+                bold = true
+            ),
+            content = "• Kiểm tra cách nhiệt\n• Kiểm tra áp lực nước\n• Lựa chọn tấm pin năng lượng",
+            contentStyle = NoteTextStyle(
+                fontSize = 16f
+            ),
+            backgroundColor = "0xFFE2F6ED",
+            isArchived = true
+        ),
+
+        NoteEntity(
+            id = "9",
+            title = "Q3 Reflection Ghi chú",
+            titleStyle = NoteTextStyle(
+                fontSize = 22f,
+                bold = true
+            ),
+            content = "Felt good about app development. Need more practice with Material 3 spacing dynamics.",
+            contentStyle = NoteTextStyle(
+                fontSize = 16f
+            ),
+            backgroundColor = "0xFFF3E5F5",
+            isArchived = true
         )
     )
 

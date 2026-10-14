@@ -16,6 +16,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -31,7 +33,8 @@ import com.example.personal_management_app.viewmodel.NoteViewModel
 
 @Composable
 fun NoteScreen(modifier: Modifier = Modifier, navController: NavController, viewModel: NoteViewModel = hiltViewModel(),) {
-    val notesList = viewModel.notes.collectAsStateWithLifecycle().value
+    val notes by viewModel.notes.collectAsStateWithLifecycle()
+    val notesList = remember(notes) { viewModel.filterNotes(isArchived = false) }
 
     MainLayout (navController = navController) { innerPadding ->
         Column(

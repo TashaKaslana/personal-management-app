@@ -3,7 +3,6 @@ package com.example.personal_management_app.ui.screen.archive_screen
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
@@ -15,18 +14,26 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import com.example.personal_management_app.repositories.ArchiveRepository
 import com.example.personal_management_app.ui.components.ArchiveCard
 import com.example.personal_management_app.ui.components.MainTopBar
 import com.example.personal_management_app.ui.layouts.MainLayout
+import com.example.personal_management_app.viewmodel.NoteViewModel
 
 @Composable
-fun ArchiveScreen(modifier: Modifier = Modifier, navController: NavController) {
+fun ArchiveScreen(
+    modifier: Modifier = Modifier,
+    navController: NavController,
+    viewModel: NoteViewModel = hiltViewModel()
+) {
     var searchQuery by remember { mutableStateOf("") }
 
-    val archiveRepository = remember { ArchiveRepository() }
-    val archiveList = archiveRepository.getArchives()
+    val notes by viewModel.notes.collectAsStateWithLifecycle()
+    val archiveList = remember(notes, searchQuery) {
+        viewModel.filterNotes(isArchived = true, query = searchQuery)
+    }
 
     MainLayout(
         navController = navController,
@@ -54,15 +61,12 @@ fun ArchiveScreen(modifier: Modifier = Modifier, navController: NavController) {
                 verticalItemSpacing = 10.dp,
                 modifier = Modifier.fillMaxSize()
             ) {
-                items(archiveList) { archive ->
+                items(archiveList, key = { it.id }) { archive ->
                     ArchiveCard(
-                        title = archive.title,
-                        content = archive.content,
-                        tag = archive.tag,
-                        timeOrStatusText = archive.timeOrStatusText,
-                        backgroundColor = archive.backgroundColor,
-                        isCheckList = archive.isCheckList,
-                        onClick = {}
+                        note = archive,
+                        onClick = {
+                            navController.navigate("notes/${archive.id}/edit")
+                        }
                     )
                 }
             }

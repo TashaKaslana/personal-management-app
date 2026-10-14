@@ -75,6 +75,7 @@ fun NoteEditScreen(
                     },
                     onSetArchived = {
                         viewModel.setArchived()
+                        navController.navigate("note_screen")
                     }
                 )
 
