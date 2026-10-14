@@ -30,13 +30,18 @@ import com.example.personal_management_app.ui.screen.note_screen.NoteThemedSurfa
 import com.example.personal_management_app.ui.screen.note_screen.buildStyledText
 import com.example.personal_management_app.ui.screen.note_screen.loadTitleSpans
 import com.example.personal_management_app.ui.screen.note_screen.noteContentColor
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @Composable
 fun ArchiveCard(
     note: NoteEntity,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    timeOrStatusText: String = "Đã lưu trữ"
+    timeOrStatusText: String = note.archivedAt?.let {
+        SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date(it))
+    } ?: "Đã lưu trữ"
 ) {
     val contentColor = noteContentColor(note.backgroundColor)
 

@@ -33,9 +33,9 @@ class NoteViewModel @Inject constructor(
         }
     }
 
-    fun filterNotes(isArchived: Boolean, query: String = ""): List<NoteEntity> {
+    fun filterNotes(archived: Boolean, query: String = ""): List<NoteEntity> {
         return _notes.value.filter { note ->
-            note.isArchived == isArchived && (
+            (note.archivedAt != null) == archived && (
                 query.isBlank() ||
                     note.title.contains(query, ignoreCase = true) ||
                     note.content.contains(query, ignoreCase = true) ||

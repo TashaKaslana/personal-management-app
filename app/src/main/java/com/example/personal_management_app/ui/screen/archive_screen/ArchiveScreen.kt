@@ -32,7 +32,7 @@ fun ArchiveScreen(
 
     val notes by viewModel.notes.collectAsStateWithLifecycle()
     val archiveList = remember(notes, searchQuery) {
-        viewModel.filterNotes(isArchived = true, query = searchQuery)
+        viewModel.filterNotes(archived = true, query = searchQuery)
     }
 
     MainLayout(

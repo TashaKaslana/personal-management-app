@@ -34,7 +34,7 @@ import com.example.personal_management_app.viewmodel.NoteViewModel
 @Composable
 fun NoteScreen(modifier: Modifier = Modifier, navController: NavController, viewModel: NoteViewModel = hiltViewModel(),) {
     val notes by viewModel.notes.collectAsStateWithLifecycle()
-    val notesList = remember(notes) { viewModel.filterNotes(isArchived = false) }
+    val notesList = remember(notes) { viewModel.filterNotes(archived = false) }
 
     MainLayout (navController = navController) { innerPadding ->
         Column(

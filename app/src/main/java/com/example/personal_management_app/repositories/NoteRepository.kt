@@ -7,6 +7,11 @@ import javax.inject.Singleton
 
 @Singleton
 class NoteRepository @Inject constructor() {
+    //set samples of times, use for dummy
+    private val seedArchivedAt: (Long) -> Long = { daysAgo ->
+        System.currentTimeMillis() - daysAgo * 24L * 60L * 60L * 1000L
+    }
+
     private var notes = mutableListOf(
         NoteEntity(
             id = "1",
@@ -98,7 +103,7 @@ class NoteRepository @Inject constructor() {
                 fontSize = 16f
             ),
             backgroundColor = "0xFFF3E5F5",
-            isArchived = true
+            archivedAt = seedArchivedAt(12)
         ),
 
         NoteEntity(
@@ -114,7 +119,7 @@ class NoteRepository @Inject constructor() {
             ),
             tag = "Du lịch",
             backgroundColor = "0xFFE3F2FD",
-            isArchived = true
+            archivedAt = seedArchivedAt(7)
         ),
 
         NoteEntity(
@@ -129,7 +134,7 @@ class NoteRepository @Inject constructor() {
                 fontSize = 16f
             ),
             backgroundColor = "0xFFE2F6ED",
-            isArchived = true
+            archivedAt = seedArchivedAt(30)
         ),
 
         NoteEntity(
@@ -144,7 +149,7 @@ class NoteRepository @Inject constructor() {
                 fontSize = 16f
             ),
             backgroundColor = "0xFFF3E5F5",
-            isArchived = true
+            archivedAt = seedArchivedAt(3)
         )
     )
 
@@ -191,11 +196,11 @@ class NoteRepository @Inject constructor() {
         }
     }
 
-    fun setArchived(noteId: String, status: Boolean) {
+    fun setArchived(noteId: String, archivedAt: Long?) {
         val index = getItem(noteId)
         if (index != -1) {
             notes[index] = notes[index].copy(
-                isArchived = status
+                archivedAt = archivedAt
             )
         }
     }
