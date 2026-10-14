@@ -15,21 +15,28 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.personal_management_app.repositories.TrashRepository
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.personal_management_app.ui.components.MainTopBar
 import com.example.personal_management_app.ui.components.TrashCard
 import com.example.personal_management_app.ui.layouts.MainLayout
+import com.example.personal_management_app.viewmodel.NoteViewModel
 
 @Composable
-fun TrashScreen(modifier: Modifier = Modifier, navController: NavController) {
+fun TrashScreen(
+    modifier: Modifier = Modifier,
+    navController: NavController,
+    viewModel: NoteViewModel = hiltViewModel()
+) {
     var searchQuery by remember { mutableStateOf("") }
 
-    val trashRepository = remember { TrashRepository() }
-    val trashList = trashRepository.getTrashItems()
+    val notes by viewModel.notes.collectAsStateWithLifecycle()
+    val trashList = remember(notes, searchQuery) {
+        viewModel.filterTrash(query = searchQuery)
+    }
 
     MainLayout(
         navController = navController,
@@ -52,7 +59,7 @@ fun TrashScreen(modifier: Modifier = Modifier, navController: NavController) {
                 .padding(horizontal = 16.dp, vertical = 12.dp)
         ) {
             Text(
-                text = "Các mục trong thùng rác sẽ bị xóa vĩnh viễn sau 7 ngày.",
+                text = "Các mục trong thùng rác sẽ bị xóa vĩnh viễn sau 30 ngày.",
                 fontSize = 12.sp,
                 color = Color.Gray,
                 modifier = Modifier.padding(bottom = 4.dp)
@@ -64,13 +71,12 @@ fun TrashScreen(modifier: Modifier = Modifier, navController: NavController) {
                 verticalItemSpacing = 10.dp,
                 modifier = Modifier.fillMaxSize()
             ) {
-                items(trashList) { item ->
+                items(trashList, key = { it.id }) { item ->
                     TrashCard(
-                        title = item.title,
-                        content = item.content,
-                        timeDeleted = item.timeDeleted,
-                        backgroundColor = item.backgroundColor,
-                        onClick = {}
+                        note = item,
+                        onClick = {
+                            navController.navigate("notes/${item.id}/edit")
+                        }
                     )
                 }
             }

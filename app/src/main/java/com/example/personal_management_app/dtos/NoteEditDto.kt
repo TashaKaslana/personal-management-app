@@ -14,7 +14,5 @@ data class NoteEditDto(
     val archivedAt: Long? = null,
     val isNotification: Boolean = false,
     val notificationCron: String? = null,
-
-    //local state for deleted status on edit
-    val isDeleted: Boolean = false
+    val deletedAt: Long? = null
 )

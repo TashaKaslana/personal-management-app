@@ -35,8 +35,7 @@ class NoteViewModel @Inject constructor(
 
     fun filterNotes(archived: Boolean, query: String = ""): List<NoteEntity> {
         return _notes.value.filter { note ->
-            (note.archivedAt != null) == archived && (
-                query.isBlank() ||
+            (note.archivedAt != null) == archived && (                query.isBlank() ||
                     note.title.contains(query, ignoreCase = true) ||
                     note.content.contains(query, ignoreCase = true) ||
                     note.tag?.contains(query, ignoreCase = true) == true
@@ -46,6 +45,31 @@ class NoteViewModel @Inject constructor(
 
     fun getNote(noteId: String): NoteEntity? {
         return repository.get(noteId)
+    }
+
+    fun filterTrash(query: String = ""): List<NoteEntity> {
+        return repository.getTrashItems(query)
+    }
+
+    fun restoreNote(noteId: String) {
+        viewModelScope.launch {
+            repository.restore(noteId)
+            loadNotes()
+        }
+    }
+
+    fun deleteNoteForever(noteId: String) {
+        viewModelScope.launch {
+            repository.deleteForever(noteId)
+            loadNotes()
+        }
+    }
+
+    fun emptyTrash() {
+        viewModelScope.launch {
+            repository.emptyTrash()
+            loadNotes()
+        }
     }
 
     fun addNote(note: NoteEntity) {

@@ -7,7 +7,11 @@ import javax.inject.Singleton
 
 @Singleton
 class NoteRepository @Inject constructor() {
-    //set samples of times, use for dummy
+
+    companion object {
+        const val TRASH_RETENTION_MILLIS: Long = 30L * 24L * 60L * 60L * 1000L
+    }
+
     private val seedArchivedAt: (Long) -> Long = { daysAgo ->
         System.currentTimeMillis() - daysAgo * 24L * 60L * 60L * 1000L
     }
@@ -150,6 +154,36 @@ class NoteRepository @Inject constructor() {
             ),
             backgroundColor = "0xFFF3E5F5",
             archivedAt = seedArchivedAt(3)
+        ),
+
+        NoteEntity(
+            id = "10",
+            title = "Ý tưởng dự án cũ",
+            titleStyle = NoteTextStyle(
+                fontSize = 24f,
+                bold = true
+            ),
+            content = "Xóa các module không cần thiết trong Jetpack Compose.",
+            contentStyle = NoteTextStyle(
+                fontSize = 16f
+            ),
+            backgroundColor = "0xFFFCE4EC",
+            deletedAt = seedArchivedAt(2)
+        ),
+
+        NoteEntity(
+            id = "11",
+            title = "Ghi chú mua sắm",
+            titleStyle = NoteTextStyle(
+                fontSize = 24f,
+                bold = true
+            ),
+            content = "Sữa, bánh mì, cà phê đen.",
+            contentStyle = NoteTextStyle(
+                fontSize = 16f
+            ),
+            backgroundColor = "0xFFE8F5E9",
+            deletedAt = seedArchivedAt(5)
         )
     )
 
@@ -158,11 +192,51 @@ class NoteRepository @Inject constructor() {
     }
 
     fun getList(): MutableList<NoteEntity> {
-        return notes
+        purgeExpiredTrash()
+        return notes.filter { it.deletedAt == null }.toMutableList()
+    }
+
+    fun getTrashItems(query: String = ""): List<NoteEntity> {
+        purgeExpiredTrash()
+        return notes.filter { note ->
+            note.deletedAt != null && (
+                query.isBlank() ||
+                    note.title.contains(query, ignoreCase = true) ||
+                    note.content.contains(query, ignoreCase = true) ||
+                    note.tag?.contains(query, ignoreCase = true) == true
+                )
+        }
     }
 
     fun delete(noteId: String) {
+        val index = getItem(noteId)
+        if (index != -1) {
+            notes[index] = notes[index].copy(
+                deletedAt = System.currentTimeMillis(),
+                isPinned = false,
+                archivedAt = null
+            )
+        }
+    }
+
+    fun restore(noteId: String) {
+        val index = getItem(noteId)
+        if (index != -1) {
+            notes[index] = notes[index].copy(deletedAt = null)
+        }
+    }
+
+    fun deleteForever(noteId: String) {
         notes.removeIf { it.id == noteId }
+    }
+
+    fun emptyTrash() {
+        notes.removeIf { it.deletedAt != null }
+    }
+
+    fun purgeExpiredTrash() {
+        val threshold = System.currentTimeMillis() - TRASH_RETENTION_MILLIS
+        notes.removeIf { it.deletedAt != null && it.deletedAt < threshold }
     }
 
     fun get(noteId: String): NoteEntity? {

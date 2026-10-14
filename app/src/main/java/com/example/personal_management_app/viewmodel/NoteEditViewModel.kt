@@ -284,7 +284,7 @@ class NoteEditViewModel @Inject constructor(
             noteRepository.delete(noteId)
         }
 
-        note = note?.copy(isDeleted = true)
+        note = note?.copy(deletedAt = System.currentTimeMillis())
     }
 
     fun copy() {

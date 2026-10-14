@@ -1,60 +1,79 @@
 package com.example.personal_management_app.ui.components
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.personal_management_app.dtos.toCompose
+import com.example.personal_management_app.entites.NoteEntity
+import com.example.personal_management_app.ui.screen.note_screen.NoteContentPreview
+import com.example.personal_management_app.ui.screen.note_screen.NoteHeading
+import com.example.personal_management_app.ui.screen.note_screen.NoteThemedSurface
+import com.example.personal_management_app.ui.screen.note_screen.buildStyledText
+import com.example.personal_management_app.ui.screen.note_screen.loadTitleSpans
+import com.example.personal_management_app.ui.screen.note_screen.noteContentColor
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @Composable
 fun TrashCard(
-    title: String,
-    content: String,
-    timeDeleted: String,
-    backgroundColor: Color,
-    onClick: () -> Unit
+    note: NoteEntity,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    timeDeletedText: String = note.deletedAt?.let {
+        SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date(it))
+    }?.let { "Đã xóa $it" } ?: "Đã xóa"
 ) {
-    Card(
+    val contentColor = noteContentColor(note.backgroundColor)
+
+    NoteThemedSurface(
+        background = note.backgroundColor,
+        modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = backgroundColor),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-        modifier = Modifier
-            .fillMaxWidth()
-            .border(width = 1.dp, color = Color.LightGray.copy(alpha = 0.5f), shape = RoundedCornerShape(12.dp))
-            .clickable { onClick() }
+        border = BorderStroke(1.dp, Color.LightGray.copy(alpha = 0.5f)),
+        onClick = onClick
     ) {
         Column(
+            verticalArrangement = Arrangement.spacedBy(6.dp),
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(12.dp),
-            verticalArrangement = Arrangement.spacedBy(6.dp)
+                .padding(12.dp)
         ) {
-            if (title.isNotBlank()) {
+            if (note.title.isNotBlank()) {
                 Text(
-                    text = title,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.DarkGray
+                    text = buildStyledText(note.title, loadTitleSpans(note.content)),
+                    style = note.titleStyle.toCompose().copy(
+                        color = contentColor,
+                        fontSize = when {
+                            note.titleStyle.fontSize >= NoteHeading.H1.fontSize -> 14.sp
+                            note.titleStyle.fontSize >= NoteHeading.H2.fontSize -> 13.sp
+                            else -> 12.sp
+                        },
+                        fontWeight = FontWeight.Bold
+                    ),
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
                 )
             }
-            if (content.isNotBlank()) {
-                Text(
-                    text = content,
-                    fontSize = 13.sp,
-                    color = Color.DarkGray
-                )
-            }
+
+            NoteContentPreview(
+                content = note.content,
+                contentColor = contentColor
+            )
+
             Text(
-                text = timeDeleted,
+                text = timeDeletedText,
                 fontSize = 11.sp,
                 color = Color.Gray,
                 fontWeight = FontWeight.Medium

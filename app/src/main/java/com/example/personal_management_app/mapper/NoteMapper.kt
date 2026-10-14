@@ -20,7 +20,8 @@ class NoteMapper @Inject constructor() {
                 isPinned = it.isPinned,
                 archivedAt = it.archivedAt,
                 isNotification = it.isNotification,
-                notificationCron = it.notificationCron
+                notificationCron = it.notificationCron,
+                deletedAt = it.deletedAt
             )
         }
     }
@@ -38,7 +39,8 @@ class NoteMapper @Inject constructor() {
                 isPinned = it.isPinned,
                 archivedAt = it.archivedAt,
                 isNotification = it.isNotification,
-                notificationCron = it.notificationCron
+                notificationCron = it.notificationCron,
+                deletedAt = it.deletedAt
             )
         }
     }

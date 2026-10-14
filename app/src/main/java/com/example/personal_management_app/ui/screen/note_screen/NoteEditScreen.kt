@@ -29,13 +29,6 @@ fun NoteEditScreen(
 ) {
     val note = viewModel.note
 
-    if (note?.isDeleted == true) {
-        LaunchedEffect(Unit) {
-            navController.navigate("note_screen")
-        }
-        return
-    }
-
     if (note == null) {
         ShowToastMessage(message = "Ghi chú không có sẵn, vui lòng thử lại")
 
