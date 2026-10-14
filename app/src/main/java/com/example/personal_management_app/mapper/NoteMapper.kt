@@ -18,7 +18,7 @@ class NoteMapper @Inject constructor() {
                 tag = it.tag,
                 backgroundColor = it.backgroundColor,
                 isPinned = it.isPinned,
-                isArchived = it.isArchived,
+                archivedAt = it.archivedAt,
                 isNotification = it.isNotification,
                 notificationCron = it.notificationCron
             )
@@ -36,7 +36,7 @@ class NoteMapper @Inject constructor() {
                 tag = it.tag,
                 backgroundColor = it.backgroundColor,
                 isPinned = it.isPinned,
-                isArchived = it.isArchived,
+                archivedAt = it.archivedAt,
                 isNotification = it.isNotification,
                 notificationCron = it.notificationCron
             )

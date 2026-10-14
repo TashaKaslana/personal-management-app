@@ -255,13 +255,12 @@ class NoteEditViewModel @Inject constructor(
 
     fun setArchived() {
         val currentNote = note ?: return
+        val newArchivedAt = if (currentNote.archivedAt == null) System.currentTimeMillis() else null
 
-        note?.let { thisNote ->
-            note = thisNote.copy(isArchived = !thisNote.isArchived)
-        }
+        note = currentNote.copy(archivedAt = newArchivedAt)
 
         if (noteId != null) {
-            noteRepository.setArchived(noteId, currentNote.isArchived)
+            noteRepository.setArchived(noteId, newArchivedAt)
         }
     }
 

@@ -12,7 +12,7 @@ data class NoteEntity(
     val tag: String? = null,
     val backgroundColor: String,
     val isPinned: Boolean = false,
-    val isArchived: Boolean = false,
+    val archivedAt: Long? = null,
     val isNotification: Boolean = false,
     val notificationCron: String? = null
 )
