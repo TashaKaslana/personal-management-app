@@ -270,6 +270,23 @@ class NoteRepository @Inject constructor() {
         }
     }
 
+    fun countByTag(name: String): Int {
+        return notes.count { it.deletedAt == null && it.tag == name }
+    }
+
+    fun renameTag(from: String, to: String) {
+        if (from == to) return
+        notes.replaceAll { note ->
+            if (note.tag == from) note.copy(tag = to) else note
+        }
+    }
+
+    fun clearTag(name: String) {
+        notes.replaceAll { note ->
+            if (note.tag == name) note.copy(tag = null) else note
+        }
+    }
+
     fun setArchived(noteId: String, archivedAt: Long?) {
         val index = getItem(noteId)
         if (index != -1) {

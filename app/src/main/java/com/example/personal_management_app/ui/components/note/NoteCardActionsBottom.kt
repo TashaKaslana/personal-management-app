@@ -12,8 +12,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Label
@@ -38,7 +41,6 @@ import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -51,6 +53,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.PopupProperties
@@ -61,6 +65,7 @@ import com.example.personal_management_app.ui.screen.note_screen.NoteThemeDialog
 import com.example.personal_management_app.ui.screen.note_screen.notePanelTypes
 import com.example.personal_management_app.utils.copyUriToNoteImageStorage
 import com.example.personal_management_app.viewmodel.NoteEditViewModel
+import com.example.personal_management_app.viewmodel.TagViewModel
 
 
 @Composable
@@ -379,11 +384,12 @@ fun NoteCardMenuAction(
     isExpanded: Boolean,
     setIsExpanded: (Boolean) -> Unit,
     viewModel: NoteEditViewModel? = null,
+    tagViewModel: TagViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
     var showTagDialog by remember { mutableStateOf(false) }
     var showPanelDialog by remember { mutableStateOf(false) }
-    var tagInput by remember { mutableStateOf(viewModel?.note?.tag.orEmpty()) }
+    val tags by tagViewModel.tags.collectAsStateWithLifecycle()
     val focusedPanelId = viewModel?.focusedPanelId()
 
     NoteDropdownMenu(
@@ -404,7 +410,6 @@ fun NoteCardMenuAction(
             label = "Add Tag",
             icon = Icons.AutoMirrored.Filled.Label,
             onClick = {
-                tagInput = viewModel?.note?.tag.orEmpty()
                 showTagDialog = true
                 setIsExpanded(false)
             }
@@ -448,30 +453,45 @@ fun NoteCardMenuAction(
     }
 
     if (showTagDialog) {
+        val selected = viewModel?.note?.tag
         AlertDialog(
             onDismissRequest = { showTagDialog = false },
-            title = { Text("Add Tag") },
+            title = { Text("Nhãn") },
             text = {
-                OutlinedTextField(
-                    value = tagInput,
-                    onValueChange = { tagInput = it },
-                    singleLine = true
-                )
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                    modifier = Modifier
+                        .heightIn(max = 320.dp)
+                        .verticalScroll(rememberScrollState())
+                ) {
+                    if (tags.isEmpty()) {
+                        Text("Chưa có nhãn. Tạo nhãn từ mục Nhãn.")
+                    }
+                    tags.forEach { tag ->
+                        NotePanelTypeRow(
+                            label = tag.name,
+                            selected = tag.name == selected,
+                            onClick = {
+                                viewModel?.updateTag(tag.name)
+                                viewModel?.upsertNote()
+                                showTagDialog = false
+                            }
+                        )
+                    }
+                }
             },
             confirmButton = {
-                TextButton(
-                    onClick = {
-                        viewModel?.updateTag(tagInput)
-                        viewModel?.upsertNote()
-                        showTagDialog = false
-                    }
-                ) {
-                    Text("Save")
+                TextButton(onClick = {
+                    viewModel?.updateTag("")
+                    viewModel?.upsertNote()
+                    showTagDialog = false
+                }) {
+                    Text("Bỏ nhãn")
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showTagDialog = false }) {
-                    Text("Cancel")
+                    Text("Hủy")
                 }
             }
         )

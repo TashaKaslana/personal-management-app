@@ -32,7 +32,7 @@ fun MainSidebar(
     val sidebarItems = listOf(
         SidebarItem("Ghi chú", "note_screen"),
         SidebarItem("Lời nhắc", "reminder_screen"),
-        SidebarItem("Tạo nhãn mới", "labels_screen"),
+        SidebarItem("Nhãn", "labels_screen"),
         SidebarItem("Lưu trữ", "archive_screen"),
         SidebarItem("Thùng rác", "trash_screen"),
         SidebarItem("Cài đặt", "settings_screen"),
