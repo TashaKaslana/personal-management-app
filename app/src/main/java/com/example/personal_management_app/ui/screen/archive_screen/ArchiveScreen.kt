@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.items
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -21,16 +22,21 @@ import com.example.personal_management_app.ui.components.ArchiveCard
 import com.example.personal_management_app.ui.components.MainTopBar
 import com.example.personal_management_app.ui.layouts.MainLayout
 import com.example.personal_management_app.viewmodel.NoteViewModel
+import com.example.personal_management_app.viewmodel.TagViewModel
 
 @Composable
 fun ArchiveScreen(
     modifier: Modifier = Modifier,
     navController: NavController,
-    viewModel: NoteViewModel = hiltViewModel()
+    viewModel: NoteViewModel = hiltViewModel(),
+    tagViewModel: TagViewModel = hiltViewModel()
 ) {
     var searchQuery by remember { mutableStateOf("") }
 
     val notes by viewModel.notes.collectAsStateWithLifecycle()
+    val tags by tagViewModel.tags.collectAsStateWithLifecycle()
+    val tagColors = remember(tags) { tags.associate { it.name to it.color } }
+    LaunchedEffect(tags) { viewModel.loadNotes() }
     val archiveList = remember(notes, searchQuery) {
         viewModel.filterNotes(archived = true, query = searchQuery)
     }
@@ -64,6 +70,7 @@ fun ArchiveScreen(
                 items(archiveList, key = { it.id }) { archive ->
                     ArchiveCard(
                         note = archive,
+                        tagColor = archive.tag?.let { tagColors[it] },
                         onClick = {
                             navController.navigate("notes/${archive.id}/edit")
                         }

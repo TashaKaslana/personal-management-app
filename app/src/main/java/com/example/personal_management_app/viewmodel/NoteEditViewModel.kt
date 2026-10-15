@@ -221,7 +221,7 @@ class NoteEditViewModel @Inject constructor(
     }
 
     fun updateTag(tag: String) {
-        note = note?.copy(tag = tag)
+        note = note?.copy(tag = tag.takeIf { it.isNotBlank() })
     }
 
     fun updateBackground(background: String) {

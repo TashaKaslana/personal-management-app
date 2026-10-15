@@ -12,10 +12,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.items
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
@@ -28,12 +27,22 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.example.personal_management_app.dtos.toCompose
+import com.example.personal_management_app.ui.components.TagChip
 import com.example.personal_management_app.ui.layouts.MainLayout
 import com.example.personal_management_app.viewmodel.NoteViewModel
+import com.example.personal_management_app.viewmodel.TagViewModel
 
 @Composable
-fun NoteScreen(modifier: Modifier = Modifier, navController: NavController, viewModel: NoteViewModel = hiltViewModel(),) {
+fun NoteScreen(
+    modifier: Modifier = Modifier,
+    navController: NavController,
+    viewModel: NoteViewModel = hiltViewModel(),
+    tagViewModel: TagViewModel = hiltViewModel()
+) {
     val notes by viewModel.notes.collectAsStateWithLifecycle()
+    val tags by tagViewModel.tags.collectAsStateWithLifecycle()
+    val tagColors = remember(tags) { tags.associate { it.name to it.color } }
+    LaunchedEffect(tags) { viewModel.loadNotes() }
     val notesList = remember(notes) { viewModel.filterNotes(archived = false) }
 
     MainLayout (navController = navController) { innerPadding ->
@@ -94,19 +103,12 @@ fun NoteScreen(modifier: Modifier = Modifier, navController: NavController, view
                                 content = note.content,
                                 contentColor = contentColor
                             )
-                            if (note.tag != null) {
+                            if (!note.tag.isNullOrBlank()) {
                                 Spacer(modifier = Modifier.height(10.dp))
-                                Surface(
-                                    shape = RoundedCornerShape(8.dp),
-                                    color = Color.White.copy(alpha = 0.6f)
-                                ) {
-                                    Text(
-                                        text = note.tag,
-                                        fontSize = 10.sp,
-                                        color = Color.DarkGray,
-                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                                    )
-                                }
+                                TagChip(
+                                    name = note.tag,
+                                    color = tagColors[note.tag]
+                                )
                             }
                         }
                     }

@@ -39,6 +39,7 @@ fun ArchiveCard(
     note: NoteEntity,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    tagColor: String? = null,
     timeOrStatusText: String = note.archivedAt?.let {
         SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date(it))
     } ?: "Đã lưu trữ"
@@ -81,17 +82,10 @@ fun ArchiveCard(
                 modifier = Modifier.padding(top = 4.dp)
             ) {
                 if (!note.tag.isNullOrBlank()) {
-                    Surface(
-                        shape = RoundedCornerShape(8.dp),
-                        color = Color.White.copy(alpha = 0.6f)
-                    ) {
-                        Text(
-                            text = note.tag,
-                            fontSize = 10.sp,
-                            color = Color.DarkGray,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                        )
-                    }
+                    TagChip(
+                        name = note.tag,
+                        color = tagColor
+                    )
                 }
 
                 Surface(
