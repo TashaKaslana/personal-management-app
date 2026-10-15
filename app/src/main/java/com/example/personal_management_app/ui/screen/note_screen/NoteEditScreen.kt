@@ -8,6 +8,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
@@ -28,6 +29,7 @@ fun NoteEditScreen(
     viewModel: NoteEditViewModel = hiltViewModel()
 ) {
     val note = viewModel.note
+    val readOnly = note?.archivedAt != null || note?.deletedAt != null
 
     if (note == null) {
         ShowToastMessage(message = "Ghi chú không có sẵn, vui lòng thử lại")
@@ -57,8 +59,16 @@ fun NoteEditScreen(
             ) {
                 NoteCardActionsTop(
                     onBackClick = {
-                        viewModel.upsertNote()
-                        navController.navigate("note_screen")
+                        if (readOnly) {
+                            if (!navController.popBackStack()) {
+                                navController.navigate(
+                                    if (note.deletedAt != null) "trash_screen" else "archive_screen"
+                                )
+                            }
+                        } else {
+                            viewModel.upsertNote()
+                            navController.navigate("note_screen")
+                        }
                     },
                     onPinClick = {
                         viewModel.pin()
@@ -69,8 +79,17 @@ fun NoteEditScreen(
                     onSetArchived = {
                         viewModel.setArchived()
                         navController.navigate("note_screen")
-                    }
+                    },
+                    showActions = !readOnly
                 )
+
+                if (readOnly) {
+                    Text(
+                        text = if (note.deletedAt != null) "Đã xóa" else "Đã lưu trữ",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = contentColor
+                    )
+                }
 
                 HorizontalDivider(
                     modifier = Modifier.padding(vertical = 4.dp),
@@ -88,6 +107,7 @@ fun NoteEditScreen(
                         viewModel.updateContent(it)
                     },
                     contentColor = contentColor,
+                    readOnly = readOnly,
                     bodyContent = {
                         NoteRenderer(
                             blocks = viewModel.blocks,
@@ -99,19 +119,22 @@ fun NoteEditScreen(
                             onModelTitleChange = viewModel::updateModelTitle,
                             pendingPanelFocusId = viewModel.pendingPanelFocusId,
                             focusedPanelId = viewModel.focusedPanelId(),
-                            onPanelFocusConsumed = viewModel::consumePanelFocus
+                            onPanelFocusConsumed = viewModel::consumePanelFocus,
+                            readOnly = readOnly
                         )
                     }
                 )
 
-                HorizontalDivider(
-                    modifier = Modifier.padding(vertical = 4.dp),
-                    color = MaterialTheme.colorScheme.outlineVariant
-                )
+                if (!readOnly) {
+                    HorizontalDivider(
+                        modifier = Modifier.padding(vertical = 4.dp),
+                        color = MaterialTheme.colorScheme.outlineVariant
+                    )
 
-                NoteCardActionsBottom(
-                    viewModel = viewModel
-                )
+                    NoteCardActionsBottom(
+                        viewModel = viewModel
+                    )
+                }
             }
         }
     }

@@ -178,7 +178,8 @@ fun NoteStyledField(
     onEdit: (String, Int, Int) -> Unit,
     modifier: Modifier = Modifier,
     fieldKey: Any = Unit,
-    focusRequester: FocusRequester? = null
+    focusRequester: FocusRequester? = null,
+    readOnly: Boolean = false
 ) {
     var fieldValue by remember(fieldKey) {
         mutableStateOf(TextFieldValue(text, androidx.compose.ui.text.TextRange(text.length)))
@@ -190,9 +191,11 @@ fun NoteStyledField(
     BasicTextField(
         value = fieldValue.copy(annotatedString = buildStyledText(text, spans)),
         onValueChange = { next ->
+            if (readOnly) return@BasicTextField
             fieldValue = next
             onEdit(next.text, next.selection.min, next.selection.max)
         },
+        readOnly = readOnly,
         textStyle = style,
         modifier = modifier
             .then(
@@ -203,7 +206,7 @@ fun NoteStyledField(
                 }
             )
             .onFocusChanged { state ->
-                if (state.isFocused) {
+                if (state.isFocused && !readOnly) {
                     onEdit(text, fieldValue.selection.min, fieldValue.selection.max)
                 }
             }

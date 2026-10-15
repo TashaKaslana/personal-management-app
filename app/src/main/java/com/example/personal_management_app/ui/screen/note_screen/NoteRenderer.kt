@@ -326,7 +326,8 @@ fun NoteRenderer(
     modifier: Modifier = Modifier,
     pendingPanelFocusId: String? = null,
     focusedPanelId: String? = null,
-    onPanelFocusConsumed: () -> Unit = {}
+    onPanelFocusConsumed: () -> Unit = {},
+    readOnly: Boolean = false
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -343,6 +344,7 @@ fun NoteRenderer(
                             onTextChange(block.id, text, start, end)
                         },
                         fieldKey = block.id,
+                        readOnly = readOnly,
                         modifier = Modifier.fillMaxWidth()
                     )
                 }
@@ -354,7 +356,10 @@ fun NoteRenderer(
                     ) {
                         Checkbox(
                             checked = block.checked,
-                            onCheckedChange = { onCheckboxChecked(block.id, it) }
+                            onCheckedChange = if (readOnly) null else {
+                                { onCheckboxChecked(block.id, it) }
+                            },
+                            enabled = !readOnly
                         )
                         NoteStyledField(
                             text = block.label,
@@ -364,6 +369,7 @@ fun NoteRenderer(
                                 onCheckboxLabelChange(block.id, label, start, end)
                             },
                             fieldKey = block.id,
+                            readOnly = readOnly,
                             modifier = Modifier.weight(1f)
                         )
                     }
@@ -376,9 +382,10 @@ fun NoteRenderer(
                         block = block,
                         textStyle = textStyle,
                         parentBackground = parentBackground,
-                        focused = focusedPanelId == block.id,
-                        autoFocusTitle = pendingPanelFocusId == block.id,
+                        focused = !readOnly && focusedPanelId == block.id,
+                        autoFocusTitle = !readOnly && pendingPanelFocusId == block.id,
                         onTitleFocusConsumed = onPanelFocusConsumed,
+                        readOnly = readOnly,
                         onTitleEdit = { title, start, end ->
                             onModelTitleChange(block.id, title, start, end)
                         }
@@ -394,7 +401,8 @@ fun NoteRenderer(
                             onModelTitleChange = onModelTitleChange,
                             pendingPanelFocusId = pendingPanelFocusId,
                             focusedPanelId = focusedPanelId,
-                            onPanelFocusConsumed = onPanelFocusConsumed
+                            onPanelFocusConsumed = onPanelFocusConsumed,
+                            readOnly = readOnly
                         )
                     }
                 }
@@ -412,6 +420,7 @@ private fun NotePanel(
     autoFocusTitle: Boolean,
     onTitleFocusConsumed: () -> Unit,
     onTitleEdit: (String, Int, Int) -> Unit,
+    readOnly: Boolean = false,
     content: @Composable (TextStyle) -> Unit
 ) {
     val decorated = block.type != NotePanelType.Inherit
@@ -473,6 +482,7 @@ private fun NotePanel(
                     onEdit = onTitleEdit,
                     fieldKey = block.id + ":title",
                     focusRequester = focusRequester,
+                    readOnly = readOnly,
                     modifier = Modifier.fillMaxWidth()
                 )
                 content(panelStyle)

@@ -40,6 +40,7 @@ fun NoteCardTextEditor(
     titleSpans: List<NoteTextSpan> = emptyList(),
     contentColor: Color = Color.Black,
     bodyContent: (@Composable () -> Unit)? = null,
+    readOnly: Boolean = false,
 ) {
     val scrollState = rememberScrollState()
     var bodyState by remember { mutableStateOf(note.content) }
@@ -57,6 +58,7 @@ fun NoteCardTextEditor(
             style = note.titleStyle.toCompose().copy(color = contentColor),
             onEdit = onTitleUpdate,
             fieldKey = note.id,
+            readOnly = readOnly,
             modifier = Modifier.fillMaxWidth()
         )
 
@@ -65,7 +67,9 @@ fun NoteCardTextEditor(
         } else {
             BasicTextField(
                 value = bodyState,
+                readOnly = readOnly,
                 onValueChange = {
+                    if (readOnly) return@BasicTextField
                     bodyState = it
                     onContentUpdate(it)
                 },
@@ -84,7 +88,8 @@ fun NoteCardActionsTop(
     onBackClick: () -> Unit,
     onPinClick: () -> Unit,
     onSetNotificationClick: () -> Unit,
-    onSetArchived: () -> Unit
+    onSetArchived: () -> Unit,
+    showActions: Boolean = true
 ) {
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -97,26 +102,28 @@ fun NoteCardActionsTop(
             description = "Back"
         )
 
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            NoteCardActionIconButton(
-                onClick = onPinClick,
-                icon = Icons.Filled.Bookmark,
-                description = "Pin"
-            )
+        if (showActions) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                NoteCardActionIconButton(
+                    onClick = onPinClick,
+                    icon = Icons.Filled.Bookmark,
+                    description = "Pin"
+                )
 
-            NoteCardActionIconButton(
-                onClick = onSetNotificationClick,
-                icon = Icons.Filled.NotificationAdd,
-                description = "Add notification"
-            )
+                NoteCardActionIconButton(
+                    onClick = onSetNotificationClick,
+                    icon = Icons.Filled.NotificationAdd,
+                    description = "Add notification"
+                )
 
-            NoteCardActionIconButton(
-                onClick = onSetArchived,
-                icon = Icons.Filled.Archive,
-                description = "Archive"
-            )
+                NoteCardActionIconButton(
+                    onClick = onSetArchived,
+                    icon = Icons.Filled.Archive,
+                    description = "Archive"
+                )
+            }
         }
     }
 }
