@@ -34,6 +34,8 @@ import com.example.personal_management_app.ui.components.TagChip
 import com.example.personal_management_app.ui.components.note.NoteCardActionsBottom
 import com.example.personal_management_app.ui.components.note.NoteCardActionsTop
 import com.example.personal_management_app.ui.components.note.NoteCardTextEditor
+import com.example.personal_management_app.ui.components.reminder.ReminderPickerDialog
+import com.example.personal_management_app.ui.components.reminder.label
 import com.example.personal_management_app.ui.components.utils.ShowToastMessage
 import com.example.personal_management_app.viewmodel.NoteEditViewModel
 import com.example.personal_management_app.viewmodel.TagViewModel

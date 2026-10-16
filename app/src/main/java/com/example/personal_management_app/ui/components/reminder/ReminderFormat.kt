@@ -1,4 +1,4 @@
-package com.example.personal_management_app.ui.screen.note_screen
+package com.example.personal_management_app.ui.components.reminder
 
 import com.example.personal_management_app.entites.NoteReminder
 import com.example.personal_management_app.entites.ReminderRepeat

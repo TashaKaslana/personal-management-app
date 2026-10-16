@@ -1,4 +1,4 @@
-package com.example.personal_management_app.ui.screen.note_screen
+package com.example.personal_management_app.ui.components.reminder
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column

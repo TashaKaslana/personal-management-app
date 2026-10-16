@@ -47,7 +47,7 @@ import com.example.personal_management_app.ui.screen.note_screen.NoteContentPrev
 import com.example.personal_management_app.ui.screen.note_screen.NoteHeading
 import com.example.personal_management_app.ui.screen.note_screen.NoteThemedSurface
 import com.example.personal_management_app.ui.screen.note_screen.buildStyledText
-import com.example.personal_management_app.ui.screen.note_screen.label
+import com.example.personal_management_app.ui.components.reminder.label
 import com.example.personal_management_app.ui.screen.note_screen.loadTitleSpans
 import com.example.personal_management_app.ui.screen.note_screen.noteContentColor
 import com.example.personal_management_app.viewmodel.NoteViewModel
@@ -134,11 +134,13 @@ fun ReminderScreen(
                                 maxLines = 3,
                                 overflow = TextOverflow.Ellipsis
                             )
+
                             Spacer(modifier = Modifier.height(6.dp))
                             NoteContentPreview(
                                 content = note.content,
                                 contentColor = contentColor
                             )
+
                             if (note.tags.isNotEmpty()) {
                                 Spacer(modifier = Modifier.height(10.dp))
                                 FlowRow(
@@ -151,6 +153,7 @@ fun ReminderScreen(
                                     }
                                 }
                             }
+
                             note.reminder?.let { reminder ->
                                 Spacer(modifier = Modifier.height(10.dp))
                                 Surface(
