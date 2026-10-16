@@ -19,8 +19,7 @@ class NoteMapper @Inject constructor() {
                 backgroundColor = it.backgroundColor,
                 isPinned = it.isPinned,
                 archivedAt = it.archivedAt,
-                isNotification = it.isNotification,
-                notificationCron = it.notificationCron,
+                reminder = it.reminder,
                 deletedAt = it.deletedAt
             )
         }
@@ -38,8 +37,7 @@ class NoteMapper @Inject constructor() {
                 backgroundColor = it.backgroundColor,
                 isPinned = it.isPinned,
                 archivedAt = it.archivedAt,
-                isNotification = it.isNotification,
-                notificationCron = it.notificationCron,
+                reminder = it.reminder,
                 deletedAt = it.deletedAt
             )
         }

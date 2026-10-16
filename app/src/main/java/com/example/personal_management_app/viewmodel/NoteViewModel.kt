@@ -43,6 +43,17 @@ class NoteViewModel @Inject constructor(
         }
     }
 
+    fun filterReminders(query: String = ""): List<NoteEntity> {
+        return _notes.value.filter { note ->
+            note.reminder != null && note.archivedAt == null && (
+                query.isBlank() ||
+                    note.title.contains(query, ignoreCase = true) ||
+                    note.content.contains(query, ignoreCase = true) ||
+                    note.tags.any { it.contains(query, ignoreCase = true) }
+                )
+        }.sortedBy { it.reminder?.atMillis }
+    }
+
     fun getNote(noteId: String): NoteEntity? {
         return repository.get(noteId)
     }

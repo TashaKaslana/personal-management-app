@@ -8,6 +8,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import com.example.personal_management_app.dtos.NoteEditDto
+import com.example.personal_management_app.entites.NoteReminder
 import com.example.personal_management_app.dtos.NoteTextStyle
 import com.example.personal_management_app.mapper.NoteMapper
 import com.example.personal_management_app.repositories.NoteRepository
@@ -246,16 +247,17 @@ class NoteEditViewModel @Inject constructor(
         }
     }
 
-    fun setNotification(cron: String? = "") {
-        val currentNote = note ?: return
-
-        note?.let { thisNote ->
-            note = thisNote.copy(isNotification = !thisNote.isNotification)
-            note = thisNote.copy(notificationCron = cron)
-        }
-
+    fun setReminder(reminder: NoteReminder) {
+        note = note?.copy(reminder = reminder)
         if (noteId != null) {
-            noteRepository.setNotification(noteId, !currentNote.isNotification, cron ?: "")
+            noteRepository.setReminder(noteId, reminder)
+        }
+    }
+
+    fun clearReminder() {
+        note = note?.copy(reminder = null)
+        if (noteId != null) {
+            noteRepository.setReminder(noteId, null)
         }
     }
 

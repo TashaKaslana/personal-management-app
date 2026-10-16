@@ -16,6 +16,8 @@ import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.NotificationAdd
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -88,6 +90,7 @@ fun NoteCardActionsTop(
     onBackClick: () -> Unit,
     onPinClick: () -> Unit,
     onSetNotificationClick: () -> Unit,
+    reminderSet: Boolean = false,
     onSetArchived: () -> Unit,
     showActions: Boolean = true
 ) {
@@ -115,7 +118,8 @@ fun NoteCardActionsTop(
                 NoteCardActionIconButton(
                     onClick = onSetNotificationClick,
                     icon = Icons.Filled.NotificationAdd,
-                    description = "Add notification"
+                    description = "Add reminder",
+                    selected = reminderSet
                 )
 
                 NoteCardActionIconButton(
@@ -133,11 +137,19 @@ fun NoteCardActionIconButton(
     onClick: () -> Unit,
     icon: ImageVector,
     description: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    selected: Boolean = false
 ) {
     FilledIconButton(
         onClick = onClick,
         shape = RoundedCornerShape(8.dp),
+        colors = if (selected) {
+            IconButtonDefaults.filledIconButtonColors(
+                containerColor = MaterialTheme.colorScheme.primary
+            )
+        } else {
+            IconButtonDefaults.filledIconButtonColors()
+        },
         modifier = modifier
     ) {
         Icon(

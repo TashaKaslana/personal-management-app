@@ -1,6 +1,6 @@
 package com.example.personal_management_app.dtos
 
-import kotlin.String
+import com.example.personal_management_app.entites.NoteReminder
 
 data class NoteEditDto(
     val id: String,
@@ -12,7 +12,6 @@ data class NoteEditDto(
     val backgroundColor: String = "white",
     val isPinned: Boolean = false,
     val archivedAt: Long? = null,
-    val isNotification: Boolean = false,
-    val notificationCron: String? = null,
+    val reminder: NoteReminder? = null,
     val deletedAt: Long? = null
 )

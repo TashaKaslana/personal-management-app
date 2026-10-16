@@ -14,6 +14,5 @@ data class NoteEntity(
     val isPinned: Boolean = false,
     val archivedAt: Long? = null,
     val deletedAt: Long? = null,
-    val isNotification: Boolean = false,
-    val notificationCron: String? = null
+    val reminder: NoteReminder? = null
 )
