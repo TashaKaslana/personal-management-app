@@ -70,7 +70,7 @@ fun ArchiveScreen(
                 items(archiveList, key = { it.id }) { archive ->
                     ArchiveCard(
                         note = archive,
-                        tagColor = archive.tag?.let { tagColors[it] },
+                        tagColors = tagColors,
                         onClick = {
                             navController.navigate("notes/${archive.id}/edit")
                         }

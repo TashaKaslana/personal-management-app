@@ -2,6 +2,7 @@ package com.example.personal_management_app.ui.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -39,7 +40,7 @@ fun ArchiveCard(
     note: NoteEntity,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    tagColor: String? = null,
+    tagColors: Map<String, String> = emptyMap(),
     timeOrStatusText: String = note.archivedAt?.let {
         SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date(it))
     } ?: "Đã lưu trữ"
@@ -81,11 +82,19 @@ fun ArchiveCard(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.padding(top = 4.dp)
             ) {
-                if (!note.tag.isNullOrBlank()) {
-                    TagChip(
-                        name = note.tag,
-                        color = tagColor
-                    )
+                if (note.tags.isNotEmpty()) {
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp),
+                        maxLines = 2
+                    ) {
+                        note.tags.forEach { name ->
+                            TagChip(
+                                name = name,
+                                color = tagColors[name]
+                            )
+                        }
+                    }
                 }
 
                 Surface(

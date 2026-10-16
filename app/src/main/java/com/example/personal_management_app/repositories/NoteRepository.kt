@@ -28,7 +28,7 @@ class NoteRepository @Inject constructor() {
             contentStyle = NoteTextStyle(
                 fontSize = 16f
             ),
-            tag = "Công việc",
+            tags = listOf("Công việc"),
             backgroundColor = "0xFFFFF8D6",
             isPinned = true
         ),
@@ -57,7 +57,7 @@ class NoteRepository @Inject constructor() {
             contentStyle = NoteTextStyle(
                 fontSize = 16f
             ),
-            tag = "Du lịch",
+            tags = listOf("Du lịch", "Công việc"),
             backgroundColor = "0xFFE3F2FD",
             isNotification = true,
             notificationCron = "0 0 8 * * ?"
@@ -121,7 +121,7 @@ class NoteRepository @Inject constructor() {
             contentStyle = NoteTextStyle(
                 fontSize = 16f
             ),
-            tag = "Du lịch",
+            tags = listOf("Du lịch"),
             backgroundColor = "0xFFE3F2FD",
             archivedAt = seedArchivedAt(7)
         ),
@@ -203,7 +203,7 @@ class NoteRepository @Inject constructor() {
                 query.isBlank() ||
                     note.title.contains(query, ignoreCase = true) ||
                     note.content.contains(query, ignoreCase = true) ||
-                    note.tag?.contains(query, ignoreCase = true) == true
+                    note.tags.any { it.contains(query, ignoreCase = true) }
                 )
         }
     }
@@ -271,19 +271,21 @@ class NoteRepository @Inject constructor() {
     }
 
     fun countByTag(name: String): Int {
-        return notes.count { it.deletedAt == null && it.tag == name }
+        return notes.count { it.deletedAt == null && name in it.tags }
     }
 
     fun renameTag(from: String, to: String) {
         if (from == to) return
         notes.replaceAll { note ->
-            if (note.tag == from) note.copy(tag = to) else note
+            if (from !in note.tags) note
+            else note.copy(tags = note.tags.map { if (it == from) to else it }.distinct())
         }
     }
 
     fun clearTag(name: String) {
         notes.replaceAll { note ->
-            if (note.tag == name) note.copy(tag = null) else note
+            if (name !in note.tags) note
+            else note.copy(tags = note.tags.filterNot { it == name })
         }
     }
 

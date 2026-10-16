@@ -137,7 +137,7 @@ fun TagScreen(
         AlertDialog(
             onDismissRequest = { pendingDelete = null },
             title = { Text("Xóa nhãn") },
-            text = { Text("Ghi chú đang dùng \"${tag.name}\" sẽ được bỏ nhãn.") },
+            text = { Text("Nhãn \"${tag.name}\" sẽ được gỡ khỏi các ghi chú đang dùng.") },
             confirmButton = {
                 TextButton(onClick = {
                     viewModel.delete(tag.id)

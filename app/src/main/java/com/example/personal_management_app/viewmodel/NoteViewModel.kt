@@ -38,7 +38,7 @@ class NoteViewModel @Inject constructor(
             (note.archivedAt != null) == archived && (                query.isBlank() ||
                     note.title.contains(query, ignoreCase = true) ||
                     note.content.contains(query, ignoreCase = true) ||
-                    note.tag?.contains(query, ignoreCase = true) == true
+                    note.tags.any { it.contains(query, ignoreCase = true) }
                 )
         }
     }

@@ -2,6 +2,7 @@ package com.example.personal_management_app.ui.screen.note_screen
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -11,25 +12,33 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.example.personal_management_app.dtos.toCompose
+import com.example.personal_management_app.ui.components.TagChip
 import com.example.personal_management_app.ui.components.note.NoteCardActionsBottom
 import com.example.personal_management_app.ui.components.note.NoteCardActionsTop
 import com.example.personal_management_app.ui.components.note.NoteCardTextEditor
 import com.example.personal_management_app.ui.components.utils.ShowToastMessage
 import com.example.personal_management_app.viewmodel.NoteEditViewModel
+import com.example.personal_management_app.viewmodel.TagViewModel
 
 @Composable
 fun NoteEditScreen(
     modifier: Modifier = Modifier,
     navController: NavController,
-    viewModel: NoteEditViewModel = hiltViewModel()
+    viewModel: NoteEditViewModel = hiltViewModel(),
+    tagViewModel: TagViewModel = hiltViewModel()
 ) {
     val note = viewModel.note
     val readOnly = note?.archivedAt != null || note?.deletedAt != null
+    val tags by tagViewModel.tags.collectAsStateWithLifecycle()
+    val tagColors = remember(tags) { tags.associate { it.name to it.color } }
 
     if (note == null) {
         ShowToastMessage(message = "Ghi chú không có sẵn, vui lòng thử lại")
@@ -95,6 +104,21 @@ fun NoteEditScreen(
                     modifier = Modifier.padding(vertical = 4.dp),
                     color = MaterialTheme.colorScheme.outlineVariant
                 )
+
+                if (note.tags.isNotEmpty()) {
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(4.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp),
+                        maxLines = 2
+                    ) {
+                        note.tags.forEach { name ->
+                            TagChip(
+                                name = name,
+                                color = tagColors[name]
+                            )
+                        }
+                    }
+                }
 
                 NoteCardTextEditor(
                     modifier = Modifier.weight(1f),

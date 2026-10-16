@@ -8,7 +8,7 @@ data class NoteEditDto(
     val titleStyle: NoteTextStyle,
     val content: String,
     val contentStyle: NoteTextStyle,
-    val tag: String? = null,
+    val tags: List<String> = emptyList(),
     val backgroundColor: String = "white",
     val isPinned: Boolean = false,
     val archivedAt: Long? = null,
