@@ -4,6 +4,7 @@ import android.content.ContentValues.TAG
 import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -103,12 +104,20 @@ fun NoteScreen(
                                 content = note.content,
                                 contentColor = contentColor
                             )
-                            if (!note.tag.isNullOrBlank()) {
+                            if (note.tags.isNotEmpty()) {
                                 Spacer(modifier = Modifier.height(10.dp))
-                                TagChip(
-                                    name = note.tag,
-                                    color = tagColors[note.tag]
-                                )
+                                FlowRow(
+                                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                                    maxLines = 2
+                                ) {
+                                    note.tags.forEach { name ->
+                                        TagChip(
+                                            name = name,
+                                            color = tagColors[name]
+                                        )
+                                    }
+                                }
                             }
                         }
                     }

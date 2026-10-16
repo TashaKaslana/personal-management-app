@@ -220,8 +220,14 @@ class NoteEditViewModel @Inject constructor(
         }
     }
 
-    fun updateTag(tag: String) {
-        note = note?.copy(tag = tag.takeIf { it.isNotBlank() })
+    fun toggleTag(tag: String) {
+        val current = note ?: return
+        val next = if (tag in current.tags) current.tags.filterNot { it == tag } else current.tags + tag
+        note = current.copy(tags = next)
+    }
+
+    fun clearTags() {
+        note = note?.copy(tags = emptyList())
     }
 
     fun updateBackground(background: String) {

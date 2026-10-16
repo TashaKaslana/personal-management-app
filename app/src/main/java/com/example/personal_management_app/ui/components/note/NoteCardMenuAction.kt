@@ -123,7 +123,7 @@ fun NoteCardMenuAction(
     }
 
     if (showTagDialog) {
-        val selected = viewModel?.note?.tag
+        val selected = viewModel?.note?.tags.orEmpty()
         var query by remember { mutableStateOf("") }
         val visible = remember(tags, query) {
             tags.filter { it.name.contains(query.trim(), ignoreCase = true) }
@@ -152,16 +152,15 @@ fun NoteCardMenuAction(
                             Text("Không tìm thấy nhãn", color = Color.Gray)
                         }
                         visible.forEach { tag ->
-                            val isSelected = tag.name == selected
+                            val isSelected = tag.name in selected
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(12.dp),
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clickable {
-                                        viewModel?.updateTag(tag.name)
+                                        viewModel?.toggleTag(tag.name)
                                         viewModel?.upsertNote()
-                                        showTagDialog = false
                                     }
                                     .padding(vertical = 8.dp)
                             ) {
@@ -191,7 +190,7 @@ fun NoteCardMenuAction(
             },
             confirmButton = {
                 TextButton(onClick = {
-                    viewModel?.updateTag("")
+                    viewModel?.clearTags()
                     viewModel?.upsertNote()
                     showTagDialog = false
                 }) {
