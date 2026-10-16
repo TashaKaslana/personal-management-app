@@ -2,6 +2,9 @@ package com.example.personal_management_app.repositories
 
 import com.example.personal_management_app.dtos.NoteTextStyle
 import com.example.personal_management_app.entites.NoteEntity
+import com.example.personal_management_app.entites.NoteReminder
+import com.example.personal_management_app.entites.ReminderRepeat
+import java.util.Calendar
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -59,8 +62,10 @@ class NoteRepository @Inject constructor() {
             ),
             tags = listOf("Du lịch", "Công việc"),
             backgroundColor = "0xFFE3F2FD",
-            isNotification = true,
-            notificationCron = "0 0 8 * * ?"
+            reminder = NoteReminder(
+                atMillis = seedAt(daysAhead = 1, hour = 8, minute = 0),
+                repeat = ReminderRepeat.Daily
+            )
         ),
 
         NoteEntity(
@@ -91,8 +96,10 @@ class NoteRepository @Inject constructor() {
                 fontSize = 16f
             ),
             backgroundColor = "0xFFFCE4EC",
-            isNotification = true,
-            notificationCron = "0 0 10 * * ?"
+            reminder = NoteReminder(
+                atMillis = seedAt(daysAhead = 1, hour = 10, minute = 0),
+                repeat = ReminderRepeat.Once
+            )
         ),
 
         NoteEntity(
@@ -260,14 +267,21 @@ class NoteRepository @Inject constructor() {
         }
     }
 
-    fun setNotification(noteId: String, status: Boolean, cron: String) {
+    fun setReminder(noteId: String, reminder: NoteReminder?) {
         val index = getItem(noteId)
         if (index != -1) {
-            notes[index] = notes[index].copy(
-                isNotification = status,
-                notificationCron = cron
-            )
+            notes[index] = notes[index].copy(reminder = reminder)
         }
+    }
+
+    private fun seedAt(daysAhead: Int, hour: Int, minute: Int): Long {
+        return Calendar.getInstance().apply {
+            add(Calendar.DAY_OF_YEAR, daysAhead)
+            set(Calendar.HOUR_OF_DAY, hour)
+            set(Calendar.MINUTE, minute)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+        }.timeInMillis
     }
 
     fun countByTag(name: String): Int {
