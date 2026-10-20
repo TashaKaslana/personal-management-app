@@ -4,9 +4,11 @@ import com.example.personal_management_app.dtos.AuthResult
 import com.example.personal_management_app.entities.ProfileEntity
 import java.util.Date
 import java.util.UUID
+import javax.inject.Inject
+import javax.inject.Singleton
 
-class UserRepository {
-
+@Singleton
+class UserRepository @Inject constructor() {
     private data class DummyUser(
         val email: String,
         val password: String,
@@ -34,6 +36,7 @@ class UserRepository {
     fun login(email: String, password: String): AuthResult {
         val user = users.find { it.email == email.trim() && it.password == password }
             ?: return AuthResult.WrongCredentials
+
         return AuthResult.Success(
             user = user.profile,
             token = UUID.randomUUID().toString()
@@ -44,6 +47,7 @@ class UserRepository {
         if (users.any { it.email == email.trim() }) {
             return AuthResult.EmailTaken
         }
+
         val profile = ProfileEntity(
             id = UUID.randomUUID().toString(),
             name = name.trim(),
@@ -55,7 +59,9 @@ class UserRepository {
             updatedAt = Date(),
             deletedAt = null
         )
+
         users.add(DummyUser(email.trim(), password, profile))
+
         return AuthResult.Success(
             user = profile,
             token = UUID.randomUUID().toString()

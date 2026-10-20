@@ -23,11 +23,13 @@ class AuthViewModel @Inject constructor(
         if (email.isBlank() || password.isBlank()) {
             return "Vui lòng nhập đầy đủ email và mật khẩu!"
         }
+
         return when (val result = userRepository.login(email, password)) {
             is AuthResult.Success -> {
                 updateSession(result)
                 null
             }
+
             AuthResult.WrongCredentials -> "Email hoặc mật khẩu không đúng!"
             AuthResult.EmailTaken -> "Email đã được sử dụng!"
         }
@@ -48,14 +50,23 @@ class AuthViewModel @Inject constructor(
         if (password.length < 6) {
             return "Mật khẩu phải có ít nhất 6 ký tự!"
         }
+
         return when (val result = userRepository.register(fullName, email, password)) {
             is AuthResult.Success -> {
                 updateSession(result)
                 null
             }
+
             AuthResult.EmailTaken -> "Email đã được sử dụng!"
             AuthResult.WrongCredentials -> "Email hoặc mật khẩu không đúng!"
         }
+    }
+
+    fun forgotPassword(email: String): String? {
+        if (email.isBlank()) {
+            return "Vui lòng nhập địa chỉ email!"
+        }
+        return null
     }
 
     private fun updateSession(result: AuthResult.Success) {
