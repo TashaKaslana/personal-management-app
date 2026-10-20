@@ -14,17 +14,28 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.personal_management_app.repositories.UserRepository
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.personal_management_app.ui.components.ProfileCard
 import com.example.personal_management_app.ui.theme.ScreenBackground
+import com.example.personal_management_app.viewmodel.ProfileViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
     navController: NavController,
-    userRepository: UserRepository = remember { UserRepository() }
+    viewModel: ProfileViewModel = hiltViewModel()
 ) {
-    val profile = userRepository.getProfile()
+    val profile = viewModel.getProfile()
+
+    if (profile == null) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
+            Text("Chưa đăng nhập", color = Color.Gray)
+        }
+        return
+    }
 
 
     var nameInput by remember { mutableStateOf(profile.name) }
@@ -137,25 +148,24 @@ fun ProfileScreen(
             ) {
                 Button(
                     onClick = {
-                        if (newPasswordInput.isNotEmpty() || confirmPasswordInput.isNotEmpty()) {
-                            if (currentPasswordInput.isEmpty()) {
-                                statusMessage = "Vui lòng nhập mật khẩu hiện tại!"
-                                isErrorState = true
-                                return@Button
-                            }
-                            if (newPasswordInput != confirmPasswordInput) {
-                                statusMessage = "Mật khẩu mới không khớp nhau!"
-                                isErrorState = true
-                                return@Button
-                            }
-                        }
+                        val error = viewModel.updateProfile(
+                            name = nameInput,
+                            username = usernameInput,
+                            currentPassword = currentPasswordInput,
+                            newPassword = newPasswordInput,
+                            confirmPassword = confirmPasswordInput
+                        )
 
-                        userRepository.updateProfile(nameInput, usernameInput)
-                        statusMessage = "Cập nhật thông tin thành công!"
-                        isErrorState = false
-                        currentPasswordInput = ""
-                        newPasswordInput = ""
-                        confirmPasswordInput = ""
+                        if (error != null) {
+                            statusMessage = error
+                            isErrorState = true
+                        } else {
+                            statusMessage = "Cập nhật thông tin thành công!"
+                            isErrorState = false
+                            currentPasswordInput = ""
+                            newPasswordInput = ""
+                            confirmPasswordInput = ""
+                        }
                     },
                     shape = RoundedCornerShape(12.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = Color.Black),
@@ -168,6 +178,7 @@ fun ProfileScreen(
 
                 OutlinedButton(
                     onClick = {
+                        viewModel.logout()
                         navController.navigate("login_screen") {
                             popUpTo(0) { inclusive = true }
                         }

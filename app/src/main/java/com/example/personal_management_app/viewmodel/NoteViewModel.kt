@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.personal_management_app.entities.NoteEntity
 import com.example.personal_management_app.repositories.NoteRepository
+import com.example.personal_management_app.ui.screen.reminder.ReminderScheduler
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -12,7 +13,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class NoteViewModel @Inject constructor(
-    private val repository: NoteRepository
+    private val repository: NoteRepository,
+    private val reminderScheduler: ReminderScheduler
 ) : ViewModel() {
     private val _notes = MutableStateFlow<List<NoteEntity>>(emptyList())
     val notes = _notes.asStateFlow()
@@ -72,6 +74,7 @@ class NoteViewModel @Inject constructor(
     fun deleteNoteForever(noteId: String) {
         viewModelScope.launch {
             repository.deleteForever(noteId)
+            reminderScheduler.cancel(noteId)
             loadNotes()
         }
     }
@@ -93,6 +96,7 @@ class NoteViewModel @Inject constructor(
     fun deleteNote(noteId: String) {
         viewModelScope.launch {
             repository.delete(noteId)
+            reminderScheduler.cancel(noteId)
             loadNotes()
         }
     }
