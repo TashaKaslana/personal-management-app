@@ -1,4 +1,4 @@
-package com.example.personal_management_app.ui.screen.note_screen
+package com.example.personal_management_app.ui.components.note
 
 import android.graphics.BitmapFactory
 import androidx.compose.foundation.BorderStroke
@@ -216,7 +216,10 @@ private fun NoteBlocksPreview(
             is NoteBlock.Text -> {
                 if (block.text.isNotBlank()) {
                     Text(
-                        text = buildStyledText(block.text, block.spans),
+                        text = buildStyledText(
+                            block.text,
+                            block.spans
+                        ),
                         style = textStyle.forPreview(block.heading),
                         maxLines = 5,
                         overflow = TextOverflow.Ellipsis
@@ -240,7 +243,10 @@ private fun NoteBlocksPreview(
                         modifier = Modifier.padding(end = 4.dp)
                     )
                     Text(
-                        text = buildStyledText(block.label, block.spans),
+                        text = buildStyledText(
+                            block.label,
+                            block.spans
+                        ),
                         style = textStyle.forPreview(block.heading),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
@@ -270,7 +276,11 @@ private fun NotePanelPreview(
         block.backgroundColor != null -> block.backgroundColor.toComposeColor()
         else -> Color.White.copy(alpha = 0.5f)
     }
-    val innerColor = block.backgroundColor?.let { noteContentColor(it) } ?: textStyle.color
+    val innerColor = block.backgroundColor?.let {
+        noteContentColor(
+            it
+        )
+    } ?: textStyle.color
     val innerStyle = textStyle.copy(
         color = innerColor,
         fontStyle = if (block.type == NotePanelType.Quote) FontStyle.Italic else textStyle.fontStyle
@@ -296,7 +306,10 @@ private fun NotePanelPreview(
     ) {
         if (block.title.isNotBlank()) {
             Text(
-                text = buildStyledText(block.title, block.titleSpans),
+                text = buildStyledText(
+                    block.title,
+                    block.titleSpans
+                ),
                 style = innerStyle.copy(fontWeight = FontWeight.Medium)
                     .forPreview(block.titleHeading),
                 maxLines = 2,
@@ -430,7 +443,9 @@ private fun NotePanel(
         else -> null
     }
     val panelStyle = textStyle.copy(
-        color = noteContentColor(block.effectiveBackground(parentBackground)),
+        color = noteContentColor(
+            block.effectiveBackground(parentBackground)
+        ),
         fontStyle = if (block.type == NotePanelType.Quote) FontStyle.Italic else textStyle.fontStyle
     )
     val focusRequester = remember(block.id) { FocusRequester() }

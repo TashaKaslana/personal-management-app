@@ -1,6 +1,5 @@
-package com.example.personal_management_app.ui.screen
+package com.example.personal_management_app.ui.screen.auth
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -12,11 +11,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.personal_management_app.ui.theme.ArchiveBlue
 import com.example.personal_management_app.ui.theme.FabContainer
 import com.example.personal_management_app.ui.theme.Loginblue
 import com.example.personal_management_app.ui.theme.NavBarBackground
-import com.example.personal_management_app.ui.theme.ReminderBlue
 
 @Composable
 fun ForgotPasswordScreen(modifier: Modifier = Modifier, navController: NavController) {

@@ -1,4 +1,4 @@
-package com.example.personal_management_app.ui.components
+package com.example.personal_management_app.ui.components.archiver
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -25,12 +25,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.personal_management_app.dtos.toCompose
 import com.example.personal_management_app.entites.NoteEntity
-import com.example.personal_management_app.ui.screen.note_screen.NoteContentPreview
-import com.example.personal_management_app.ui.screen.note_screen.NoteHeading
-import com.example.personal_management_app.ui.screen.note_screen.NoteThemedSurface
-import com.example.personal_management_app.ui.screen.note_screen.buildStyledText
-import com.example.personal_management_app.ui.screen.note_screen.loadTitleSpans
-import com.example.personal_management_app.ui.screen.note_screen.noteContentColor
+import com.example.personal_management_app.ui.components.tag.TagChip
+import com.example.personal_management_app.ui.components.note.NoteContentPreview
+import com.example.personal_management_app.ui.components.note.NoteHeading
+import com.example.personal_management_app.ui.components.note.NoteThemedSurface
+import com.example.personal_management_app.ui.components.note.buildStyledText
+import com.example.personal_management_app.ui.components.note.loadTitleSpans
+import com.example.personal_management_app.ui.components.note.noteContentColor
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale

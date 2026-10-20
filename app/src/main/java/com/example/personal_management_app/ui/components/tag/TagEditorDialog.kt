@@ -1,4 +1,4 @@
-package com.example.personal_management_app.ui.components
+package com.example.personal_management_app.ui.components.tag
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border

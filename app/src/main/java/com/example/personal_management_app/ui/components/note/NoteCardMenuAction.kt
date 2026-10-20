@@ -44,7 +44,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.personal_management_app.ui.screen.note_screen.NotePanelType
+import com.example.personal_management_app.ui.components.note.NotePanelType
 import com.example.personal_management_app.utils.toComposeColor
 import com.example.personal_management_app.viewmodel.NoteEditViewModel
 import com.example.personal_management_app.viewmodel.TagViewModel

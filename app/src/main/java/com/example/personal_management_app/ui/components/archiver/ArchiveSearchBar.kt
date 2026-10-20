@@ -1,4 +1,4 @@
-package com.example.personal_management_app.ui.components
+package com.example.personal_management_app.ui.components.archiver
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height

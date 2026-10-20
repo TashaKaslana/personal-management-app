@@ -1,4 +1,4 @@
-package com.example.personal_management_app.ui.screen.archive_screen
+package com.example.personal_management_app.ui.screen.trash
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -7,49 +7,46 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
 import androidx.compose.foundation.lazy.staggeredgrid.items
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import androidx.navigation.NavController
-import com.example.personal_management_app.ui.components.ArchiveCard
-import com.example.personal_management_app.ui.components.MainTopBar
+import com.example.personal_management_app.ui.components.main_layout.MainTopBar
+import com.example.personal_management_app.ui.components.TrashCard
 import com.example.personal_management_app.ui.layouts.MainLayout
 import com.example.personal_management_app.viewmodel.NoteViewModel
-import com.example.personal_management_app.viewmodel.TagViewModel
 
 @Composable
-fun ArchiveScreen(
+fun TrashScreen(
     modifier: Modifier = Modifier,
     navController: NavController,
-    viewModel: NoteViewModel = hiltViewModel(),
-    tagViewModel: TagViewModel = hiltViewModel()
+    viewModel: NoteViewModel = hiltViewModel()
 ) {
     var searchQuery by remember { mutableStateOf("") }
 
     val notes by viewModel.notes.collectAsStateWithLifecycle()
-    val tags by tagViewModel.tags.collectAsStateWithLifecycle()
-    val tagColors = remember(tags) { tags.associate { it.name to it.color } }
-    LaunchedEffect(tags) { viewModel.loadNotes() }
-    val archiveList = remember(notes, searchQuery) {
-        viewModel.filterNotes(archived = true, query = searchQuery)
+    val trashList = remember(notes, searchQuery) {
+        viewModel.filterTrash(query = searchQuery)
     }
 
     MainLayout(
         navController = navController,
-        currentTab = 2,
+        currentTab = -1,
         topBar = { onMenuClick ->
             MainTopBar(
                 navController = navController,
                 searchQuery = searchQuery,
                 onSearchQueryChange = { searchQuery = it },
-                placeholderText = "Tìm kiếm trong mục lưu trữ",
+                placeholderText = "Tìm kiếm trong thùng rác",
                 onMenuClick = onMenuClick
             )
         }
@@ -61,18 +58,24 @@ fun ArchiveScreen(
                 .padding(innerPadding)
                 .padding(horizontal = 16.dp, vertical = 12.dp)
         ) {
+            Text(
+                text = "Các mục trong thùng rác sẽ bị xóa vĩnh viễn sau 30 ngày.",
+                fontSize = 12.sp,
+                color = Color.Gray,
+                modifier = Modifier.padding(bottom = 4.dp)
+            )
+
             LazyVerticalStaggeredGrid(
                 columns = StaggeredGridCells.Fixed(2),
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
                 verticalItemSpacing = 10.dp,
                 modifier = Modifier.fillMaxSize()
             ) {
-                items(archiveList, key = { it.id }) { archive ->
-                    ArchiveCard(
-                        note = archive,
-                        tagColors = tagColors,
+                items(trashList, key = { it.id }) { item ->
+                    TrashCard(
+                        note = item,
                         onClick = {
-                            navController.navigate("notes/${archive.id}/edit")
+                            navController.navigate("notes/${item.id}/edit")
                         }
                     )
                 }

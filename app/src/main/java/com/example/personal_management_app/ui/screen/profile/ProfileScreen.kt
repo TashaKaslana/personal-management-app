@@ -1,4 +1,4 @@
-package com.example.personal_management_app.ui.screen.profile_screen
+package com.example.personal_management_app.ui.screen.profile
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape

@@ -1,13 +1,9 @@
-package com.example.personal_management_app.ui.screen
+package com.example.personal_management_app.ui.screen.auth
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -21,9 +17,11 @@ import androidx.navigation.NavController
 import com.example.personal_management_app.ui.theme.Loginblue
 
 @Composable
-fun LoginScreen(modifier: Modifier = Modifier, navController: NavController) {
+fun RegisterScreen(modifier: Modifier = Modifier, navController: NavController) {
+    var fullName by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var confirmPassword by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf("") }
 
     val scrollState = rememberScrollState()
@@ -45,13 +43,13 @@ fun LoginScreen(modifier: Modifier = Modifier, navController: NavController) {
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 Text(
-                    text = "Đăng nhập",
+                    text = "Đăng ký",
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color.Black
                 )
                 Text(
-                    text = "Ứng dụng ghi chú của bạn",
+                    text = "Tạo tài khoản mới",
                     fontSize = 14.sp,
                     color = Color.Gray
                 )
@@ -61,6 +59,22 @@ fun LoginScreen(modifier: Modifier = Modifier, navController: NavController) {
                 verticalArrangement = Arrangement.spacedBy(16.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
+                OutlinedTextField(
+                    value = fullName,
+                    onValueChange = { fullName = it },
+                    label = { Text("Họ và tên") },
+                    placeholder = { Text("Họ và tên") },
+                    singleLine = true,
+                    shape = RoundedCornerShape(12.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedContainerColor = Color.White,
+                        unfocusedContainerColor = Color.White,
+                        focusedBorderColor = Color(0xFF1A73E8),
+                        unfocusedBorderColor = Color(0xFFE0E0E0)
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                )
+
                 OutlinedTextField(
                     value = email,
                     onValueChange = { email = it },
@@ -93,31 +107,31 @@ fun LoginScreen(modifier: Modifier = Modifier, navController: NavController) {
                     ),
                     modifier = Modifier.fillMaxWidth()
                 )
+
+                OutlinedTextField(
+                    value = confirmPassword,
+                    onValueChange = { confirmPassword = it },
+                    label = { Text("Xác nhận mật khẩu") },
+                    placeholder = { Text("Xác nhận mật khẩu") },
+                    singleLine = true,
+                    visualTransformation = PasswordVisualTransformation(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedContainerColor = Color.White,
+                        unfocusedContainerColor = Color.White,
+                        focusedBorderColor = Color(0xFF1A73E8),
+                        unfocusedBorderColor = Color(0xFFE0E0E0)
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
 
-            Column(
-                verticalArrangement = Arrangement.spacedBy(4.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Start
-                ) {
-                    TextButton(
-                        onClick = { navController.navigate("forgot_password_screen") },
-                        contentPadding = PaddingValues(0.dp)
-                    ) {
-                        Text("Quên mật khẩu?", color = Loginblue, fontSize = 14.sp)
-                    }
-                }
-
-                if (errorMessage.isNotEmpty()) {
-                    Text(
-                        text = errorMessage,
-                        color = MaterialTheme.colorScheme.error,
-                        style = MaterialTheme.typography.bodySmall
-                    )
-                }
+            if (errorMessage.isNotEmpty()) {
+                Text(
+                    text = errorMessage,
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall
+                )
             }
 
             Row(
@@ -127,15 +141,25 @@ fun LoginScreen(modifier: Modifier = Modifier, navController: NavController) {
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
+                TextButton(
+                    onClick = { navController.popBackStack() }
+                ) {
+                    Text(
+                        text = "Đã có tài khoản? Đăng nhập",
+                        color = Loginblue,
+                        fontSize = 13.sp
+                    )
+                }
+
                 Button(
                     onClick = {
-                        if (email.isBlank() || password.isBlank()) {
-                            errorMessage = "Vui lòng nhập đầy đủ email và mật khẩu!"
+                        if (fullName.isBlank() || email.isBlank() || password.isBlank() || confirmPassword.isBlank()) {
+                            errorMessage = "Vui lòng nhập đầy đủ tất cả các trường!"
+                        } else if (password != confirmPassword) {
+                            errorMessage = "Mật khẩu xác nhận không khớp!"
                         } else {
                             errorMessage = ""
-                            navController.navigate("home_screen") {
-                                popUpTo("login_screen") { inclusive = true }
-                            }
+                            navController.popBackStack()
                         }
                     },
                     shape = RoundedCornerShape(24.dp),
@@ -147,17 +171,7 @@ fun LoginScreen(modifier: Modifier = Modifier, navController: NavController) {
                         .height(48.dp)
                         .width(130.dp)
                 ) {
-                    Text("Đăng nhập", fontWeight = FontWeight.Bold)
-                }
-
-                TextButton(
-                    onClick = { navController.navigate("register_screen") }
-                ) {
-                    Text(
-                        text = "Chưa có tài khoản? Đăng ký",
-                        color = Loginblue,
-                        fontSize = 13.sp
-                    )
+                    Text("Đăng ký", fontWeight = FontWeight.Bold)
                 }
             }
         }

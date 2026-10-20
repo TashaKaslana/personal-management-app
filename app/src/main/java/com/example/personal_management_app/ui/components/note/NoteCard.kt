@@ -30,8 +30,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import com.example.personal_management_app.dtos.NoteEditDto
 import com.example.personal_management_app.dtos.toCompose
-import com.example.personal_management_app.ui.screen.note_screen.NoteStyledField
-import com.example.personal_management_app.ui.screen.note_screen.NoteTextSpan
 
 @Composable
 fun NoteCardTextEditor(

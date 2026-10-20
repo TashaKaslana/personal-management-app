@@ -45,11 +45,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.PopupProperties
-import com.example.personal_management_app.ui.screen.note_screen.NoteHeading
-import com.example.personal_management_app.ui.screen.note_screen.NoteInlineStyle
-import com.example.personal_management_app.ui.screen.note_screen.NotePanelType
-import com.example.personal_management_app.ui.screen.note_screen.NoteThemeDialog
-import com.example.personal_management_app.ui.screen.note_screen.notePanelTypes
 import com.example.personal_management_app.utils.copyUriToNoteImageStorage
 import com.example.personal_management_app.viewmodel.NoteEditViewModel
 

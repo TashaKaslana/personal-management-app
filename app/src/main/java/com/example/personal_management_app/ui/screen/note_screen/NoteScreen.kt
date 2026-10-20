@@ -28,7 +28,13 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.example.personal_management_app.dtos.toCompose
-import com.example.personal_management_app.ui.components.TagChip
+import com.example.personal_management_app.ui.components.tag.TagChip
+import com.example.personal_management_app.ui.components.note.NoteContentPreview
+import com.example.personal_management_app.ui.components.note.NoteHeading
+import com.example.personal_management_app.ui.components.note.NoteThemedSurface
+import com.example.personal_management_app.ui.components.note.buildStyledText
+import com.example.personal_management_app.ui.components.note.loadTitleSpans
+import com.example.personal_management_app.ui.components.note.noteContentColor
 import com.example.personal_management_app.ui.layouts.MainLayout
 import com.example.personal_management_app.viewmodel.NoteViewModel
 import com.example.personal_management_app.viewmodel.TagViewModel
@@ -86,7 +92,12 @@ fun NoteScreen(
                         ) {
                             //title
                             Text(
-                                text = buildStyledText(note.title, loadTitleSpans(note.content)),
+                                text = buildStyledText(
+                                    note.title,
+                                    loadTitleSpans(
+                                        note.content
+                                    )
+                                ),
                                 style = note.titleStyle.toCompose().copy(
                                     color = contentColor,
                                     fontSize = when {

@@ -30,10 +30,13 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.example.personal_management_app.dtos.toCompose
-import com.example.personal_management_app.ui.components.TagChip
+import com.example.personal_management_app.ui.components.tag.TagChip
 import com.example.personal_management_app.ui.components.note.NoteCardActionsBottom
 import com.example.personal_management_app.ui.components.note.NoteCardActionsTop
 import com.example.personal_management_app.ui.components.note.NoteCardTextEditor
+import com.example.personal_management_app.ui.components.note.NoteRenderer
+import com.example.personal_management_app.ui.components.note.NoteThemedSurface
+import com.example.personal_management_app.ui.components.note.noteContentColor
 import com.example.personal_management_app.ui.components.reminder.ReminderPickerDialog
 import com.example.personal_management_app.ui.components.reminder.label
 import com.example.personal_management_app.ui.components.utils.ShowToastMessage

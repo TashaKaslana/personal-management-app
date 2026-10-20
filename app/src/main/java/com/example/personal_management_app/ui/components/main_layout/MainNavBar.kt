@@ -1,4 +1,4 @@
-package com.example.personal_management_app.ui.components
+package com.example.personal_management_app.ui.components.main_layout
 
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons

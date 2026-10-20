@@ -1,4 +1,4 @@
-package com.example.personal_management_app.ui.screen.note_screen
+package com.example.personal_management_app.ui.components.note
 
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.runtime.Composable
@@ -12,6 +12,7 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontStyle
@@ -182,10 +183,10 @@ fun NoteStyledField(
     readOnly: Boolean = false
 ) {
     var fieldValue by remember(fieldKey) {
-        mutableStateOf(TextFieldValue(text, androidx.compose.ui.text.TextRange(text.length)))
+        mutableStateOf(TextFieldValue(text, TextRange(text.length)))
     }
     if (fieldValue.text != text) {
-        fieldValue = TextFieldValue(text, androidx.compose.ui.text.TextRange(text.length))
+        fieldValue = TextFieldValue(text, TextRange(text.length))
     }
 
     BasicTextField(

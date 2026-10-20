@@ -1,4 +1,4 @@
-package com.example.personal_management_app.ui.screen.reminder_screen
+package com.example.personal_management_app.ui.screen.reminder
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -40,16 +40,16 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.example.personal_management_app.dtos.toCompose
-import com.example.personal_management_app.ui.components.MainTopBar
-import com.example.personal_management_app.ui.components.TagChip
+import com.example.personal_management_app.ui.components.main_layout.MainTopBar
+import com.example.personal_management_app.ui.components.tag.TagChip
 import com.example.personal_management_app.ui.layouts.MainLayout
-import com.example.personal_management_app.ui.screen.note_screen.NoteContentPreview
-import com.example.personal_management_app.ui.screen.note_screen.NoteHeading
-import com.example.personal_management_app.ui.screen.note_screen.NoteThemedSurface
-import com.example.personal_management_app.ui.screen.note_screen.buildStyledText
+import com.example.personal_management_app.ui.components.note.NoteContentPreview
+import com.example.personal_management_app.ui.components.note.NoteHeading
+import com.example.personal_management_app.ui.components.note.NoteThemedSurface
+import com.example.personal_management_app.ui.components.note.buildStyledText
 import com.example.personal_management_app.ui.components.reminder.label
-import com.example.personal_management_app.ui.screen.note_screen.loadTitleSpans
-import com.example.personal_management_app.ui.screen.note_screen.noteContentColor
+import com.example.personal_management_app.ui.components.note.loadTitleSpans
+import com.example.personal_management_app.ui.components.note.noteContentColor
 import com.example.personal_management_app.viewmodel.NoteViewModel
 import com.example.personal_management_app.viewmodel.TagViewModel
 

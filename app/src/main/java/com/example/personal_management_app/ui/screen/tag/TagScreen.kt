@@ -1,4 +1,4 @@
-package com.example.personal_management_app.ui.screen.tag_screen
+package com.example.personal_management_app.ui.screen.tag
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -29,9 +29,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.example.personal_management_app.entites.TagEntity
 import com.example.personal_management_app.entites.tagColors
-import com.example.personal_management_app.ui.components.MainTopBar
-import com.example.personal_management_app.ui.components.TagCard
-import com.example.personal_management_app.ui.components.TagEditorDialog
+import com.example.personal_management_app.ui.components.main_layout.MainTopBar
+import com.example.personal_management_app.ui.components.tag.TagCard
+import com.example.personal_management_app.ui.components.tag.TagEditorDialog
 import com.example.personal_management_app.ui.layouts.MainLayout
 import com.example.personal_management_app.viewmodel.TagViewModel
 

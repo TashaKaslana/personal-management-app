@@ -1,4 +1,4 @@
-package com.example.personal_management_app.ui.screen.note_screen
+package com.example.personal_management_app.ui.components.note
 
 import android.graphics.BitmapFactory
 import androidx.activity.compose.rememberLauncherForActivityResult

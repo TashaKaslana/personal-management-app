@@ -1,4 +1,4 @@
-package com.example.personal_management_app.ui.components
+package com.example.personal_management_app.ui.components.tag
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -28,7 +28,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.personal_management_app.entites.TagEntity
-import com.example.personal_management_app.ui.screen.note_screen.noteContentColor
+import com.example.personal_management_app.ui.components.note.noteContentColor
 import com.example.personal_management_app.utils.toComposeColor
 
 @Composable
