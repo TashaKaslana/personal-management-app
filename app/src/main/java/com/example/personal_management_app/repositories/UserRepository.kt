@@ -10,6 +10,7 @@ import javax.inject.Singleton
 @Singleton
 class UserRepository @Inject constructor() {
     private data class DummyUser(
+        val id: String,
         val email: String,
         val password: String,
         val profile: ProfileEntity
@@ -17,7 +18,8 @@ class UserRepository @Inject constructor() {
 
     private val users = mutableListOf(
         DummyUser(
-            email = "duc.nguyen@example.com",
+            id = "user_01",
+            email = "abc@gmail.com",
             password = "password123",
             profile = ProfileEntity(
                 id = "user_01",
@@ -48,8 +50,9 @@ class UserRepository @Inject constructor() {
             return AuthResult.EmailTaken
         }
 
+        val id = UUID.randomUUID().toString()
         val profile = ProfileEntity(
-            id = UUID.randomUUID().toString(),
+            id = id,
             name = name.trim(),
             username = email.trim().substringBefore("@"),
             password = "••••••••",
@@ -60,7 +63,7 @@ class UserRepository @Inject constructor() {
             deletedAt = null
         )
 
-        users.add(DummyUser(email.trim(), password, profile))
+        users.add(DummyUser(id, email.trim(), password, profile))
 
         return AuthResult.Success(
             user = profile,
@@ -68,18 +71,27 @@ class UserRepository @Inject constructor() {
         )
     }
 
-    fun getProfile(): ProfileEntity {
-        return users.first().profile
+    fun changePassword(userId: String, currentPassword: String, newPassword: String): Boolean {
+        val index = users.indexOfFirst { it.id == userId }
+        if (index < 0 || users[index].password != currentPassword) return false
+        users[index] = users[index].copy(password = newPassword)
+        return true
     }
 
-    fun updateProfile(newName: String, newUsername: String) {
-        val user = users.first()
-        users[0] = user.copy(
-            profile = user.profile.copy(
+    fun getProfile(userId: String): ProfileEntity? {
+        return users.find { it.id == userId }?.profile
+    }
+
+    fun updateProfile(userId: String, newName: String, newUsername: String): Boolean {
+        val index = users.indexOfFirst { it.id == userId }
+        if (index < 0) return false
+        users[index] = users[index].copy(
+            profile = users[index].profile.copy(
                 name = newName,
                 username = newUsername,
                 updatedAt = Date()
             )
         )
+        return true
     }
 }
