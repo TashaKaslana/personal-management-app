@@ -14,8 +14,15 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import com.example.personal_management_app.MainActivity
 import com.example.personal_management_app.R
+import com.example.personal_management_app.repositories.NoteRepository
+import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
+@AndroidEntryPoint
 class ReminderAlarmReceiver : BroadcastReceiver() {
+
+    @Inject lateinit var noteRepository: NoteRepository
+    @Inject lateinit var scheduler: ReminderScheduler
 
     override fun onReceive(context: Context, intent: Intent) {
         val title = intent.getStringExtra(ReminderAlarmManager.EXTRA_TITLE) ?: "Reminder"
@@ -23,6 +30,14 @@ class ReminderAlarmReceiver : BroadcastReceiver() {
         val reminderId = intent.getStringExtra(ReminderAlarmManager.EXTRA_ID) ?: ""
 
         showNotification(context, title, description, reminderId)
+        reschedule(reminderId)
+    }
+
+    private fun reschedule(reminderId: String) {
+        val note = noteRepository.get(reminderId) ?: return
+        val reminder = note.reminder ?: return
+        val next = scheduler.nextAfterFired(reminder) ?: return
+        scheduler.apply(note.copy(reminder = reminder.copy(atMillis = next)))
     }
 
     private fun showNotification(context: Context, title: String, description: String, id: String) {

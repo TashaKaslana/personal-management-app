@@ -20,8 +20,14 @@ import androidx.compose.material.icons.outlined.AccessTime
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -31,6 +37,8 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.ContextCompat
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -51,6 +59,7 @@ import com.example.personal_management_app.ui.components.reminder.label
 import com.example.personal_management_app.ui.components.note.loadTitleSpans
 import com.example.personal_management_app.ui.components.note.noteContentColor
 import com.example.personal_management_app.viewmodel.NoteViewModel
+import com.example.personal_management_app.viewmodel.ReminderViewModel
 import com.example.personal_management_app.viewmodel.TagViewModel
 
 @Composable
@@ -58,20 +67,40 @@ fun ReminderScreen(
     modifier: Modifier = Modifier,
     navController: NavController,
     viewModel: NoteViewModel = hiltViewModel(),
-    tagViewModel: TagViewModel = hiltViewModel()
+    tagViewModel: TagViewModel = hiltViewModel(),
+    reminderViewModel: ReminderViewModel = hiltViewModel()
 ) {
     var searchQuery by remember { mutableStateOf("") }
     val notes by viewModel.notes.collectAsStateWithLifecycle()
     val tags by tagViewModel.tags.collectAsStateWithLifecycle()
     val tagColors = remember(tags) { tags.associate { it.name to it.color } }
+    val context = LocalContext.current
+    val notificationPermission = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) {}
+
+    LaunchedEffect(Unit) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            ContextCompat.checkSelfPermission(
+                context, Manifest.permission.POST_NOTIFICATIONS
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
+        }
+    }
+
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_RESUME) viewModel.loadNotes()
+            if (event == Lifecycle.Event.ON_RESUME) {
+                viewModel.loadNotes()
+                reminderViewModel.syncAlarms()
+            }
         }
         lifecycleOwner.lifecycle.addObserver(observer)
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
+
     val reminderList = remember(notes, searchQuery) {
         viewModel.filterReminders(searchQuery)
     }

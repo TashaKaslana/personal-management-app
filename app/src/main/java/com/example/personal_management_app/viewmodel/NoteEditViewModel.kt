@@ -12,6 +12,7 @@ import com.example.personal_management_app.entities.NoteReminder
 import com.example.personal_management_app.dtos.NoteTextStyle
 import com.example.personal_management_app.mapper.NoteMapper
 import com.example.personal_management_app.repositories.NoteRepository
+import com.example.personal_management_app.ui.screen.reminder.ReminderScheduler
 import com.example.personal_management_app.ui.components.note.NoteBlock
 import com.example.personal_management_app.ui.components.note.NoteCaret
 import com.example.personal_management_app.ui.components.note.NoteHeading
@@ -37,6 +38,7 @@ import java.util.UUID
 class NoteEditViewModel @Inject constructor(
     private val mapper: NoteMapper,
     private val noteRepository: NoteRepository,
+    private val reminderScheduler: ReminderScheduler,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
     private val noteId: String? = savedStateHandle.get<String>("noteId")
@@ -251,6 +253,7 @@ class NoteEditViewModel @Inject constructor(
         note = note?.copy(reminder = reminder)
         if (noteId != null) {
             noteRepository.setReminder(noteId, reminder)
+            noteRepository.get(noteId)?.let { reminderScheduler.apply(it) }
         }
     }
 
@@ -258,6 +261,7 @@ class NoteEditViewModel @Inject constructor(
         note = note?.copy(reminder = null)
         if (noteId != null) {
             noteRepository.setReminder(noteId, null)
+            reminderScheduler.cancel(noteId)
         }
     }
 
@@ -269,6 +273,7 @@ class NoteEditViewModel @Inject constructor(
 
         if (noteId != null) {
             noteRepository.setArchived(noteId, newArchivedAt)
+            noteRepository.get(noteId)?.let { reminderScheduler.apply(it) }
         }
     }
 
@@ -284,12 +289,14 @@ class NoteEditViewModel @Inject constructor(
         }
 
         noteRepository.update(entity)
+        reminderScheduler.apply(entity)
     }
 
 
     fun delete() {
         if (noteId != null && noteId != newNote.id) {
             noteRepository.delete(noteId)
+            reminderScheduler.cancel(noteId)
         }
 
         note = note?.copy(deletedAt = System.currentTimeMillis())
