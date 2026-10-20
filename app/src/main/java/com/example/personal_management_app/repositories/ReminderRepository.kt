@@ -1,6 +1,6 @@
 package com.example.personal_management_app.repositories
 
-import com.example.personal_management_app.entites.ReminderEntity
+import com.example.personal_management_app.entities.ReminderEntity
 import com.example.personal_management_app.ui.theme.FabContainer
 import com.example.personal_management_app.ui.theme.ReminderBlue
 import com.example.personal_management_app.ui.theme.ReminderPink

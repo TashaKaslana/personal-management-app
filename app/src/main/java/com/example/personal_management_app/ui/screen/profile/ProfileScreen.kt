@@ -14,7 +14,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import com.example.personal_management_app.repositories.ProfileRepository
+import com.example.personal_management_app.repositories.UserRepository
 import com.example.personal_management_app.ui.components.ProfileCard
 import com.example.personal_management_app.ui.theme.ScreenBackground
 
@@ -22,9 +22,9 @@ import com.example.personal_management_app.ui.theme.ScreenBackground
 @Composable
 fun ProfileScreen(
     navController: NavController,
-    profileRepository: ProfileRepository = remember { ProfileRepository() }
+    userRepository: UserRepository = remember { UserRepository() }
 ) {
-    val profile = profileRepository.getProfile()
+    val profile = userRepository.getProfile()
 
 
     var nameInput by remember { mutableStateOf(profile.name) }
@@ -150,7 +150,7 @@ fun ProfileScreen(
                             }
                         }
 
-                        profileRepository.updateProfile(nameInput, usernameInput)
+                        userRepository.updateProfile(nameInput, usernameInput)
                         statusMessage = "Cập nhật thông tin thành công!"
                         isErrorState = false
                         currentPasswordInput = ""

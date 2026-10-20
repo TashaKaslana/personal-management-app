@@ -19,8 +19,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.unit.dp
-import com.example.personal_management_app.entites.NoteReminder
-import com.example.personal_management_app.entites.ReminderRepeat
+import com.example.personal_management_app.entities.NoteReminder
+import com.example.personal_management_app.entities.ReminderRepeat
 import java.util.Calendar
 
 @OptIn(ExperimentalMaterial3Api::class)

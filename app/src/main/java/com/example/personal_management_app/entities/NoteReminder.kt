@@ -1,4 +1,4 @@
-package com.example.personal_management_app.entites
+package com.example.personal_management_app.entities
 
 enum class ReminderRepeat {
     Once,

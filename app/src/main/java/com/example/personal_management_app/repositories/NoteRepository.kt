@@ -1,9 +1,9 @@
 package com.example.personal_management_app.repositories
 
 import com.example.personal_management_app.dtos.NoteTextStyle
-import com.example.personal_management_app.entites.NoteEntity
-import com.example.personal_management_app.entites.NoteReminder
-import com.example.personal_management_app.entites.ReminderRepeat
+import com.example.personal_management_app.entities.NoteEntity
+import com.example.personal_management_app.entities.NoteReminder
+import com.example.personal_management_app.entities.ReminderRepeat
 import java.util.Calendar
 import javax.inject.Inject
 import javax.inject.Singleton

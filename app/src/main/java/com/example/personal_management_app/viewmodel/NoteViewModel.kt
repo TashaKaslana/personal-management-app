@@ -2,7 +2,7 @@ package com.example.personal_management_app.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.personal_management_app.entites.NoteEntity
+import com.example.personal_management_app.entities.NoteEntity
 import com.example.personal_management_app.repositories.NoteRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
