@@ -1,6 +1,6 @@
 package com.example.personal_management_app.repositories
 
-import com.example.personal_management_app.core.service.UserSession
+import com.example.personal_management_app.dtos.AuthResult
 import com.example.personal_management_app.entities.ProfileEntity
 import java.util.Date
 import java.util.UUID
@@ -31,17 +31,19 @@ class UserRepository {
         )
     )
 
-    fun login(email: String, password: String): UserSession? {
-        val user = users.find { it.email == email.trim() && it.password == password } ?: return null
-        return UserSession(
-            userId = user.profile.id,
-            token = UUID.randomUUID().toString(),
-            username = user.profile.username
+    fun login(email: String, password: String): AuthResult {
+        val user = users.find { it.email == email.trim() && it.password == password }
+            ?: return AuthResult.WrongCredentials
+        return AuthResult.Success(
+            user = user.profile,
+            token = UUID.randomUUID().toString()
         )
     }
 
-    fun register(name: String, email: String, password: String): UserSession? {
-        if (users.any { it.email == email.trim() }) return null
+    fun register(name: String, email: String, password: String): AuthResult {
+        if (users.any { it.email == email.trim() }) {
+            return AuthResult.EmailTaken
+        }
         val profile = ProfileEntity(
             id = UUID.randomUUID().toString(),
             name = name.trim(),
@@ -54,10 +56,9 @@ class UserRepository {
             deletedAt = null
         )
         users.add(DummyUser(email.trim(), password, profile))
-        return UserSession(
-            userId = profile.id,
-            token = UUID.randomUUID().toString(),
-            username = profile.username
+        return AuthResult.Success(
+            user = profile,
+            token = UUID.randomUUID().toString()
         )
     }
 
