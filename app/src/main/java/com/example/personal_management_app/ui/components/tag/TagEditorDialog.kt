@@ -24,7 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.example.personal_management_app.entites.tagColors
+import com.example.personal_management_app.entities.tagColors
 import com.example.personal_management_app.utils.toComposeColor
 
 @Composable

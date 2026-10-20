@@ -8,7 +8,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import com.example.personal_management_app.dtos.NoteEditDto
-import com.example.personal_management_app.entites.NoteReminder
+import com.example.personal_management_app.entities.NoteReminder
 import com.example.personal_management_app.dtos.NoteTextStyle
 import com.example.personal_management_app.mapper.NoteMapper
 import com.example.personal_management_app.repositories.NoteRepository

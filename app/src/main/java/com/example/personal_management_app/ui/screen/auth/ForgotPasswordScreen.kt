@@ -11,12 +11,18 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.personal_management_app.ui.theme.FabContainer
 import com.example.personal_management_app.ui.theme.Loginblue
 import com.example.personal_management_app.ui.theme.NavBarBackground
+import com.example.personal_management_app.viewmodel.AuthViewModel
 
 @Composable
-fun ForgotPasswordScreen(modifier: Modifier = Modifier, navController: NavController) {
+fun ForgotPasswordScreen(
+    modifier: Modifier = Modifier,
+    navController: NavController,
+    viewModel: AuthViewModel = hiltViewModel()
+) {
     var emailInput by remember { mutableStateOf("") }
     var statusMessage by remember { mutableStateOf<String?>(null) }
     var isErrorState by remember { mutableStateOf(false) }
@@ -78,8 +84,9 @@ fun ForgotPasswordScreen(modifier: Modifier = Modifier, navController: NavContro
             // Nút Gửi yêu cầu
             Button(
                 onClick = {
-                    if (emailInput.isBlank()) {
-                        statusMessage = "Vui lòng nhập địa chỉ email!"
+                    val error = viewModel.forgotPassword(emailInput)
+                    if (error != null) {
+                        statusMessage = error
                         isErrorState = true
                     } else {
                         statusMessage = "Liên kết khôi phục đã được gửi qua email!"

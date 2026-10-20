@@ -14,10 +14,16 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.personal_management_app.ui.theme.Loginblue
+import com.example.personal_management_app.viewmodel.AuthViewModel
 
 @Composable
-fun RegisterScreen(modifier: Modifier = Modifier, navController: NavController) {
+fun RegisterScreen(
+    modifier: Modifier = Modifier,
+    navController: NavController,
+    viewModel: AuthViewModel = hiltViewModel()
+) {
     var fullName by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -153,13 +159,12 @@ fun RegisterScreen(modifier: Modifier = Modifier, navController: NavController) 
 
                 Button(
                     onClick = {
-                        if (fullName.isBlank() || email.isBlank() || password.isBlank() || confirmPassword.isBlank()) {
-                            errorMessage = "Vui lòng nhập đầy đủ tất cả các trường!"
-                        } else if (password != confirmPassword) {
-                            errorMessage = "Mật khẩu xác nhận không khớp!"
-                        } else {
-                            errorMessage = ""
-                            navController.popBackStack()
+                        val error = viewModel.register(fullName, email, password, confirmPassword)
+                        errorMessage = error ?: ""
+                        if (error == null) {
+                            navController.navigate("home_screen") {
+                                popUpTo("login_screen") { inclusive = true }
+                            }
                         }
                     },
                     shape = RoundedCornerShape(24.dp),

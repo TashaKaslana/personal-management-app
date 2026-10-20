@@ -14,10 +14,16 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.personal_management_app.ui.theme.Loginblue
+import com.example.personal_management_app.viewmodel.AuthViewModel
 
 @Composable
-fun LoginScreen(modifier: Modifier = Modifier, navController: NavController) {
+fun LoginScreen(
+    modifier: Modifier = Modifier,
+    navController: NavController,
+    viewModel: AuthViewModel = hiltViewModel()
+) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var errorMessage by remember { mutableStateOf("") }
@@ -125,10 +131,9 @@ fun LoginScreen(modifier: Modifier = Modifier, navController: NavController) {
             ) {
                 Button(
                     onClick = {
-                        if (email.isBlank() || password.isBlank()) {
-                            errorMessage = "Vui lòng nhập đầy đủ email và mật khẩu!"
-                        } else {
-                            errorMessage = ""
+                        val error = viewModel.login(email, password)
+                        errorMessage = error ?: ""
+                        if (error == null) {
                             navController.navigate("home_screen") {
                                 popUpTo("login_screen") { inclusive = true }
                             }
