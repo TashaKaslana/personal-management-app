@@ -5,7 +5,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.personal_management_app.ui.screen.ForgotPasswordScreen
-
 import com.example.personal_management_app.ui.screen.HomeScreen
 import com.example.personal_management_app.ui.screen.LoginScreen
 import com.example.personal_management_app.ui.screen.note_screen.NoteScreen
@@ -14,7 +13,7 @@ import com.example.personal_management_app.ui.screen.archive_screen.ArchiveScree
 import com.example.personal_management_app.ui.screen.note_screen.NoteEditScreen
 import com.example.personal_management_app.ui.screen.profile_screen.ProfileScreen
 import com.example.personal_management_app.ui.screen.reminder_screen.ReminderScreen
-
+import com.example.personal_management_app.ui.screen.setting_screen.SettingsScreen
 
 @Composable
 fun PersonalManagementApp() {
@@ -53,6 +52,9 @@ fun PersonalManagementApp() {
             val noteId = backStackEntry.arguments?.getString("noteId") ?: ""
 
             NoteEditScreen(navController = navController, noteId = noteId)
+        }
+        composable("settings_screen") {
+            SettingsScreen(navController = navController)
         }
     }
 }
