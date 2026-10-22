@@ -1,11 +1,7 @@
 package com.example.personal_management_app.ui.screen.settings
 
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -16,38 +12,46 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import com.example.personal_management_app.ui.theme.Loginblue
+import com.example.personal_management_app.ui.components.settings.DisplaySettingsSection
+import com.example.personal_management_app.ui.components.settings.NotificationSettingsSection
+import com.example.personal_management_app.ui.components.settings.SharingSettingsSection
+import com.example.personal_management_app.viewmodel.SettingViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
-    navController: NavController
+    navController: NavController,
+    settingViewModel: SettingViewModel = hiltViewModel()
 ) {
-    var addItemsToBottom by remember { mutableStateOf(false) }
-    var moveCheckedToBottom by remember { mutableStateOf(false) }
-    var displayLinkPreviews by remember { mutableStateOf(false) }
-    var themeSelection by remember { mutableStateOf("Mặc định theo hệ thống") }
-    var morningReminder by remember { mutableStateOf("08:00") }
-    var afternoonReminder by remember { mutableStateOf("13:00") }
-    var eveningReminder by remember { mutableStateOf("18:00") }
-    var enableSharing by remember { mutableStateOf(false) }
+    val uiState by settingViewModel.uiState.collectAsStateWithLifecycle()
+
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                settingViewModel.loadNotes()
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
 
     Scaffold(
         topBar = {
@@ -82,140 +86,28 @@ fun SettingsScreen(
                 .padding(innerPadding)
                 .verticalScroll(rememberScrollState())
         ) {
-            GoogleKeepSectionHeader(title = "Mục hiển thị")
-
-            GoogleKeepSwitchItem(
-                title = "Thêm các mục mới vào cuối",
-                checked = addItemsToBottom,
-                onCheckedChange = { addItemsToBottom = it }
-            )
-
-            GoogleKeepSwitchItem(
-                title = "Chuyển các mục đã chọn xuống dưới cùng",
-                checked = moveCheckedToBottom,
-                onCheckedChange = { moveCheckedToBottom = it }
-            )
-
-            GoogleKeepSwitchItem(
-                title = "Hiển thị xem trước đường liên kết đa phương tiện",
-                checked = displayLinkPreviews,
-                onCheckedChange = { displayLinkPreviews = it }
-            )
-
-            GoogleKeepClickableItem(
-                title = "Giao diện",
-                subtitle = themeSelection,
-                onClick = { }
+            DisplaySettingsSection(
+                settings = uiState.settings,
+                onUpdateSettings = settingViewModel::updateSettings,
+                onThemeClick = { }
             )
 
             HorizontalDivider(color = Color(0xFFE0E0E0), thickness = 0.5.dp)
 
-            GoogleKeepSectionHeader(title = "Mặc định lời nhắc")
-
-            GoogleKeepClickableItem(
-                title = "Buổi sáng",
-                subtitle = morningReminder,
-                onClick = { }
-            )
-
-            GoogleKeepClickableItem(
-                title = "Buổi chiều",
-                subtitle = afternoonReminder,
-                onClick = { }
-            )
-
-            GoogleKeepClickableItem(
-                title = "Buổi tối",
-                subtitle = eveningReminder,
-                onClick = { }
+            NotificationSettingsSection(
+                settings = uiState.settings,
+                onUpdateSettings = settingViewModel::updateSettings,
+                activeRemindersCount = uiState.reminderNotes.size,
+                upcomingRemindersSummary = uiState.upcomingSummary,
+                reminderNotes = uiState.reminderNotes
             )
 
             HorizontalDivider(color = Color(0xFFE0E0E0), thickness = 0.5.dp)
 
-            GoogleKeepSectionHeader(title = "Chia sẻ")
-
-            GoogleKeepSwitchItem(
-                title = "Bật tính năng chia sẻ",
-                checked = enableSharing,
-                onCheckedChange = { enableSharing = it }
+            SharingSettingsSection(
+                settings = uiState.settings,
+                onUpdateSettings = settingViewModel::updateSettings
             )
         }
     }
 }
-
-@Composable
-fun GoogleKeepSectionHeader(title: String) {
-    Text(
-        text = title,
-        fontSize = 14.sp,
-        fontWeight = FontWeight.Medium,
-        color = Loginblue,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 14.dp)
-    )
-}
-
-@Composable
-fun GoogleKeepSwitchItem(
-    title: String,
-    checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { onCheckedChange(!checked) }
-            .padding(horizontal = 16.dp, vertical = 14.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Text(
-            text = title,
-            fontSize = 16.sp,
-            color = Color(0xFF1F1F1F),
-            modifier = Modifier
-                .weight(1f)
-                .padding(end = 16.dp)
-        )
-        Switch(
-            checked = checked,
-            onCheckedChange = onCheckedChange,
-            colors = SwitchDefaults.colors(
-                checkedThumbColor = Color.White,
-                checkedTrackColor = Loginblue,
-                uncheckedThumbColor = Color(0xFF747775),
-                uncheckedTrackColor = Color(0xFFE1E3E1)
-            )
-        )
-    }
-}
-
-@Composable
-fun GoogleKeepClickableItem(
-    title: String,
-    subtitle: String? = null,
-    onClick: () -> Unit
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 14.dp),
-        verticalArrangement = Arrangement.spacedBy(4.dp)
-    ) {
-        Text(
-            text = title,
-            fontSize = 16.sp,
-            color = Color(0xFF1F1F1F)
-        )
-        if (subtitle != null) {
-            Text(
-                text = subtitle,
-                fontSize = 14.sp,
-                color = Color(0xFF747775)
-            )
-        }
-    }
-}
-
