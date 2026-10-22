@@ -15,6 +15,7 @@ import com.example.personal_management_app.ui.screen.archive.ArchiveScreen
 import com.example.personal_management_app.ui.screen.note_screen.NoteEditScreen
 import com.example.personal_management_app.ui.screen.profile.ProfileScreen
 import com.example.personal_management_app.ui.screen.reminder.ReminderScreen
+import com.example.personal_management_app.ui.screen.settings.SettingsScreen
 import com.example.personal_management_app.ui.screen.tag.TagScreen
 import com.example.personal_management_app.ui.screen.trash.TrashScreen
 
@@ -64,6 +65,8 @@ fun PersonalManagementApp() {
         composable("labels_screen") {
             TagScreen(navController = navController)
         }
+        composable("settings_screen") {
+            SettingsScreen(navController = navController)
+        }
     }
 }
-
