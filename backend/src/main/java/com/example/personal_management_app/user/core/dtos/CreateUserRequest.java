@@ -9,14 +9,17 @@ import com.example.personal_management_app.user.role.enums.UserRoleEnum;
 
 @Data
 public class CreateUserRequest {
-    @NotNull
-    private String username;
+    @NotBlank
+    private String name;
 
+    @NotBlank
     @Email
     private String email;
 
-    @NotNull @NotBlank @Size(min = 6, max = 24)
-    private String passwordHash;
+    @NotBlank @Size(min = 6, max = 128)
+    private String password;
+
+    private String username;
 
     @NotNull
     private UserRoleEnum roleName = UserRoleEnum.USER;

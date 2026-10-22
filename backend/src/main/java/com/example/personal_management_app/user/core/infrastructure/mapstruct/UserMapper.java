@@ -20,6 +20,7 @@ public interface UserMapper {
 
     List<UserDto> toDtoList(List<User> users);
 
+    @Mapping(target = "passwordHash", source = "password")
     User toEntity(CreateUserRequest request);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)

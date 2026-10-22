@@ -10,7 +10,8 @@ public enum UserError {
     USER_NOT_FOUND("user.not_found", "User not found"),
     USER_EMAIL_EXISTS("user.email_exists", "Email already exists"),
     USER_USERNAME_EXISTS("user.username_exists", "Username already exists"),
-    USER_INVALID_CREDENTIALS("user.invalid_credentials", "Invalid credentials");
+    USER_INVALID_CREDENTIALS("user.invalid_credentials", "Invalid credentials"),
+    USER_PASSWORD_INCORRECT("user.password_incorrect", "Current password is incorrect");
 
     private final String code;
     private final String message;

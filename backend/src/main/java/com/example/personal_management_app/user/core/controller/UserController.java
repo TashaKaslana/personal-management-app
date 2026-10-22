@@ -2,6 +2,7 @@ package com.example.personal_management_app.user.core.controller;
 
 import lombok.RequiredArgsConstructor;
 import com.example.personal_management_app.core.responses.RestApiResponse;
+import com.example.personal_management_app.user.core.dtos.ChangePasswordRequest;
 import com.example.personal_management_app.user.core.dtos.CreateUserRequest;
 import com.example.personal_management_app.user.core.dtos.UpdateUserRequest;
 import com.example.personal_management_app.user.core.dtos.UserDto;
@@ -105,8 +106,8 @@ public class UserController {
     }
 
     @PutMapping("/{id}/password")
-    public ResponseEntity<RestApiResponse<UserDto>> updateUserPassword(@PathVariable UUID id, @RequestBody String newPasswordHash) {
-        UserDto updatedUser = userService.updatePassword(id, newPasswordHash);
+    public ResponseEntity<RestApiResponse<UserDto>> updateUserPassword(@PathVariable UUID id, @Valid @RequestBody ChangePasswordRequest request) {
+        UserDto updatedUser = userService.updatePassword(id, request.getCurrentPassword(), request.getNewPassword());
         return RestApiResponse.success(updatedUser, "Password updated successfully");
     }
 

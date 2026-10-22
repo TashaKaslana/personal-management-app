@@ -34,9 +34,23 @@ public class UserSpecificExceptionHandler {
 
     @ExceptionHandler(UserUsernameExistsException.class)
     public ResponseEntity<RestApiResponse<Void>> handleUserUsernameExistsException(UserUsernameExistsException ex,
-                                                                                 WebRequest request) {
+                                                                                  WebRequest request) {
         log.debug("Username Already Exists: {}", ex.getMessage());
         return RestApiResponse.conflict(HttpRequestUtils.getRequestPath(request), ex.getMessage());
+    }
+
+    @ExceptionHandler(InvalidCredentialsException.class)
+    public ResponseEntity<RestApiResponse<Void>> handleInvalidCredentialsException(InvalidCredentialsException ex,
+                                                                                   WebRequest request) {
+        log.debug("Invalid Credentials: {}", ex.getMessage());
+        return RestApiResponse.unauthorized(HttpRequestUtils.getRequestPath(request), ex.getMessage());
+    }
+
+    @ExceptionHandler(IncorrectPasswordException.class)
+    public ResponseEntity<RestApiResponse<Void>> handleIncorrectPasswordException(IncorrectPasswordException ex,
+                                                                                WebRequest request) {
+        log.debug("Incorrect Current Password: {}", ex.getMessage());
+        return RestApiResponse.badRequest(HttpRequestUtils.getRequestPath(request), ex.getMessage());
     }
 
     // Generic user domain exception handler

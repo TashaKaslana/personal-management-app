@@ -1,11 +1,13 @@
 package com.example.personal_management_app.user.core.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 //import com.example.personal_management_app.log.auditlog.annotations.AuditLog;
 //import com.example.personal_management_app.log.auditlog.enums.AuditAction;
 import com.example.personal_management_app.user.core.dtos.CreateUserRequest;
 import com.example.personal_management_app.user.core.dtos.UpdateUserRequest;
 import com.example.personal_management_app.user.core.dtos.UserDto;
+import com.example.personal_management_app.user.core.exception.IncorrectPasswordException;
 import com.example.personal_management_app.user.core.exception.UserEmailExistsException;
 import com.example.personal_management_app.user.core.exception.UserNotFoundException;
 import com.example.personal_management_app.user.core.exception.UserUsernameExistsException;
@@ -35,6 +37,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final RoleService roleService;
     private final UserMapper userMapper;
+    private final PasswordEncoder passwordEncoder;
 
     /**
      * Create a new user using DTO
@@ -46,8 +49,10 @@ public class UserService {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new UserEmailExistsException(request.getEmail());
         }
-        if (userRepository.existsByUsername(request.getUsername())) {
-            throw new UserUsernameExistsException(request.getUsername());
+
+        String username = resolveUsername(request);
+        if (userRepository.existsByUsername(username)) {
+            throw new UserUsernameExistsException(username);
         }
 
         // Get role entity
@@ -55,9 +60,18 @@ public class UserService {
             .orElseThrow(() -> new RoleNotFoundException("name", request.getRoleName()));
 
         User user = userMapper.toEntity(request);
+        user.setUsername(username);
+        user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
         user.setRole(role);
         User savedUser = userRepository.save(user);
         return userMapper.toDto(savedUser);
+    }
+
+    private String resolveUsername(CreateUserRequest request) {
+        if (request.getUsername() != null && !request.getUsername().isBlank()) {
+            return request.getUsername().trim();
+        }
+        return request.getEmail().substring(0, request.getEmail().indexOf('@'));
     }
 
     /**
@@ -66,29 +80,9 @@ public class UserService {
     @Transactional
     // @AuditLog(action = AuditAction.USER_CREATE, description = "Bulk user creation", targetIdExpression = "returnObject.![id]")
     public List<UserDto> createUsers(List<CreateUserRequest> requests) {
-        // Validate all requests first
-        for (CreateUserRequest request : requests) {
-            if (userRepository.existsByEmail(request.getEmail())) {
-                throw new UserEmailExistsException(request.getEmail());
-            }
-            if (userRepository.existsByUsername(request.getUsername())) {
-                throw new UserUsernameExistsException(request.getUsername());
-            }
-        }
-
-        List<User> users = requests.stream()
-            .map(request -> {
-                Role role = roleService.findEntityByName(request.getRoleName() != null ? request.getRoleName() : UserRoleEnum.USER)
-                    .orElseThrow(() -> new RoleNotFoundException("name", request.getRoleName()));
-
-                User user = userMapper.toEntity(request);
-                user.setRole(role);
-                return user;
-            })
+        return requests.stream()
+            .map(this::createUser)
             .toList();
-
-        List<User> savedUsers = userRepository.saveAll(users);
-        return userMapper.toDtoList(savedUsers);
     }
 
     /**
@@ -126,10 +120,10 @@ public class UserService {
             .orElseThrow(() -> new UserNotFoundException(id.toString()));
 
         // Check if another user takes email/username
-        if (!user.getEmail().equals(request.email()) && userRepository.existsByEmail(request.email())) {
+        if (request.email() != null && !user.getEmail().equals(request.email()) && userRepository.existsByEmail(request.email())) {
             throw new UserEmailExistsException(request.email());
         }
-        if (!user.getUsername().equals(request.username()) && userRepository.existsByUsername(request.username())) {
+        if (request.username() != null && !user.getUsername().equals(request.username()) && userRepository.existsByUsername(request.username())) {
             throw new UserUsernameExistsException(request.username());
         }
 
@@ -150,11 +144,15 @@ public class UserService {
      */
     @Transactional
 //    @AuditLog(action = AuditAction.USER_UPDATE, description = "Password update", targetIdExpression = "#id")
-    public UserDto updatePassword(UUID id, String newPasswordHash) {
+    public UserDto updatePassword(UUID id, String currentPassword, String newPassword) {
         User user = userRepository.findById(id)
             .orElseThrow(() -> new UserNotFoundException(id.toString()));
 
-        user.setPasswordHash(newPasswordHash);
+        if (!passwordEncoder.matches(currentPassword, user.getPasswordHash())) {
+            throw new IncorrectPasswordException();
+        }
+
+        user.setPasswordHash(passwordEncoder.encode(newPassword));
         User savedUser = userRepository.save(user);
         return userMapper.toDto(savedUser);
     }

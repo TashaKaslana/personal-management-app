@@ -35,6 +35,10 @@ import java.time.OffsetDateTime;
 })
 public class User extends BaseEntity {
     @NotNull
+    @Column(name = "name", nullable = false, length = 255)
+    private String name;
+
+    @NotNull
     @Column(name = "username", nullable = false, length = Integer.MAX_VALUE)
     private String username;
 
@@ -45,6 +49,9 @@ public class User extends BaseEntity {
     @NotNull
     @Column(name = "password_hash", nullable = false, length = Integer.MAX_VALUE)
     private String passwordHash;
+
+    @Column(name = "avatar_url")
+    private String avatarUrl;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "role_id")
