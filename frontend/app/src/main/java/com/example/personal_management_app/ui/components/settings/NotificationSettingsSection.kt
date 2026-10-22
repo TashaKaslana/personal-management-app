@@ -20,50 +20,20 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.personal_management_app.entities.DayPeriod
 import com.example.personal_management_app.entities.NoteEntity
+import com.example.personal_management_app.entities.SettingEntity
 import com.example.personal_management_app.ui.components.reminder.label
 import com.example.personal_management_app.ui.theme.Loginblue
-
-enum class DayPeriod(val title: String, val hourRangeText: String) {
-    MORNING("Buổi sáng", "05:00 - 12:59"),
-    AFTERNOON("Buổi chiều", "13:00 - 17:59"),
-    NIGHT("Buổi tối & Đêm", "18:00 - 04:59");
-
-    companion object {
-        fun fromHour(hour: Int): DayPeriod {
-            return when (hour) {
-                in 5..12 -> MORNING
-                in 13..17 -> AFTERNOON
-                else -> NIGHT
-            }
-        }
-    }
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NotificationSettingsSection(
-    disableAllNotifications: Boolean,
-    onDisableAllNotificationsChange: (Boolean) -> Unit,
-
-    disableMorning: Boolean,
-    onDisableMorningChange: (Boolean) -> Unit,
-    morningTime: String,
-    onMorningTimeChange: (String) -> Unit,
-
-    disableAfternoon: Boolean,
-    onDisableAfternoonChange: (Boolean) -> Unit,
-    afternoonTime: String,
-    onAfternoonTimeChange: (String) -> Unit,
-
-    disableNight: Boolean,
-    onDisableNightChange: (Boolean) -> Unit,
-    nightTime: String,
-    onNightTimeChange: (String) -> Unit,
-
+    settings: SettingEntity,
+    onUpdateSettings: ((SettingEntity) -> SettingEntity) -> Unit,
     activeRemindersCount: Int,
     upcomingRemindersSummary: String,
-    reminderNotes: List<NoteEntity> = emptyList(),
+    reminderNotes: List<NoteEntity>,
     modifier: Modifier = Modifier
 ) {
     var editingPeriod by remember { mutableStateOf<DayPeriod?>(null) }
@@ -73,51 +43,71 @@ fun NotificationSettingsSection(
 
         SettingsSwitchItem(
             title = "Tắt tất cả thông báo",
-            subtitle = if (disableAllNotifications) {
+            subtitle = if (settings.disableAllNotifications) {
                 "Đang tắt tất cả thông báo 24/7 (kể cả sáng, chiều, tối)"
             } else {
                 "Áp dụng theo từng buổi (Sáng, Chiều, Tối) bên dưới"
             },
-            checked = disableAllNotifications,
-            onCheckedChange = onDisableAllNotificationsChange
+            checked = settings.disableAllNotifications,
+            onCheckedChange = { disabled ->
+                onUpdateSettings { it.copy(disableAllNotifications = disabled) }
+            }
         )
 
         SettingsSwitchItem(
             title = "Tắt thông báo Buổi sáng (5h - 12h)",
-            subtitle = if (disableMorning) "Đang tắt thông báo lúc sáng ($morningTime)" else "Nhận thông báo buổi sáng (Mặc định: $morningTime)",
-            checked = disableMorning,
-            onCheckedChange = onDisableMorningChange,
-            enabled = !disableAllNotifications
+            subtitle = if (settings.disableMorning) {
+                "Đang tắt thông báo lúc sáng (${settings.morningTime})"
+            } else {
+                "Nhận thông báo buổi sáng (Mặc định: ${settings.morningTime})"
+            },
+            checked = settings.disableMorning,
+            onCheckedChange = { disabled ->
+                onUpdateSettings { it.copy(disableMorning = disabled) }
+            },
+            enabled = !settings.disableAllNotifications
         )
         SettingsClickableItem(
-            title = "  └ Giờ thông báo buổi sáng",
-            subtitle = "$morningTime (Nhấn để chỉnh giờ)",
+            title = "Giờ thông báo buổi sáng",
+            subtitle = "${settings.morningTime} (Nhấn để chỉnh giờ)",
             onClick = { editingPeriod = DayPeriod.MORNING }
         )
 
         SettingsSwitchItem(
             title = "Tắt thông báo Buổi chiều (13h - 17h)",
-            subtitle = if (disableAfternoon) "Đang tắt thông báo lúc chiều ($afternoonTime)" else "Nhận thông báo buổi chiều (Mặc định: $afternoonTime)",
-            checked = disableAfternoon,
-            onCheckedChange = onDisableAfternoonChange,
-            enabled = !disableAllNotifications
+            subtitle = if (settings.disableAfternoon) {
+                "Đang tắt thông báo lúc chiều (${settings.afternoonTime})"
+            } else {
+                "Nhận thông báo buổi chiều (Mặc định: ${settings.afternoonTime})"
+            },
+            checked = settings.disableAfternoon,
+            onCheckedChange = { disabled ->
+                onUpdateSettings { it.copy(disableAfternoon = disabled) }
+            },
+            enabled = !settings.disableAllNotifications
         )
         SettingsClickableItem(
-            title = "  └ Giờ thông báo buổi chiều",
-            subtitle = "$afternoonTime (Nhấn để chỉnh giờ)",
+            title = "Giờ thông báo buổi chiều",
+            subtitle = "${settings.afternoonTime} (Nhấn để chỉnh giờ)",
             onClick = { editingPeriod = DayPeriod.AFTERNOON }
         )
 
         SettingsSwitchItem(
             title = "Tắt thông báo Buổi tối (18h - 4h sáng)",
-            subtitle = if (disableNight) "Đang tắt thông báo ban đêm ($nightTime)" else "Nhận thông báo buổi tối (Mặc định: $nightTime)",
-            checked = disableNight,
-            onCheckedChange = onDisableNightChange,
-            enabled = !disableAllNotifications
+            subtitle = if (settings.disableNight) {
+                "Đang tắt thông báo ban đêm (${settings.nightTime})"
+            } else {
+                "Nhận thông báo buổi tối (Mặc định: ${settings.nightTime})"
+            },
+            checked = settings.disableNight,
+            onCheckedChange = { disabled ->
+                onUpdateSettings { it.copy(disableNight = disabled) }
+            },
+            enabled = !settings.disableAllNotifications
         )
         SettingsClickableItem(
-            title = "  └ Giờ thông báo buổi tối",
-            subtitle = "$nightTime (Nhấn để chỉnh giờ)",
+            title = "Giờ thông báo buổi tối",
+            subtitle = "${settings.nightTime} (Nhấn để chỉnh giờ)",
             onClick = { editingPeriod = DayPeriod.NIGHT }
         )
 
@@ -139,7 +129,7 @@ fun NotificationSettingsSection(
 
         if (reminderNotes.isNotEmpty()) {
             Text(
-                text = "DỮ LIỆU LỜI NHẮC TRÊN THỰC TẾ",
+                text = "Lời nhắc đang có",
                 fontSize = 12.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.Gray,
@@ -152,10 +142,10 @@ fun NotificationSettingsSection(
                     java.util.Calendar.getInstance().apply { timeInMillis = it.atMillis }.get(java.util.Calendar.HOUR_OF_DAY)
                 } ?: 0
                 val notePeriod = DayPeriod.fromHour(reminderHour)
-                val isNoteMuted = disableAllNotifications || when (notePeriod) {
-                    DayPeriod.MORNING -> disableMorning
-                    DayPeriod.AFTERNOON -> disableAfternoon
-                    DayPeriod.NIGHT -> disableNight
+                val isNoteMuted = settings.disableAllNotifications || when (notePeriod) {
+                    DayPeriod.MORNING -> settings.disableMorning
+                    DayPeriod.AFTERNOON -> settings.disableAfternoon
+                    DayPeriod.NIGHT -> settings.disableNight
                 }
 
                 SettingsClickableItem(
@@ -173,9 +163,9 @@ fun NotificationSettingsSection(
 
     editingPeriod?.let { period ->
         val initialTime = when (period) {
-            DayPeriod.MORNING -> morningTime
-            DayPeriod.AFTERNOON -> afternoonTime
-            DayPeriod.NIGHT -> nightTime
+            DayPeriod.MORNING -> settings.morningTime
+            DayPeriod.AFTERNOON -> settings.afternoonTime
+            DayPeriod.NIGHT -> settings.nightTime
         }
         val parts = initialTime.split(":")
         val initialHour = parts.getOrNull(0)?.toIntOrNull() ?: when (period) {
@@ -210,9 +200,9 @@ fun NotificationSettingsSection(
                 TextButton(onClick = {
                     val formatted = String.format("%02d:%02d", timePickerState.hour, timePickerState.minute)
                     when (period) {
-                        DayPeriod.MORNING -> onMorningTimeChange(formatted)
-                        DayPeriod.AFTERNOON -> onAfternoonTimeChange(formatted)
-                        DayPeriod.NIGHT -> onNightTimeChange(formatted)
+                        DayPeriod.MORNING -> onUpdateSettings { it.copy(morningTime = formatted) }
+                        DayPeriod.AFTERNOON -> onUpdateSettings { it.copy(afternoonTime = formatted) }
+                        DayPeriod.NIGHT -> onUpdateSettings { it.copy(nightTime = formatted) }
                     }
                     editingPeriod = null
                 }) {

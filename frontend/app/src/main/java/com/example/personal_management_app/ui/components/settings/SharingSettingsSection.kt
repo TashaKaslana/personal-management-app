@@ -3,11 +3,12 @@ package com.example.personal_management_app.ui.components.settings
 import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import com.example.personal_management_app.entities.SettingEntity
 
 @Composable
 fun SharingSettingsSection(
-    enableSharing: Boolean,
-    onEnableSharingChange: (Boolean) -> Unit,
+    settings: SettingEntity,
+    onUpdateSettings: ((SettingEntity) -> SettingEntity) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier) {
@@ -15,9 +16,10 @@ fun SharingSettingsSection(
 
         SettingsSwitchItem(
             title = "Bật tính năng chia sẻ",
-            checked = enableSharing,
-            onCheckedChange = onEnableSharingChange
+            checked = settings.enableSharing,
+            onCheckedChange = { checked ->
+                onUpdateSettings { it.copy(enableSharing = checked) }
+            }
         )
     }
 }
-

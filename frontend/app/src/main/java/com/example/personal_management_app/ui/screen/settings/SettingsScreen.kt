@@ -1,6 +1,5 @@
 package com.example.personal_management_app.ui.screen.settings
 
-import android.content.Context
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -17,133 +16,41 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import com.example.personal_management_app.ui.components.reminder.label
-import com.example.personal_management_app.ui.components.settings.DayPeriod
 import com.example.personal_management_app.ui.components.settings.DisplaySettingsSection
 import com.example.personal_management_app.ui.components.settings.NotificationSettingsSection
 import com.example.personal_management_app.ui.components.settings.SharingSettingsSection
-import com.example.personal_management_app.ui.screen.reminder.ReminderScheduler
-import com.example.personal_management_app.viewmodel.NoteViewModel
-import java.util.Calendar
+import com.example.personal_management_app.viewmodel.SettingViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
     navController: NavController,
-    noteViewModel: NoteViewModel = hiltViewModel()
+    settingViewModel: SettingViewModel = hiltViewModel()
 ) {
-    val context = LocalContext.current
-    val sharedPrefs = remember {
-        context.getSharedPreferences("app_settings", Context.MODE_PRIVATE)
-    }
+    val uiState by settingViewModel.uiState.collectAsStateWithLifecycle()
 
-    var addItemsToBottom by remember {
-        mutableStateOf(sharedPrefs.getBoolean("add_items_to_bottom", false))
-    }
-    var moveCheckedToBottom by remember {
-        mutableStateOf(sharedPrefs.getBoolean("move_checked_to_bottom", false))
-    }
-    var displayLinkPreviews by remember {
-        mutableStateOf(sharedPrefs.getBoolean("display_link_previews", false))
-    }
-    var themeSelection by remember {
-        mutableStateOf(sharedPrefs.getString("theme_selection", "Mặc định theo hệ thống") ?: "Mặc định theo hệ thống")
-    }
-
-    var disableAllNotifications by remember {
-        mutableStateOf(sharedPrefs.getBoolean("disable_all_notifications", false))
-    }
-    var disableMorning by remember {
-        mutableStateOf(sharedPrefs.getBoolean("disable_morning", false))
-    }
-    var morningTime by remember {
-        mutableStateOf(sharedPrefs.getString("morning_time", "08:00") ?: "08:00")
-    }
-
-    var disableAfternoon by remember {
-        mutableStateOf(sharedPrefs.getBoolean("disable_afternoon", false))
-    }
-    var afternoonTime by remember {
-        mutableStateOf(sharedPrefs.getString("afternoon_time", "13:00") ?: "13:00")
-    }
-
-    var disableNight by remember {
-        mutableStateOf(sharedPrefs.getBoolean("disable_night", false))
-    }
-    var nightTime by remember {
-        mutableStateOf(sharedPrefs.getString("night_time", "18:00") ?: "18:00")
-    }
-
-    var enableSharing by remember {
-        mutableStateOf(sharedPrefs.getBoolean("enable_sharing", false))
-    }
-
-    val notes by noteViewModel.notes.collectAsStateWithLifecycle()
-    val now = System.currentTimeMillis()
-
-    val reminderNotes = remember(notes) {
-        notes.filter { it.reminder != null && it.deletedAt == null && it.archivedAt == null }
-            .sortedBy { it.reminder?.atMillis ?: 0L }
-    }
-
-    val nextUpcomingReminder = remember(reminderNotes, now) {
-        reminderNotes
-            .filter { (it.reminder?.atMillis ?: 0L) >= now }
-            .minByOrNull { it.reminder?.atMillis ?: Long.MAX_VALUE }
-    }
-
-    val upcomingSummary = remember(nextUpcomingReminder) {
-        nextUpcomingReminder?.let { note ->
-            val reminderLabel = note.reminder?.label() ?: ""
-            "${note.title.ifBlank { "Không có tiêu đề" }} ($reminderLabel)"
-        } ?: "Không có lời nhắc nào sắp tới"
-    }
-
-    val reminderScheduler = remember {
-        val entryPoint = dagger.hilt.android.EntryPointAccessors.fromApplication(
-            context.applicationContext,
-            SettingsEntryPoint::class.java
-        )
-        entryPoint.reminderScheduler()
-    }
-
-    fun syncAlarmsWithSettings(
-        allMuted: Boolean,
-        morningMuted: Boolean,
-        afternoonMuted: Boolean,
-        nightMuted: Boolean
-    ) {
-        reminderNotes.forEach { note ->
-            val noteReminder = note.reminder ?: return@forEach
-            val cal = Calendar.getInstance().apply { timeInMillis = noteReminder.atMillis }
-            val hour = cal.get(Calendar.HOUR_OF_DAY)
-            val period = DayPeriod.fromHour(hour)
-
-            val isMuted = allMuted || when (period) {
-                DayPeriod.MORNING -> morningMuted
-                DayPeriod.AFTERNOON -> afternoonMuted
-                DayPeriod.NIGHT -> nightMuted
-            }
-
-            if (isMuted) {
-                reminderScheduler.cancel(note.id)
-            } else {
-                reminderScheduler.apply(note)
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                settingViewModel.loadNotes()
             }
         }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
     Scaffold(
@@ -180,91 +87,27 @@ fun SettingsScreen(
                 .verticalScroll(rememberScrollState())
         ) {
             DisplaySettingsSection(
-                addItemsToBottom = addItemsToBottom,
-                onAddItemsToBottomChange = {
-                    addItemsToBottom = it
-                    sharedPrefs.edit().putBoolean("add_items_to_bottom", it).apply()
-                },
-                moveCheckedToBottom = moveCheckedToBottom,
-                onMoveCheckedToBottomChange = {
-                    moveCheckedToBottom = it
-                    sharedPrefs.edit().putBoolean("move_checked_to_bottom", it).apply()
-                },
-                displayLinkPreviews = displayLinkPreviews,
-                onDisplayLinkPreviewsChange = {
-                    displayLinkPreviews = it
-                    sharedPrefs.edit().putBoolean("display_link_previews", it).apply()
-                },
-                themeSelection = themeSelection,
+                settings = uiState.settings,
+                onUpdateSettings = settingViewModel::updateSettings,
                 onThemeClick = { }
             )
 
             HorizontalDivider(color = Color(0xFFE0E0E0), thickness = 0.5.dp)
 
             NotificationSettingsSection(
-                disableAllNotifications = disableAllNotifications,
-                onDisableAllNotificationsChange = { disabled ->
-                    disableAllNotifications = disabled
-                    sharedPrefs.edit().putBoolean("disable_all_notifications", disabled).apply()
-                    syncAlarmsWithSettings(disabled, disableMorning, disableAfternoon, disableNight)
-                },
-
-                disableMorning = disableMorning,
-                onDisableMorningChange = { disabled ->
-                    disableMorning = disabled
-                    sharedPrefs.edit().putBoolean("disable_morning", disabled).apply()
-                    syncAlarmsWithSettings(disableAllNotifications, disabled, disableAfternoon, disableNight)
-                },
-                morningTime = morningTime,
-                onMorningTimeChange = { time ->
-                    morningTime = time
-                    sharedPrefs.edit().putString("morning_time", time).apply()
-                },
-
-                disableAfternoon = disableAfternoon,
-                onDisableAfternoonChange = { disabled ->
-                    disableAfternoon = disabled
-                    sharedPrefs.edit().putBoolean("disable_afternoon", disabled).apply()
-                    syncAlarmsWithSettings(disableAllNotifications, disableMorning, disabled, disableNight)
-                },
-                afternoonTime = afternoonTime,
-                onAfternoonTimeChange = { time ->
-                    afternoonTime = time
-                    sharedPrefs.edit().putString("afternoon_time", time).apply()
-                },
-
-                disableNight = disableNight,
-                onDisableNightChange = { disabled ->
-                    disableNight = disabled
-                    sharedPrefs.edit().putBoolean("disable_night", disabled).apply()
-                    syncAlarmsWithSettings(disableAllNotifications, disableMorning, disableAfternoon, disabled)
-                },
-                nightTime = nightTime,
-                onNightTimeChange = { time ->
-                    nightTime = time
-                    sharedPrefs.edit().putString("night_time", time).apply()
-                },
-
-                activeRemindersCount = reminderNotes.size,
-                upcomingRemindersSummary = upcomingSummary,
-                reminderNotes = reminderNotes
+                settings = uiState.settings,
+                onUpdateSettings = settingViewModel::updateSettings,
+                activeRemindersCount = uiState.reminderNotes.size,
+                upcomingRemindersSummary = uiState.upcomingSummary,
+                reminderNotes = uiState.reminderNotes
             )
 
             HorizontalDivider(color = Color(0xFFE0E0E0), thickness = 0.5.dp)
 
             SharingSettingsSection(
-                enableSharing = enableSharing,
-                onEnableSharingChange = {
-                    enableSharing = it
-                    sharedPrefs.edit().putBoolean("enable_sharing", it).apply()
-                }
+                settings = uiState.settings,
+                onUpdateSettings = settingViewModel::updateSettings
             )
         }
     }
-}
-
-@dagger.hilt.EntryPoint
-@dagger.hilt.InstallIn(dagger.hilt.components.SingletonComponent::class)
-interface SettingsEntryPoint {
-    fun reminderScheduler(): ReminderScheduler
 }
