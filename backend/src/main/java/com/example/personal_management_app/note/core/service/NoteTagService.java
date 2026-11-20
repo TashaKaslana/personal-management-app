@@ -14,6 +14,8 @@ import com.example.personal_management_app.note.tag.exception.TagNotFoundExcepti
 import com.example.personal_management_app.note.tag.infrastructure.persistence.entities.Tag;
 import com.example.personal_management_app.note.tag.infrastructure.persistence.repositories.TagRepository;
 import org.springframework.stereotype.Service;
+import com.example.personal_management_app.core.security.CurrentUserProvider;
+import com.example.personal_management_app.note.tag.exception.TagOwnerUnavailableException;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -34,6 +36,7 @@ public class NoteTagService {
     private final NoteTagRepository noteTagRepository;
     private final NoteRepository noteRepository;
     private final TagRepository tagRepository;
+    private final CurrentUserProvider currentUserProvider;
 
     /**
      * Assign tag to note
@@ -43,7 +46,7 @@ public class NoteTagService {
         Note note = noteRepository.findById(noteId)
             .orElseThrow(() -> new NoteNotFoundException(noteId.toString()));
 
-        Tag tag = tagRepository.findById(tagId)
+        Tag tag = tagRepository.findByIdAndOwnerId(tagId, currentOwnerId())
             .orElseThrow(() -> new TagNotFoundException(tagId.toString()));
 
         NoteTagId id = new NoteTagId();
@@ -162,7 +165,7 @@ public class NoteTagService {
         }
 
         // Verify all tags exist
-        List<Tag> tags = tagRepository.findByIdIn(distinctTagIds);
+        List<Tag> tags = tagRepository.findByIdInAndOwnerId(distinctTagIds, currentOwnerId());
         if (tags.size() != distinctTagIds.size()) {
             throw new TagNotFoundException(TagError.TAG_LIST_NOT_FOUND, distinctTagIds.toString());
         }
@@ -233,5 +236,9 @@ public class NoteTagService {
      */
     public long count() {
         return noteTagRepository.count();
+    }
+    private UUID currentOwnerId() {
+        return currentUserProvider.getCurrentUserId()
+            .orElseThrow(TagOwnerUnavailableException::new);
     }
 }

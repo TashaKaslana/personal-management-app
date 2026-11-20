@@ -32,6 +32,13 @@ public class TagSpecificExceptionHandler {
         return RestApiResponse.conflict(HttpRequestUtils.getRequestPath(request), ex.getMessage());
     }
 
+    @ExceptionHandler(TagOwnerUnavailableException.class)
+    public ResponseEntity<RestApiResponse<Void>> handleTagOwnerUnavailableException(TagOwnerUnavailableException ex,
+                                                                                   WebRequest request) {
+        log.error("Tag owner unavailable: {}", ex.getMessage());
+        return RestApiResponse.internalServerError(HttpRequestUtils.getRequestPath(request), ex.getError().getMessage());
+    }
+
     // Generic tag domain exception handler
     @ExceptionHandler(TagDomainException.class)
     public ResponseEntity<RestApiResponse<Void>> handleTagDomainException(TagDomainException ex,

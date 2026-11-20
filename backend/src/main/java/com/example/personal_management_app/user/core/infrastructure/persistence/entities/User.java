@@ -22,7 +22,7 @@ import java.time.OffsetDateTime;
 @Setter
 @Entity
 @Table(name = "users", indexes = {
-        @Index(name = "idx_users_email", columnList = "email"),
+        @Index(name = "idx_users_role_id", columnList = "role_id"),
         @Index(name = "idx_users_deleted_at", columnList = "deleted_at")
 }, uniqueConstraints = {
         @UniqueConstraint(name = "users_username_key", columnNames = {"username"}),

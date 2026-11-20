@@ -7,6 +7,7 @@ import lombok.Getter;
  */
 @Getter
 public enum TagError {
+    TAG_OWNER_UNAVAILABLE("tag.owner_unavailable", "Tag owner is unavailable"),
     TAG_NOT_FOUND("tag.not_found", "Tag not found"),
     TAG_LIST_NOT_FOUND("tag.list_not_found", "One or more tags not found"),
     TAG_NAME_EXISTS("tag.name_exists", "Tag name already exists");

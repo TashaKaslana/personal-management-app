@@ -1,8 +1,11 @@
 package com.example.personal_management_app.note.core.infrastructure.persistence.entities;
 
+import com.example.personal_management_app.note.core.infrastructure.persistence.key.NoteTagId;
+import com.example.personal_management_app.note.tag.infrastructure.persistence.entities.Tag;
 import jakarta.persistence.EmbeddedId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.Index;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.MapsId;
@@ -11,13 +14,13 @@ import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
-import com.example.personal_management_app.note.core.infrastructure.persistence.key.NoteTagId;
-import com.example.personal_management_app.note.tag.infrastructure.persistence.entities.Tag;
 
 @Getter
 @Setter
 @Entity
-@Table(name = "note_tags")
+@Table(name = "note_tags", indexes = {
+        @Index(name = "idx_note_tags_tag_id", columnList = "tag_id")
+})
 public class NoteTag {
     @EmbeddedId
     private NoteTagId id;
