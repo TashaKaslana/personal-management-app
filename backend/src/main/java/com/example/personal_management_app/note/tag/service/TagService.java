@@ -11,6 +11,8 @@ import com.example.personal_management_app.note.tag.infrastructure.mapstruct.Tag
 import com.example.personal_management_app.note.tag.infrastructure.persistence.entities.Tag;
 import com.example.personal_management_app.note.tag.infrastructure.persistence.repositories.TagRepository;
 import org.springframework.data.domain.Page;
+import com.example.personal_management_app.core.security.CurrentUserProvider;
+import com.example.personal_management_app.note.tag.exception.TagOwnerUnavailableException;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +30,7 @@ import java.util.UUID;
 @Transactional(readOnly = true)
 public class TagService {
 
+    private final CurrentUserProvider currentUserProvider;
     private final TagRepository tagRepository;
     private final TagMapper tagMapper;
     private final NoteTagService noteTagService;
@@ -37,11 +40,12 @@ public class TagService {
      */
     @Transactional
     public TagDto createTag(CreateTagRequest request) {
-        if (tagRepository.existsByName(request.getName())) {
+        if (tagRepository.existsByNameAndOwnerId(request.getName(), currentOwnerId())) {
             throw new TagNameExistsException(request.getName());
         }
 
         Tag tag = tagMapper.toEntity(request);
+        tag.setOwnerId(currentOwnerId());
         Tag savedTag = tagRepository.save(tag);
         return tagMapper.toDto(savedTag);
     }
@@ -60,7 +64,7 @@ public class TagService {
      * Find a tag by ID
      */
     public TagDto findById(UUID id) {
-        return tagRepository.findById(id)
+        return tagRepository.findByIdAndOwnerId(id, currentOwnerId())
             .map(tagMapper::toDto)
             .orElseThrow(() -> new TagNotFoundException(id.toString()));
     }
@@ -69,7 +73,7 @@ public class TagService {
      * Find a tag by name
      */
     public TagDto findByName(String name) {
-        return tagRepository.findByName(name)
+        return tagRepository.findByNameAndOwnerId(name, currentOwnerId())
             .map(tagMapper::toDto)
             .orElseThrow(() -> new TagNotFoundException("name", name));
     }
@@ -78,7 +82,7 @@ public class TagService {
      * Find all tags
      */
     public List<TagDto> findAll() {
-        List<Tag> tags = tagRepository.findAll();
+        List<Tag> tags = tagRepository.findAllByOwnerId(currentOwnerId());
         return tagMapper.toDtoList(tags);
     }
 
@@ -86,7 +90,7 @@ public class TagService {
      * Find tags with pagination
      */
     public Page<TagDto> findAll(Pageable pageable) {
-        return tagRepository.findAll(pageable)
+        return tagRepository.findAllByOwnerId(currentOwnerId(), pageable)
             .map(tagMapper::toDto);
     }
 
@@ -95,10 +99,10 @@ public class TagService {
      */
     @Transactional
     public TagDto updateTag(UUID id, CreateTagRequest request) {
-        Tag tag = tagRepository.findById(id)
+        Tag tag = tagRepository.findByIdAndOwnerId(id, currentOwnerId())
             .orElseThrow(() -> new TagNotFoundException(id.toString()));
 
-        if (tagRepository.existsByNameAndIdNot(request.getName(), id)) {
+        if (tagRepository.existsByNameAndOwnerIdAndIdNot(request.getName(), currentOwnerId(), id)) {
             throw new TagNameExistsException(request.getName());
         }
 
@@ -112,7 +116,7 @@ public class TagService {
      */
     @Transactional
     public void deleteTag(UUID id) {
-        Tag tag = tagRepository.findById(id)
+        Tag tag = tagRepository.findByIdAndOwnerId(id, currentOwnerId())
             .orElseThrow(() -> new TagNotFoundException(id.toString()));
 
         noteTagService.removeAllNoteLinksFromTag(id);
@@ -125,7 +129,7 @@ public class TagService {
      */
     @Transactional
     public int clearTag(UUID id) {
-        if (!tagRepository.existsById(id)) {
+        if (!tagRepository.existsByIdAndOwnerId(id, currentOwnerId())) {
             throw new TagNotFoundException(id.toString());
         }
 
@@ -136,7 +140,7 @@ public class TagService {
      * Find all non-deleted notes linked to a tag
      */
     public List<Note> findNotesByTag(UUID tagId) {
-        if (!tagRepository.existsById(tagId)) {
+        if (!tagRepository.existsByIdAndOwnerId(tagId, currentOwnerId())) {
             throw new TagNotFoundException(tagId.toString());
         }
 
@@ -147,7 +151,7 @@ public class TagService {
      * Count non-deleted notes linked to a tag
      */
     public long countNotesByTag(UUID tagId) {
-        if (!tagRepository.existsById(tagId)) {
+        if (!tagRepository.existsByIdAndOwnerId(tagId, currentOwnerId())) {
             throw new TagNotFoundException(tagId.toString());
         }
 
@@ -158,7 +162,7 @@ public class TagService {
      * Count all note links of a tag (including trashed notes)
      */
     public long countNoteLinksByTag(UUID tagId) {
-        if (!tagRepository.existsById(tagId)) {
+        if (!tagRepository.existsByIdAndOwnerId(tagId, currentOwnerId())) {
             throw new TagNotFoundException(tagId.toString());
         }
 
@@ -169,25 +173,30 @@ public class TagService {
      * Check if a tag exists
      */
     public boolean existsById(UUID id) {
-        return tagRepository.existsById(id);
+        return tagRepository.existsByIdAndOwnerId(id, currentOwnerId());
     }
 
     /**
      * Check if a tag exists by name
      */
     public boolean existsByName(String name) {
-        return tagRepository.existsByName(name);
+        return tagRepository.existsByNameAndOwnerId(name, currentOwnerId());
     }
 
     /**
      * Count all tags
      */
     public long count() {
-        return tagRepository.count();
+        return tagRepository.countByOwnerId(currentOwnerId());
+    }
+
+    private UUID currentOwnerId() {
+        return currentUserProvider.getCurrentUserId()
+            .orElseThrow(TagOwnerUnavailableException::new);
     }
 
     // Internal method for getting entity (used by other services)
     public Optional<Tag> findEntityByName(String name) {
-        return tagRepository.findByName(name);
+        return tagRepository.findByNameAndOwnerId(name, currentOwnerId());
     }
 }

@@ -16,6 +16,7 @@ public interface TagMapper {
 
     List<TagDto> toDtoList(List<Tag> tags);
 
+    @Mapping(target = "ownerId", ignore = true)
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
@@ -23,6 +24,7 @@ public interface TagMapper {
     @Mapping(target = "updatedBy", ignore = true)
     Tag toEntity(CreateTagRequest request);
 
+    @Mapping(target = "ownerId", ignore = true)
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "createdAt", ignore = true)
     @Mapping(target = "updatedAt", ignore = true)
