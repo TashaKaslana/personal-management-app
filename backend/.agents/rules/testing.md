@@ -54,3 +54,11 @@ void createUser_shouldReturnCreatedUser_whenRequestIsValid() {
 - Keep tests independent—never rely on execution order or shared mutable state.
 - Avoid hardcoding database auto-generated IDs in assertions when testing against a real database.
 - Always run `./gradlew test` after writing or modifying tests to confirm they pass.
+
+## 5. When to Add or Update Tests
+- Add or update tests when introducing or changing business behavior.
+- For bug fixes, add a regression test that fails before the fix.
+- When deleting behavior, remove obsolete tests and update affected tests.
+- For behavior-preserving refactors, use existing tests unless meaningful coverage is missing.
+- Do not add tests solely for formatting, comments, trivial DTOs, generated mappings, or built-in repository methods.
+- Run the relevant test suite after every code change.

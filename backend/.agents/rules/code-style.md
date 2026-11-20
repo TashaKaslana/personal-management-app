@@ -30,13 +30,23 @@
   - Use explicit `@Query` (JPQL) for complex filters, projections, or `JOIN FETCH` to avoid N+1 queries.
   - Use `nativeQuery = true` only for PostgreSQL-specific features.
 
-## 6. Exceptions & Logging
+## 6. Exceptions
 - Keep domain exception handling inside the same domain's `exception/` folder using a dedicated `@RestControllerAdvice` annotated with `@Order(Ordered.HIGHEST_PRECEDENCE)` (e.g., `UserSpecificExceptionHandler`).
 - Let the root `core/exception/` global handler act only as the fallback for generic/unhandled exceptions.
 - Never swallow exceptions silently.
-- Use Lombok `@Slf4j` with parameterized logging (`log.info("Created note id={}", id)`). Never use `System.out.println`.
 
-## 7. Naming Conventions
+## 7. Logging policy
+- Add logs for operational events and failures that help diagnosis. Do not log every method entry/exit or routine CRUD operation.
+- INFO: significant operational milestones; summarize batch jobs with counts and duration.
+- WARN: unexpected but recoverable conditions or degraded behavior.
+- ERROR: failed operations requiring investigation. Include the exception stack trace when needed to diagnose the failure.
+- DEBUG: troubleshooting details. Expected business rejections normally need no log.
+- Log an exception once at the layer responsible for handling it. Avoid logging and rethrowing the same exception at every layer.
+- Include useful context such as operation, entity ID, and counts.
+- Never log passwords, tokens, authorization headers, note content, complete request bodies, or user settings.
+- Use Lombok `@Slf4j` and parameterized messages; never use `System.out.println`.
+
+## 8. Naming Conventions
 - **Controllers:** `<Entity>Controller` (e.g., `UserController`)
 - **Services:** `<Entity>Service` (and `<Entity>ServiceImpl` if using interfaces)
 - **DTOs:** `<Action><Entity>Request` / `<Entity>Dto` (e.g., `CreateUserRequest`, `UserDto`)
