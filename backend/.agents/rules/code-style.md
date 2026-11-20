@@ -53,3 +53,8 @@
 - **Mappers:** `<Entity>Mapper`
 - **Repositories:** `<Entity>Repository`
 - **Exceptions & Handlers:** `<Reason>Exception` and `<Domain>SpecificExceptionHandler`
+
+## 9. Imports
+- **Never use inline fully qualified names (FQNs)** for classes or annotations (e.g., `@org.hibernate.annotations.DynamicUpdate`). Always add an explicit `import` statement at the top of the file.
+- The **only** exception is a genuine simple-name collision within the same file (e.g., `java.util.Date` vs `java.sql.Date`).
+- Never use wildcard imports (`import java.util.*;`).
