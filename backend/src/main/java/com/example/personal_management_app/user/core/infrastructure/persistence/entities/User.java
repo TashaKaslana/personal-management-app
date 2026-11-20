@@ -17,6 +17,10 @@ import com.example.personal_management_app.core.superbase.BaseEntity;
 import com.example.personal_management_app.user.role.infrastructure.persistence.entities.Role;
 
 import java.time.OffsetDateTime;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Getter
 @Setter
@@ -52,6 +56,10 @@ public class User extends BaseEntity {
 
     @Column(name = "avatar_url")
     private String avatarUrl;
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "settings", nullable = false, columnDefinition = "jsonb")
+    private Map<String, Object> settings = new LinkedHashMap<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "role_id")
