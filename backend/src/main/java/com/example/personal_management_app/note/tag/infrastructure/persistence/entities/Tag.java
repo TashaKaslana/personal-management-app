@@ -7,6 +7,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
 import jakarta.validation.constraints.NotNull;
+
+import java.util.UUID;
 import lombok.Getter;
 import lombok.Setter;
 import com.example.personal_management_app.core.superbase.BaseFullAuditEntity;
@@ -19,7 +21,7 @@ import com.example.personal_management_app.core.superbase.BaseFullAuditEntity;
 @Setter
 @Entity
 @Table(name = "tags", uniqueConstraints = {
-        @UniqueConstraint(name = "tags_name_key", columnNames = {"name"})
+        @UniqueConstraint(name = "uq_tags_owner_id_name", columnNames = {"owner_id", "name"})
 })
 @AttributeOverrides({
         @AttributeOverride(name = "id", column = @Column(name = "id", nullable = false)),
@@ -29,6 +31,10 @@ import com.example.personal_management_app.core.superbase.BaseFullAuditEntity;
         @AttributeOverride(name = "updatedBy", column = @Column(name = "updated_by"))
 })
 public class Tag extends BaseFullAuditEntity {
+
+    @NotNull
+    @Column(name = "owner_id", nullable = false, updatable = false)
+    private UUID ownerId;
 
     @NotNull
     @Column(name = "name", nullable = false, length = 100)
