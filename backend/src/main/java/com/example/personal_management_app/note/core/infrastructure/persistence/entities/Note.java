@@ -12,10 +12,11 @@ import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.DynamicUpdate;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import com.example.personal_management_app.core.superbase.BaseFullAuditEntity;
-import com.example.personal_management_app.note.core.enums.ReminderRepeat;
+import com.example.personal_management_app.note.reminder.enums.ReminderRepeat;
 
 import java.time.OffsetDateTime;
 
@@ -39,6 +40,7 @@ import java.time.OffsetDateTime;
 @Getter
 @Setter
 @Entity
+@DynamicUpdate
 @Table(name = "notes", indexes = {
         @Index(name = "idx_notes_deleted_at", columnList = "deleted_at"),
         @Index(name = "idx_notes_archived_at", columnList = "archived_at"),

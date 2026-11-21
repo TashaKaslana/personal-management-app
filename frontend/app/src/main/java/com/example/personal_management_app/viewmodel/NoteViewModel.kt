@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.personal_management_app.entities.NoteEntity
 import com.example.personal_management_app.repositories.NoteRepository
 import com.example.personal_management_app.ui.screen.reminder.ReminderScheduler
+import com.example.personal_management_app.utils.matchesQuery
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -22,6 +23,7 @@ class NoteViewModel @Inject constructor(
     init {
         loadNotes()
     }
+
     fun loadNotes() {
         viewModelScope.launch {
             _notes.value = repository.getList()
@@ -35,24 +37,29 @@ class NoteViewModel @Inject constructor(
         }
     }
 
-    fun filterNotes(archived: Boolean, query: String = ""): List<NoteEntity> {
+    fun filterNotes(
+        archived: Boolean,
+        query: String = "",
+        selectedTag: String? = null
+    ): List<NoteEntity> {
         return _notes.value.filter { note ->
-            (note.archivedAt != null) == archived && (                query.isBlank() ||
-                    note.title.contains(query, ignoreCase = true) ||
-                    note.content.contains(query, ignoreCase = true) ||
-                    note.tags.any { it.contains(query, ignoreCase = true) }
-                )
+            (note.archivedAt != null) == archived &&
+            note.deletedAt == null &&
+            (selectedTag.isNullOrBlank() || note.tags.contains(selectedTag)) &&
+            note.matchesQuery(query)
         }
     }
 
-    fun filterReminders(query: String = ""): List<NoteEntity> {
+    fun filterReminders(
+        query: String = "",
+        selectedTag: String? = null
+    ): List<NoteEntity> {
         return _notes.value.filter { note ->
-            note.reminder != null && note.archivedAt == null && (
-                query.isBlank() ||
-                    note.title.contains(query, ignoreCase = true) ||
-                    note.content.contains(query, ignoreCase = true) ||
-                    note.tags.any { it.contains(query, ignoreCase = true) }
-                )
+            note.reminder != null &&
+            note.archivedAt == null &&
+            note.deletedAt == null &&
+            (selectedTag.isNullOrBlank() || note.tags.contains(selectedTag)) &&
+            note.matchesQuery(query)
         }.sortedBy { it.reminder?.atMillis }
     }
 
@@ -74,7 +81,6 @@ class NoteViewModel @Inject constructor(
     fun deleteNoteForever(noteId: String) {
         viewModelScope.launch {
             repository.deleteForever(noteId)
-            reminderScheduler.cancel(noteId)
             loadNotes()
         }
     }
@@ -96,7 +102,27 @@ class NoteViewModel @Inject constructor(
     fun deleteNote(noteId: String) {
         viewModelScope.launch {
             repository.delete(noteId)
-            reminderScheduler.cancel(noteId)
+            loadNotes()
+        }
+    }
+
+    fun setArchive(noteId: String, isArchived: Boolean) {
+        viewModelScope.launch {
+            val note = repository.get(noteId) ?: return@launch
+            val updated = note.copy(
+                archivedAt = if (isArchived) System.currentTimeMillis() else null,
+                isPinned = if (isArchived) false else note.isPinned
+            )
+            repository.update(updated)
+            loadNotes()
+        }
+    }
+
+    fun togglePin(noteId: String) {
+        viewModelScope.launch {
+            val note = repository.get(noteId) ?: return@launch
+            val updated = note.copy(isPinned = !note.isPinned)
+            repository.update(updated)
             loadNotes()
         }
     }

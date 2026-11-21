@@ -1,5 +1,7 @@
 package com.example.personal_management_app.user.core.service;
 
+import java.util.Optional;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 //import com.example.personal_management_app.log.auditlog.annotations.AuditLog;
@@ -92,6 +94,11 @@ public class UserService {
         return userRepository.findById(id)
             .map(userMapper::toDto)
             .orElseThrow(() -> new UserNotFoundException(id.toString()));
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<String> findActiveEmail(UUID id) {
+        return userRepository.findActiveEmail(id);
     }
 
     /**

@@ -7,6 +7,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
 import java.io.File
+import java.text.Normalizer
 import java.util.UUID
 
 fun String.toComposeColor(): Color {
