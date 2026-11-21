@@ -17,10 +17,10 @@ interface NoteDao {
     @Query("SELECT * FROM notes WHERE userId = :userId AND deletedAt IS NULL")
     fun getNotesByUserId(userId: String): List<NoteEntity>
 
-    @Query("SELECT * FROM notes WHERE userId = :userId AND deletedAt IS NOT NULL")
+    @Query("SELECT * FROM notes WHERE userId = :userId AND deletedAt IS NOT NULL ORDER BY deletedAt DESC")
     fun getTrashNotes(userId: String): List<NoteEntity>
 
-    @Query("SELECT * FROM notes WHERE userId = :userId AND deletedAt IS NOT NULL")
+    @Query("SELECT * FROM notes WHERE userId = :userId AND deletedAt IS NOT NULL ORDER BY deletedAt DESC")
     fun getTrashNotesFlow(userId: String): Flow<List<NoteEntity>>
 
     @Query("SELECT * FROM notes WHERE id = :id LIMIT 1")

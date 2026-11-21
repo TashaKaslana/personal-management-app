@@ -20,11 +20,19 @@ class NoteViewModel @Inject constructor(
     private val _notes = MutableStateFlow<List<NoteEntity>>(emptyList())
     val notes = _notes.asStateFlow()
 
+    private val _trashNotes = MutableStateFlow<List<NoteEntity>>(emptyList())
+    val trashNotes = _trashNotes.asStateFlow()
+
     init {
         loadNotes()
         viewModelScope.launch {
             repository.getNotesFlow().collect { list ->
                 _notes.value = list
+            }
+        }
+        viewModelScope.launch {
+            repository.getTrashFlow().collect { list ->
+                _trashNotes.value = list
             }
         }
     }
@@ -59,7 +67,12 @@ class NoteViewModel @Inject constructor(
     }
 
     fun filterTrash(query: String = ""): List<NoteEntity> {
-        return repository.getTrashItems(query)
+        val list = _trashNotes.value
+        return if (query.isBlank()) {
+            list
+        } else {
+            list.filter { it.matchesQuery(query) }
+        }
     }
 
     fun restoreNote(noteId: String) {

@@ -302,6 +302,21 @@ class NoteEditViewModel @Inject constructor(
         note = note?.copy(deletedAt = System.currentTimeMillis())
     }
 
+    fun restore() {
+        if (noteId != null && noteId != newNote.id) {
+            noteRepository.restore(noteId)
+            note = note?.copy(deletedAt = null)
+        }
+    }
+
+    fun deleteForever() {
+        if (noteId != null && noteId != newNote.id) {
+            noteRepository.deleteForever(noteId)
+            reminderScheduler.cancel(noteId)
+            note = null
+        }
+    }
+
     fun copy() {
         val currentNote = note
         val copied = mapper.toEntity(currentNote)?.copy(

@@ -6,3 +6,7 @@ Thumbs.db
 .gradle/
 .kotlin/
 build/
+*.db
+*.db-journal
+*.db-wal
+*.db-shm

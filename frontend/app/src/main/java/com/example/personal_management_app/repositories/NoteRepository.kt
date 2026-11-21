@@ -36,6 +36,13 @@ class NoteRepository @Inject constructor(
         noteDao.getNotesFlowByUserId(uid)
     }
 
+    @OptIn(ExperimentalCoroutinesApi::class)
+    fun getTrashFlow(): Flow<List<NoteEntity>> = sessionManager.sessionState.flatMapLatest { session ->
+        val uid = session?.userId ?: "user_01"
+        purgeExpiredTrash()
+        noteDao.getTrashNotesFlow(uid)
+    }
+
     /**
      * Luồng Offline-First:
      * - Khi Online (có API): Gọi server -> lưu vào Room DB -> Room Flow tự động bắn lên UI.
