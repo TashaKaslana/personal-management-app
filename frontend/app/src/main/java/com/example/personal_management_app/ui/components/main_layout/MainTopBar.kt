@@ -17,6 +17,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -135,13 +136,20 @@ fun MainTopBar(
                                 contentScale = ContentScale.Crop,
                                 modifier = Modifier.fillMaxSize()
                             )
-                        } else {
-                            val initials = getInitials(profile?.name ?: "NMD")
+                        } else if (!profile?.name.isNullOrBlank()) {
+                            val initials = getInitials(profile.name)
                             Text(
                                 text = initials,
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color.DarkGray
+                            )
+                        } else {
+                            Icon(
+                                imageVector = Icons.Default.Person,
+                                contentDescription = "Tài khoản",
+                                tint = Color.DarkGray,
+                                modifier = Modifier.size(18.dp)
                             )
                         }
                     }

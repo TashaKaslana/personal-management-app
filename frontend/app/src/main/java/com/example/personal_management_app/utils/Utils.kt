@@ -103,7 +103,7 @@ fun loadAvatarBitmap(context: Context, pathOrUri: String?): ImageBitmap? {
 }
 
 /**
- * Extracts initials from a user's display name (e.g., "Nguyễn Minh Đức" -> "NMD").
+ * Extracts initials from a user's display name (e.g., "John Doe" -> "JD").
  */
 fun getInitials(name: String): String {
     val trimmed = name.trim()
