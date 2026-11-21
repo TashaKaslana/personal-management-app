@@ -24,6 +24,9 @@ class ProfileViewModel @Inject constructor(
     private val userRepository: UserRepository
 ) : ViewModel() {
 
+    val currentUserId: String?
+        get() = sessionManager.sessionState.value?.userId
+
     @OptIn(ExperimentalCoroutinesApi::class)
     val profileFlow: StateFlow<ProfileEntity?> = sessionManager.sessionState
         .flatMapLatest { session ->
@@ -46,14 +49,14 @@ class ProfileViewModel @Inject constructor(
     }
 
     fun uploadAvatar(context: Context, uri: Uri): String? {
-        val userId = sessionManager.sessionState.value?.userId ?: return null
+        val userId = currentUserId ?: return null
         val savedPath = copyUriToAvatarStorage(context, uri, userId) ?: return null
         userRepository.updateAvatar(userId, savedPath)
         return savedPath
     }
 
     fun removeAvatar(context: Context) {
-        val userId = sessionManager.sessionState.value?.userId ?: return
+        val userId = currentUserId ?: return
         deleteAvatarFile(context, userId)
         userRepository.updateAvatar(userId, null)
     }
@@ -71,8 +74,6 @@ class ProfileViewModel @Inject constructor(
         if (name.isBlank() || username.isBlank()) {
             return "Vui lòng nhập đầy đủ họ tên và tên đăng nhập!"
         }
-        val userId = sessionManager.sessionState.value?.userId
-            ?: return "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!"
 
         if (newPassword.isNotEmpty() || confirmPassword.isNotEmpty()) {
             if (currentPassword.isBlank()) {

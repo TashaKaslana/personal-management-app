@@ -5,10 +5,6 @@ import com.example.personal_management_app.data.local.dao.UserDao
 import com.example.personal_management_app.data.local.entities.UserEntity
 import com.example.personal_management_app.dtos.AuthResult
 import com.example.personal_management_app.entities.ProfileEntity
-import dagger.hilt.android.qualifiers.ApplicationContext
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.map
 import com.example.personal_management_app.entities.TagEntity
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -57,14 +53,12 @@ class UserRepository @Inject constructor(
 
         userDao.insertUser(user)
 
-        // Seed brand-new default tags for this new user:
         tagDao.insertAll(
             listOf(
                 TagEntity(id = UUID.randomUUID().toString(), userId = id, name = "Công việc", color = "0xFF64B5F6"),
                 TagEntity(id = UUID.randomUUID().toString(), userId = id, name = "Du lịch", color = "0xFF4DB6AC")
             )
         )
-        // Note: ZERO notes are created. Brand new account is completely clean!
 
         return AuthResult.Success(
             user = user.toProfileEntity(),
