@@ -12,8 +12,9 @@
 ## 3. DTOs & MapStruct
 - Use **Java `record`** or Lombok `@Getter`/`@Builder` for DTOs (e.g., `CreateUserRequest`, `UserDto`).
 - Annotate request DTO fields with Jakarta Validation (`@NotBlank`, `@Size`, `@NotNull`).
+- **Always use MapStruct** for all entity-to-DTO and DTO-to-entity conversions.
 - Place all mappers in `<domain>/<module>/infrastructure/mapstruct/` with `@Mapper(componentModel = "spring")`.
-- Never write manual entity-to-DTO mapping inside services when a MapStruct mapper exists.
+- If no mapper exists for an entity or new DTO, **create or extend the MapStruct mapper**—never write manual mapping logic (`new FooDto(...)`, builder calls, or setter chains) inside services or controllers.
 
 ## 4. Service Layer & Transactions
 - Place `@Transactional` on the **service layer only**—never on controllers or repositories.
@@ -31,9 +32,11 @@
   - Use `nativeQuery = true` only for PostgreSQL-specific features.
 
 ## 6. Exceptions
-- Keep domain exception handling inside the same domain's `exception/` folder using a dedicated `@RestControllerAdvice` annotated with `@Order(Ordered.HIGHEST_PRECEDENCE)` (e.g., `UserSpecificExceptionHandler`).
-- Let the root `core/exception/` global handler act only as the fallback for generic/unhandled exceptions.
-- Never swallow exceptions silently.
+- **Create custom domain exceptions** in `<domain>/exception/` for business rule violations and domain-specific errors (e.g., `UserNotFoundException`, `OrderAlreadyCancelledException`).
+- **Domain handlers only handle domain exceptions:** Use a scoped `@RestControllerAdvice(basePackages = "com.yourapp.<domain>")` with `@Order(Ordered.HIGHEST_PRECEDENCE)` inside `<domain>/exception/` to handle **only** custom exceptions owned by that domain.
+- **Global handler (`core/exception/`) owns framework exceptions + 500 fallback:** Map standard Spring/JPA/validation exceptions (e.g., `OptimisticLockingFailureException` -> 409, `MethodArgumentNotValidException` -> 400) in the root `core/exception/` handler, with `@ExceptionHandler(Exception.class)` returning 500 as the final fallback.
+  - If a domain needs custom behavior for a framework exception, catch it in the service layer and rethrow a custom domain exception.
+- **Never swallow exceptions silently.**
 
 ## 7. Logging policy
 - Add logs for operational events and failures that help diagnosis. Do not log every method entry/exit or routine CRUD operation.

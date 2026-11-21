@@ -43,8 +43,7 @@ public class NoteTagService {
      */
     @Transactional
     public void assignTagToNote(UUID noteId, UUID tagId) {
-        Note note = noteRepository.findById(noteId)
-            .orElseThrow(() -> new NoteNotFoundException(noteId.toString()));
+        Note note = ownedNote(noteId);
 
         Tag tag = tagRepository.findByIdAndOwnerId(tagId, currentOwnerId())
             .orElseThrow(() -> new TagNotFoundException(tagId.toString()));
@@ -71,6 +70,7 @@ public class NoteTagService {
      */
     @Transactional
     public void removeTagFromNote(UUID noteId, UUID tagId) {
+        ownedNote(noteId);
         NoteTagId id = new NoteTagId();
         id.setNoteId(noteId);
         id.setTagId(tagId);
@@ -120,7 +120,7 @@ public class NoteTagService {
      * Find all (non-deleted) notes that have a specific tag
      */
     public List<Note> findActiveNotesByTag(UUID tagId) {
-        return noteRepository.findActiveByTagId(tagId);
+        return noteRepository.findActiveByTagId(currentOwnerId(), tagId);
     }
 
     /**
@@ -138,7 +138,7 @@ public class NoteTagService {
      * Count non-deleted notes linked to a tag
      */
     public long countActiveNotesByTag(UUID tagId) {
-        return noteRepository.countActiveByTagId(tagId);
+        return noteRepository.countActiveByTagId(currentOwnerId(), tagId);
     }
 
     /**
@@ -154,8 +154,7 @@ public class NoteTagService {
      */
     @Transactional
     public void replaceTags(UUID noteId, List<UUID> tagIds) {
-        Note note = noteRepository.findById(noteId)
-            .orElseThrow(() -> new NoteNotFoundException(noteId.toString()));
+        Note note = ownedNote(noteId);
 
         List<UUID> distinctTagIds = tagIds.stream().distinct().toList();
 
@@ -237,8 +236,15 @@ public class NoteTagService {
     public long count() {
         return noteTagRepository.count();
     }
+    private Note ownedNote(UUID noteId) {
+        return noteRepository.findById(noteId)
+                .filter(note -> currentOwnerId().equals(note.getCreatedBy()))
+                .orElseThrow(() -> new NoteNotFoundException(noteId.toString()));
+    }
+
     private UUID currentOwnerId() {
         return currentUserProvider.getCurrentUserId()
+            .filter(id -> !new UUID(0, 0).equals(id))
             .orElseThrow(TagOwnerUnavailableException::new);
     }
 }
