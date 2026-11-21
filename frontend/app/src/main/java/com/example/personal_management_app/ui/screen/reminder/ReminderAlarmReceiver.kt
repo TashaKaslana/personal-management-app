@@ -15,6 +15,7 @@ import androidx.core.content.ContextCompat
 import com.example.personal_management_app.MainActivity
 import com.example.personal_management_app.R
 import com.example.personal_management_app.repositories.NoteRepository
+import com.example.personal_management_app.ui.components.note.getNotePlainText
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 
@@ -25,8 +26,11 @@ class ReminderAlarmReceiver : BroadcastReceiver() {
     @Inject lateinit var scheduler: ReminderScheduler
 
     override fun onReceive(context: Context, intent: Intent) {
-        val title = intent.getStringExtra(ReminderAlarmManager.EXTRA_TITLE) ?: "Reminder"
-        val description = intent.getStringExtra(ReminderAlarmManager.EXTRA_DESCRIPTION) ?: ""
+        val title = intent.getStringExtra(ReminderAlarmManager.EXTRA_TITLE)?.ifBlank { "Nhắc nhở" } ?: "Nhắc nhở"
+        val rawDescription = intent.getStringExtra(ReminderAlarmManager.EXTRA_DESCRIPTION) ?: ""
+        val description = getNotePlainText(rawDescription).ifBlank {
+            "Bạn có một lời nhắc ghi chú"
+        }
         val reminderId = intent.getStringExtra(ReminderAlarmManager.EXTRA_ID) ?: ""
 
         showNotification(context, title, description, reminderId)

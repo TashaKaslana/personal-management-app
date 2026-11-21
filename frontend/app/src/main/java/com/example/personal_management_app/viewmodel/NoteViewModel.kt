@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.personal_management_app.entities.NoteEntity
 import com.example.personal_management_app.repositories.NoteRepository
 import com.example.personal_management_app.ui.screen.reminder.ReminderScheduler
+import com.example.personal_management_app.utils.matchesQuery
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -21,7 +22,13 @@ class NoteViewModel @Inject constructor(
 
     init {
         loadNotes()
+        viewModelScope.launch {
+            repository.getNotesFlow().collect { list ->
+                _notes.value = list
+            }
+        }
     }
+
     fun loadNotes() {
         viewModelScope.launch {
             _notes.value = repository.getList()
@@ -37,22 +44,13 @@ class NoteViewModel @Inject constructor(
 
     fun filterNotes(archived: Boolean, query: String = ""): List<NoteEntity> {
         return _notes.value.filter { note ->
-            (note.archivedAt != null) == archived && (                query.isBlank() ||
-                    note.title.contains(query, ignoreCase = true) ||
-                    note.content.contains(query, ignoreCase = true) ||
-                    note.tags.any { it.contains(query, ignoreCase = true) }
-                )
+            (note.archivedAt != null) == archived && note.matchesQuery(query)
         }
     }
 
     fun filterReminders(query: String = ""): List<NoteEntity> {
         return _notes.value.filter { note ->
-            note.reminder != null && note.archivedAt == null && (
-                query.isBlank() ||
-                    note.title.contains(query, ignoreCase = true) ||
-                    note.content.contains(query, ignoreCase = true) ||
-                    note.tags.any { it.contains(query, ignoreCase = true) }
-                )
+            note.reminder != null && note.archivedAt == null && note.matchesQuery(query)
         }.sortedBy { it.reminder?.atMillis }
     }
 

@@ -540,3 +540,40 @@ private fun NoteImageBlock(
         )
     }
 }
+
+
+/**
+ * Extracts clean, human-readable plain text from rich-text JSON content.
+ * Used for notifications, previews, and search indexing without showing raw JSON blocks.
+ */
+fun getNotePlainText(content: String): String {
+    if (content.isBlank()) return ""
+    if (!content.trimStart().startsWith("{")) return content.trim()
+
+    val blocks = loadNoteContent(content)
+    val texts = mutableListOf<String>()
+
+    fun extract(blockList: List<NoteBlock>) {
+        for (block in blockList) {
+            when (block) {
+                is NoteBlock.Text -> {
+                    if (block.text.isNotBlank()) texts.add(block.text.trim())
+                }
+                is NoteBlock.Checkbox -> {
+                    val status = if (block.checked) "☑" else "☐"
+                    if (block.label.isNotBlank()) texts.add("$status ${block.label.trim()}")
+                }
+                is NoteBlock.Image -> {
+                    texts.add("[Hình ảnh]")
+                }
+                is NoteBlock.ModelBox -> {
+                    if (block.title.isNotBlank()) texts.add(block.title.trim())
+                    extract(block.blocks)
+                }
+            }
+        }
+    }
+
+    extract(blocks)
+    return texts.joinToString("\n").trim()
+}

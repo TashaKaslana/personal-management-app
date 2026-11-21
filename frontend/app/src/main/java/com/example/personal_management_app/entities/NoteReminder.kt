@@ -1,5 +1,8 @@
 package com.example.personal_management_app.entities
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 enum class ReminderRepeat {
     Once,
     Daily,
@@ -7,6 +10,7 @@ enum class ReminderRepeat {
     Monthly
 }
 
+@Serializable
 data class NoteReminder(
     val atMillis: Long,
     val repeat: ReminderRepeat = ReminderRepeat.Once

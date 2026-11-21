@@ -32,11 +32,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.example.personal_management_app.ui.components.profile.ProfileActionButtons
 import com.example.personal_management_app.ui.components.profile.ProfileAvatarSection
 import com.example.personal_management_app.ui.components.profile.ProfileInfoForm
 import com.example.personal_management_app.ui.components.profile.ProfileSecurityForm
+import com.example.personal_management_app.utils.loadAvatarBitmap
 import com.example.personal_management_app.viewmodel.ProfileViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -46,7 +48,7 @@ fun ProfileScreen(
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
-    val profile = viewModel.getProfile()
+    val profile by viewModel.profileFlow.collectAsStateWithLifecycle()
 
     if (profile == null) {
         Box(
@@ -58,8 +60,9 @@ fun ProfileScreen(
         return
     }
 
-    var nameInput by remember { mutableStateOf(profile.name) }
-    var usernameInput by remember { mutableStateOf(profile.username) }
+    val currentProfile = profile!!
+    var nameInput by remember(currentProfile.id) { mutableStateOf(currentProfile.name) }
+    var usernameInput by remember(currentProfile.id) { mutableStateOf(currentProfile.username) }
     var currentPasswordInput by remember { mutableStateOf("") }
     var newPasswordInput by remember { mutableStateOf("") }
     var confirmPasswordInput by remember { mutableStateOf("") }
@@ -68,15 +71,17 @@ fun ProfileScreen(
     var statusMessage by remember { mutableStateOf<String?>(null) }
     var isErrorState by remember { mutableStateOf(false) }
 
-    val avatarBitmap = remember(selectedImageUri) {
-        selectedImageUri?.let { uri ->
+    val avatarBitmap = remember(currentProfile.avatar, selectedImageUri) {
+        if (selectedImageUri != null) {
             try {
-                context.contentResolver.openInputStream(uri)?.use { stream ->
+                context.contentResolver.openInputStream(selectedImageUri!!)?.use { stream ->
                     BitmapFactory.decodeStream(stream)?.asImageBitmap()
                 }
             } catch (e: Exception) {
-                null
+                loadAvatarBitmap(context, currentProfile.avatar)
             }
+        } else {
+            loadAvatarBitmap(context, currentProfile.avatar)
         }
     }
 
@@ -119,20 +124,25 @@ fun ProfileScreen(
                 name = nameInput,
                 username = usernameInput,
                 avatarBitmap = avatarBitmap,
-                hasCustomAvatar = selectedImageUri != null,
+                hasCustomAvatar = avatarBitmap != null || !currentProfile.avatar.isNullOrBlank(),
                 onPickImage = { uri ->
                     selectedImageUri = uri
-                    statusMessage = "Đã chọn ảnh đại diện mới thành công"
-                    isErrorState = false
+                    val saved = viewModel.uploadAvatar(context, uri)
+                    if (saved != null) {
+                        statusMessage = "Đã tải lên và lưu ảnh đại diện mới thành công!"
+                        isErrorState = false
+                    } else {
+                        statusMessage = "Không thể lưu ảnh đại diện!"
+                        isErrorState = true
+                    }
                 },
                 onRemoveImage = {
                     selectedImageUri = null
+                    viewModel.removeAvatar(context)
                     statusMessage = "Đã xóa ảnh đại diện, trở về mặc định."
                     isErrorState = false
                 }
             )
-
-
 
             ProfileInfoForm(
                 name = nameInput,
