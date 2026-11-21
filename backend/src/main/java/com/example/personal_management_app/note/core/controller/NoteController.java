@@ -1,6 +1,7 @@
 package com.example.personal_management_app.note.core.controller;
 
 import lombok.RequiredArgsConstructor;
+import com.example.personal_management_app.note.core.dtos.UpdateNoteRequest;
 import com.example.personal_management_app.core.responses.RestApiResponse;
 import com.example.personal_management_app.note.core.dtos.CreateNoteRequest;
 import com.example.personal_management_app.note.core.dtos.NoteDto;
@@ -113,7 +114,7 @@ public class NoteController {
     @PutMapping("/{id}")
     public ResponseEntity<RestApiResponse<NoteDto>> updateNote(
             @PathVariable UUID id,
-            @Valid @RequestBody CreateNoteRequest request) {
+            @Valid @RequestBody UpdateNoteRequest request) {
         NoteDto updatedNote = noteService.updateNote(id, request);
         return RestApiResponse.success(updatedNote, "Note updated successfully");
     }

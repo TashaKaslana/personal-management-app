@@ -7,7 +7,7 @@ import com.example.personal_management_app.dtos.NoteTextStyle
 @Entity(tableName = "notes")
 data class NoteEntity(
     @PrimaryKey val id: String,
-    val userId: String = "user_01",
+    val userId: String = "",
     val title: String,
     val titleStyle: NoteTextStyle,
     val content: String,

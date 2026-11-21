@@ -66,11 +66,13 @@ class NoteRepository @Inject constructor(
     }
 
     fun getList(): MutableList<NoteEntity> {
+        val uid = currentUserId ?: return mutableListOf()
         purgeExpiredTrash()
         return noteDao.getNotesByUserId(currentUserId).toMutableList()
     }
 
     fun getTrashItems(query: String = ""): List<NoteEntity> {
+        val uid = currentUserId ?: return emptyList()
         purgeExpiredTrash()
         val trashNotes = noteDao.getTrashNotes(currentUserId)
         return if (query.isBlank()) {
@@ -109,6 +111,7 @@ class NoteRepository @Inject constructor(
     }
 
     fun purgeExpiredTrash() {
+        val uid = currentUserId ?: return
         val threshold = System.currentTimeMillis() - TRASH_RETENTION_MILLIS
         noteDao.purgeExpiredTrash(currentUserId, threshold)
     }

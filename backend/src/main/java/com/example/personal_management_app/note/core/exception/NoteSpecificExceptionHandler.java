@@ -14,9 +14,21 @@ import org.springframework.web.context.request.WebRequest;
  * Exception handler for note subdomain specific exceptions
  */
 @Slf4j
-@RestControllerAdvice
+@RestControllerAdvice(basePackages = "com.example.personal_management_app.note")
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class NoteSpecificExceptionHandler {
+
+    @ExceptionHandler(StaleNoteVersionException.class)
+    public ResponseEntity<RestApiResponse<Void>> handleConflict(StaleNoteVersionException ex,
+                                                                 WebRequest request) {
+        return RestApiResponse.conflict(HttpRequestUtils.getRequestPath(request),
+                ex.getMessage());
+    }
+
+    @ExceptionHandler(NoteAccessDeniedException.class)
+    public ResponseEntity<RestApiResponse<Void>> handleAccessDenied(NoteAccessDeniedException ex, WebRequest request) {
+        return RestApiResponse.forbidden(HttpRequestUtils.getRequestPath(request), ex.getMessage());
+    }
 
     @ExceptionHandler(NoteNotFoundException.class)
     public ResponseEntity<RestApiResponse<Void>> handleNoteNotFoundException(NoteNotFoundException ex,

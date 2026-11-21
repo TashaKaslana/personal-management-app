@@ -12,6 +12,7 @@ import java.util.UUID;
 @Data
 public class NoteDto {
     private UUID id;
+    private long version;
     private String title;
     private NoteTextStyleDto titleStyle;
     private String content;

@@ -2,7 +2,9 @@
 
 ## 1. Project Overview
 - **Purpose:** Personal note management backend application.
-- **Stack:** Java, Spring Boot, PostgreSQL, Gradle.
+- **Stack:** Java 17, Spring Boot 4.1.1, Gradle, PostgreSQL.
+- **Core Libraries:** Spring Data JPA, Flyway, Spring Security, JJWT (`0.12.6`), Spring WebMVC, Jakarta Validation, 
+Quartz, Spring Mail, Lombok, MapStruct (`1.6.3`), Testcontainers (PostgreSQL).
 
 ## 2. Repo Layout
 - **Architecture:** Modular Monolith (package-by-feature)
@@ -35,4 +37,3 @@ Before starting a task, read the relevant files below:
 | Writing, refactoring, or scaffolding code | `.agents/rules/architecture.md`, `.agents/rules/code-style.md` |
 | Adding or updating tests | `.agents/rules/testing.md` |
 | Changing the database schema or entities | `.agents/workflows/db-migration.md` ||
-

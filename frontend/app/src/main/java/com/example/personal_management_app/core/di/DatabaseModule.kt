@@ -8,7 +8,6 @@ import com.example.personal_management_app.data.local.AppDatabase
 import com.example.personal_management_app.data.local.dao.NoteDao
 import com.example.personal_management_app.data.local.dao.TagDao
 import com.example.personal_management_app.data.local.dao.UserDao
-import com.example.personal_management_app.utils.exportDatabase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -49,19 +48,12 @@ object DatabaseModule {
                     db.execSQL("""
                         INSERT OR IGNORE INTO tags (id, userId, name, color) VALUES ('tag-travel', 'user_01', 'Du lịch', '0xFF4DB6AC')
                     """)
-                    // Zero dummy notes! Database starts completely clean.
-                }
-
-                override fun onOpen(db: SupportSQLiteDatabase) {
-                    super.onOpen(db)
-                    exportDatabase(context)
                 }
             })
             .build()
 
         // Pre-warm database to trigger onCreate and open the DB file immediately
         database.openHelper.writableDatabase
-        exportDatabase(context)
 
         return database
     }
