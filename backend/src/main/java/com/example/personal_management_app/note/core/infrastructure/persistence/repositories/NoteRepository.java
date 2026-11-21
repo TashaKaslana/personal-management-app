@@ -1,6 +1,8 @@
 package com.example.personal_management_app.note.core.infrastructure.persistence.repositories;
 
 import java.util.Optional;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import com.example.personal_management_app.note.core.infrastructure.persistence.entities.Note;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -22,26 +24,36 @@ public interface NoteRepository extends JpaRepository<Note, UUID> {
             """, nativeQuery = true)
     Optional<Note> lockDueReminder(@Param("id") UUID id, @Param("now") OffsetDateTime now);
 
+    String VISIBLE = "(s.createdBy = :actor or (s.deletedAt is null and exists "
+            + "(select 1 from NoteCollaborator member "
+            + "where member.id.noteId = s.id and member.id.userId = :actor)))";
+
+    @Query("select s from Note s where " + VISIBLE)
+    Page<Note> findVisible(UUID actor, Pageable pageable);
+
+    @Query("select count(s) from Note s where " + VISIBLE)
+    long countVisible(UUID actor);
+
     // --- Active (not trashed) notes ---
 
-    @Query("SELECT s FROM Note s WHERE s.deletedAt IS NULL ORDER BY s.pinned DESC, s.updatedAt DESC")
-    List<Note> findAllActive();
+    @Query("SELECT s FROM Note s WHERE " + VISIBLE + " AND s.deletedAt IS NULL ORDER BY s.pinned DESC, s.updatedAt DESC")
+    List<Note> findAllActive(UUID actor);
 
-    @Query("SELECT s FROM Note s WHERE s.deletedAt IS NULL AND s.archivedAt IS NULL ORDER BY s.pinned DESC, s.updatedAt DESC")
-    List<Note> findAllUnarchived();
+    @Query("SELECT s FROM Note s WHERE " + VISIBLE + " AND s.deletedAt IS NULL AND s.archivedAt IS NULL ORDER BY s.pinned DESC, s.updatedAt DESC")
+    List<Note> findAllUnarchived(UUID actor);
 
-    @Query("SELECT s FROM Note s WHERE s.deletedAt IS NULL AND s.archivedAt IS NOT NULL ORDER BY s.updatedAt DESC")
-    List<Note> findAllArchived();
+    @Query("SELECT s FROM Note s WHERE " + VISIBLE + " AND s.deletedAt IS NULL AND s.archivedAt IS NOT NULL ORDER BY s.updatedAt DESC")
+    List<Note> findAllArchived(UUID actor);
 
-    @Query("SELECT s FROM Note s WHERE s.deletedAt IS NULL AND s.pinned = true ORDER BY s.updatedAt DESC")
-    List<Note> findAllPinned();
+    @Query("SELECT s FROM Note s WHERE " + VISIBLE + " AND s.deletedAt IS NULL AND s.pinned = true ORDER BY s.updatedAt DESC")
+    List<Note> findAllPinned(UUID actor);
 
     // --- Trash ---
 
-    @Query("SELECT s FROM Note s WHERE s.deletedAt IS NOT NULL ORDER BY s.deletedAt DESC")
-    List<Note> findAllTrashed();
+    @Query("SELECT s FROM Note s WHERE s.createdBy = :actor AND s.deletedAt IS NOT NULL ORDER BY s.deletedAt DESC")
+    List<Note> findAllTrashed(UUID actor);
 
-    List<Note> findByDeletedAtBefore(OffsetDateTime threshold);
+    List<Note> findByCreatedByAndDeletedAtBefore(UUID actor, OffsetDateTime threshold);
 
     // --- Search (visible text via search_text, or tag name) ---
 
@@ -49,46 +61,52 @@ public interface NoteRepository extends JpaRepository<Note, UUID> {
             SELECT DISTINCT s FROM Note s
             LEFT JOIN NoteTag nt ON nt.id.noteId = s.id
             LEFT JOIN nt.tag t
-            WHERE s.deletedAt IS NULL
+            WHERE""" + VISIBLE + """
+              AND s.deletedAt IS NULL
               AND (LOWER(s.searchText) LIKE LOWER(CONCAT('%', :query, '%'))
                 OR LOWER(t.name) LIKE LOWER(CONCAT('%', :query, '%')))
             ORDER BY s.pinned DESC, s.updatedAt DESC
             """)
-    List<Note> searchActive(@Param("query") String query);
+    List<Note> searchActive(@Param("actor") UUID actor, @Param("query") String query);
 
     @Query("""
             SELECT DISTINCT s FROM Note s
             LEFT JOIN NoteTag nt ON nt.id.noteId = s.id
             LEFT JOIN nt.tag t
-            WHERE s.deletedAt IS NOT NULL
+            WHERE s.createdBy = :actor AND s.deletedAt IS NOT NULL
               AND (LOWER(s.searchText) LIKE LOWER(CONCAT('%', :query, '%'))
                 OR LOWER(t.name) LIKE LOWER(CONCAT('%', :query, '%')))
             ORDER BY s.deletedAt DESC
             """)
-    List<Note> searchTrashed(@Param("query") String query);
+    List<Note> searchTrashed(@Param("actor") UUID actor, @Param("query") String query);
 
     // --- By tag ---
 
     @Query("""
             SELECT DISTINCT s FROM Note s
             JOIN NoteTag nt ON nt.id.noteId = s.id
-            WHERE nt.id.tagId = :tagId AND s.deletedAt IS NULL
+            WHERE""" + VISIBLE + """
+              AND nt.id.tagId = :tagId AND s.deletedAt IS NULL
             ORDER BY s.pinned DESC, s.updatedAt DESC
             """)
-    List<Note> findActiveByTagId(@Param("tagId") UUID tagId);
+    List<Note> findActiveByTagId(@Param("actor") UUID actor, @Param("tagId") UUID tagId);
 
     // --- Counts ---
 
-    long countByDeletedAtIsNull();
+    @Query("select count(s) from Note s where " + VISIBLE + " and s.deletedAt is null")
+    long countByDeletedAtIsNull(UUID actor);
 
-    long countByDeletedAtIsNullAndArchivedAtIsNotNull();
+    @Query("select count(s) from Note s where " + VISIBLE + " and s.deletedAt is null and s.archivedAt is not null")
+    long countByDeletedAtIsNullAndArchivedAtIsNotNull(UUID actor);
 
-    long countByDeletedAtIsNotNull();
+    @Query("select count(s) from Note s where " + VISIBLE + " and s.deletedAt is not null")
+    long countByDeletedAtIsNotNull(UUID actor);
 
     @Query("""
             SELECT COUNT(s) FROM Note s
-            WHERE s.deletedAt IS NULL
+            WHERE""" + VISIBLE + """
+              AND s.deletedAt IS NULL
               AND s.id IN (SELECT nt.id.noteId FROM NoteTag nt WHERE nt.id.tagId = :tagId)
             """)
-    long countActiveByTagId(@Param("tagId") UUID tagId);
+    long countActiveByTagId(@Param("actor") UUID actor, @Param("tagId") UUID tagId);
 }

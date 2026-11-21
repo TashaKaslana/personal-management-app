@@ -3,6 +3,7 @@ package com.example.personal_management_app.note.core.infrastructure.persistence
 import jakarta.persistence.AttributeOverride;
 import jakarta.persistence.AttributeOverrides;
 import jakarta.persistence.Column;
+import jakarta.persistence.Version;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -56,8 +57,11 @@ import java.time.OffsetDateTime;
 })
 public class Note extends BaseFullAuditEntity {
 
+    @Version
+    private long version;
+
     @NotNull
-    @Column(name = "title", nullable = false, length = 255)
+    @Column(name = "title", nullable = false)
     private String title;
 
     /**

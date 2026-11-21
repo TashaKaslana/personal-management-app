@@ -1,16 +1,20 @@
 package com.example.personal_management_app.note.core.service;
 
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.LockModeType;
 import lombok.RequiredArgsConstructor;
+import com.example.personal_management_app.note.collaboration.enums.CollaboratorRole;
+import com.example.personal_management_app.note.core.dtos.UpdateNoteRequest;
+import com.example.personal_management_app.note.collaboration.service.NoteMembershipService;
+import com.example.personal_management_app.note.core.exception.StaleNoteVersionException;
 import com.example.personal_management_app.core.security.CurrentUserProvider;
-import org.springframework.security.access.AccessDeniedException;
+import com.example.personal_management_app.note.core.exception.NoteAccessDeniedException;
 import com.example.personal_management_app.note.core.dtos.CreateNoteRequest;
 import com.example.personal_management_app.note.core.dtos.NoteDto;
-import com.example.personal_management_app.note.core.dtos.NoteTextStyleDto;
 import com.example.personal_management_app.note.reminder.enums.ReminderRepeat;
 import com.example.personal_management_app.note.core.exception.NoteNotFoundException;
 import com.example.personal_management_app.note.core.infrastructure.mapstruct.NoteMapper;
 import com.example.personal_management_app.note.core.infrastructure.persistence.entities.Note;
-import com.example.personal_management_app.note.core.infrastructure.persistence.entities.NoteTextStyle;
 import com.example.personal_management_app.note.core.infrastructure.persistence.repositories.NoteRepository;
 import com.example.personal_management_app.note.tag.infrastructure.mapstruct.TagMapper;
 import com.example.personal_management_app.note.tag.infrastructure.persistence.entities.Tag;
@@ -38,6 +42,8 @@ public class NoteService {
 
     public static final int TRASH_RETENTION_DAYS = 30;
 
+    private final EntityManager entityManager;
+    private final NoteMembershipService memberships;
     private final NoteRepository noteRepository;
     private final CurrentUserProvider currentUserProvider;
     private final NoteTagService noteTagService;
@@ -50,12 +56,11 @@ public class NoteService {
      */
     @Transactional
     public NoteDto createNote(CreateNoteRequest request) {
+        getActorOrThrow();
         Note note = noteMapper.toEntity(request);
-        applyStyle(request.getTitleStyle(), note.getTitleStyle());
-        applyStyle(request.getContentStyle(), note.getContentStyle());
         note.setSearchText(noteSearchTextExtractor.extract(request.getTitle(), request.getContent()));
 
-        Note savedNote = noteRepository.save(note);
+        Note savedNote = noteRepository.saveAndFlush(note);
 
         if (request.getTagIds() != null) {
             noteTagService.replaceTags(savedNote.getId(), request.getTagIds());
@@ -78,42 +83,46 @@ public class NoteService {
      * Find a note by ID
      */
     public NoteDto getNoteById(UUID id) {
-        return toDtoWithTags(getNoteEntity(id));
+        Note note = getNoteEntity(id);
+        if (!visible(note)) {
+            throw new NoteNotFoundException(id.toString());
+        }
+        return toDtoWithTags(note);
     }
 
     /**
      * Find all non-deleted notes (active + archived, pinned first)
      */
     public List<NoteDto> findAllActive() {
-        return toDtoListWithTags(noteRepository.findAllActive());
+        return toDtoListWithTags(noteRepository.findAllActive(getActorOrThrow()));
     }
 
     /**
      * Find all non-deleted, non-archived notes (the main note grid)
      */
     public List<NoteDto> findAllUnarchived() {
-        return toDtoListWithTags(noteRepository.findAllUnarchived());
+        return toDtoListWithTags(noteRepository.findAllUnarchived(getActorOrThrow()));
     }
 
     /**
      * Find all archived notes (not in trash)
      */
     public List<NoteDto> findAllArchived() {
-        return toDtoListWithTags(noteRepository.findAllArchived());
+        return toDtoListWithTags(noteRepository.findAllArchived(getActorOrThrow()));
     }
 
     /**
      * Find all pinned notes (not in trash)
      */
     public List<NoteDto> findAllPinned() {
-        return toDtoListWithTags(noteRepository.findAllPinned());
+        return toDtoListWithTags(noteRepository.findAllPinned(getActorOrThrow()));
     }
 
     /**
      * Find all notes with pagination
      */
     public Page<NoteDto> findAll(Pageable pageable) {
-        return noteRepository.findAll(pageable)
+        return noteRepository.findVisible(getActorOrThrow(), pageable)
             .map(noteMapper::toDto);
     }
 
@@ -122,8 +131,8 @@ public class NoteService {
      */
     public List<NoteDto> findAllTrashed(String query) {
         List<Note> trashed = (query == null || query.isBlank())
-            ? noteRepository.findAllTrashed()
-            : noteRepository.searchTrashed(query.trim());
+            ? noteRepository.findAllTrashed(getActorOrThrow())
+            : noteRepository.searchTrashed(getActorOrThrow(), query.trim());
 
         return toDtoListWithTags(trashed);
     }
@@ -136,7 +145,7 @@ public class NoteService {
             return findAllActive();
         }
 
-        return toDtoListWithTags(noteRepository.searchActive(query.trim()));
+        return toDtoListWithTags(noteRepository.searchActive(getActorOrThrow(), query.trim()));
     }
 
     /**
@@ -150,20 +159,27 @@ public class NoteService {
      * Update a note (full replace). A null {@code tagIds} keeps the existing tags.
      */
     @Transactional
-    public NoteDto updateNote(UUID id, CreateNoteRequest request) {
+    public NoteDto updateNote(UUID id, UpdateNoteRequest request) {
         Note note = getNoteEntity(id);
-        requireOwner(note);
-
-        noteMapper.updateEntity(request, note);
-        applyStyle(request.getTitleStyle(), note.getTitleStyle());
-        applyStyle(request.getContentStyle(), note.getContentStyle());
+        boolean owner = getActorOrThrow().equals(note.getCreatedBy());
+        if (!owner && (note.getDeletedAt() != null || !memberships.hasRole(id, getActorOrThrow(), CollaboratorRole.EDITOR))) {
+            throw new NoteAccessDeniedException("Editing this note requires editor access");
+        }
+        if (request.getVersion() == null || request.getVersion() != note.getVersion()) {
+            throw new StaleNoteVersionException();
+        }
+        if (owner) {
+            noteMapper.updateEntity(request, note);
+        } else {
+            noteMapper.updateEditorFields(request, note);
+        }
         note.setSearchText(noteSearchTextExtractor.extract(request.getTitle(), request.getContent()));
 
-        if (request.getTagIds() != null) {
+        if (owner && request.getTagIds() != null) {
             noteTagService.replaceTags(id, request.getTagIds());
         }
 
-        Note savedNote = noteRepository.save(note);
+        Note savedNote = noteRepository.saveAndFlush(note);
         return toDtoWithTags(savedNote);
     }
 
@@ -173,6 +189,7 @@ public class NoteService {
     @Transactional
     public void deleteNote(UUID id) {
         Note note = getNoteEntity(id);
+        requireOwner(note);
 
         note.setDeletedAt(OffsetDateTime.now());
         note.setPinned(false);
@@ -194,9 +211,10 @@ public class NoteService {
     @Transactional
     public NoteDto restoreNote(UUID id) {
         Note note = getNoteEntity(id);
+        requireOwner(note);
 
         note.setDeletedAt(null);
-        Note savedNote = noteRepository.save(note);
+        Note savedNote = noteRepository.saveAndFlush(note);
         return toDtoWithTags(savedNote);
     }
 
@@ -206,6 +224,7 @@ public class NoteService {
     @Transactional
     public void deleteNotePermanently(UUID id) {
         Note note = getNoteEntity(id);
+        requireOwner(note);
 
         noteTagService.removeAllTagsFromNote(id);
         noteRepository.delete(note);
@@ -216,7 +235,7 @@ public class NoteService {
      */
     @Transactional
     public int emptyTrash() {
-        List<Note> trashed = noteRepository.findAllTrashed();
+        List<Note> trashed = noteRepository.findAllTrashed(getActorOrThrow());
         if (trashed.isEmpty()) {
             return 0;
         }
@@ -234,7 +253,7 @@ public class NoteService {
     @Transactional
     public int purgeExpiredTrash() {
         OffsetDateTime threshold = OffsetDateTime.now().minusDays(TRASH_RETENTION_DAYS);
-        List<Note> expired = noteRepository.findByDeletedAtBefore(threshold);
+        List<Note> expired = noteRepository.findByCreatedByAndDeletedAtBefore(getActorOrThrow(), threshold);
         if (expired.isEmpty()) {
             return 0;
         }
@@ -252,9 +271,10 @@ public class NoteService {
     @Transactional
     public NoteDto setPinned(UUID id, boolean pinned) {
         Note note = getNoteEntity(id);
+        requireOwner(note);
 
         note.setPinned(pinned);
-        Note savedNote = noteRepository.save(note);
+        Note savedNote = noteRepository.saveAndFlush(note);
 
         return toDtoWithTags(savedNote);
     }
@@ -265,9 +285,10 @@ public class NoteService {
     @Transactional
     public NoteDto setArchived(UUID id, boolean archived) {
         Note note = getNoteEntity(id);
+        requireOwner(note);
 
         note.setArchivedAt(archived ? OffsetDateTime.now() : null);
-        Note savedNote = noteRepository.save(note);
+        Note savedNote = noteRepository.saveAndFlush(note);
 
         return toDtoWithTags(savedNote);
     }
@@ -282,7 +303,7 @@ public class NoteService {
 
         note.setReminderAt(at);
         note.setReminderRepeat(at != null ? (repeat != null ? repeat : ReminderRepeat.ONCE) : null);
-        Note savedNote = noteRepository.save(note);
+        Note savedNote = noteRepository.saveAndFlush(note);
 
         return toDtoWithTags(savedNote);
     }
@@ -297,7 +318,7 @@ public class NoteService {
 
         note.setReminderAt(null);
         note.setReminderRepeat(null);
-        Note savedNote = noteRepository.save(note);
+        Note savedNote = noteRepository.saveAndFlush(note);
 
         return toDtoWithTags(savedNote);
     }
@@ -321,10 +342,40 @@ public class NoteService {
         }
     }
 
+    private UUID getActorOrThrow() {
+        return currentUserProvider.getCurrentUserId()
+                .filter(id -> !new UUID(0, 0).equals(id))
+                .orElseThrow(() -> new NoteAccessDeniedException("Sign in to access notes"));
+    }
+
+    private boolean visible(Note note) {
+        UUID userId = getActorOrThrow();
+        return userId.equals(note.getCreatedBy())
+                || (note.getDeletedAt() == null && memberships.contains(note.getId(), userId));
+    }
+
+    public void requireOwner(UUID noteId) {
+        requireOwner(getNoteEntity(noteId));
+    }
+
+    @Transactional(propagation = Propagation.MANDATORY)
+    public UUID lockOwnedNoteForSharing(UUID noteId) {
+        Note note = getNoteEntity(noteId);
+        requireOwner(note);
+        entityManager.lock(note, LockModeType.PESSIMISTIC_WRITE);
+        return note.getCreatedBy();
+    }
+
+    @Transactional(propagation = Propagation.MANDATORY)
+    public void advanceSharingVersion(UUID noteId) {
+        Note note = getNoteEntity(noteId);
+        requireOwner(note);
+        entityManager.lock(note, LockModeType.PESSIMISTIC_FORCE_INCREMENT);
+    }
+
     private void requireOwner(Note note) {
-        if (note.getCreatedBy() != null && currentUserProvider.getCurrentUserId()
-                .filter(note.getCreatedBy()::equals).isEmpty()) {
-            throw new AccessDeniedException("Only the note owner can change this note or its reminder");
+        if (!getActorOrThrow().equals(note.getCreatedBy())) {
+            throw new NoteAccessDeniedException("Only the note owner can perform this action");
         }
     }
 
@@ -332,42 +383,42 @@ public class NoteService {
      * Check if a note exists
      */
     public boolean existsById(UUID id) {
-        return noteRepository.existsById(id);
+        return noteRepository.findById(id).filter(this::visible).isPresent();
     }
 
     /**
      * Count all notes (including trashed)
      */
     public long count() {
-        return noteRepository.count();
+        return noteRepository.countVisible(getActorOrThrow());
     }
 
     /**
      * Count non-deleted notes
      */
     public long countActive() {
-        return noteRepository.countByDeletedAtIsNull();
+        return noteRepository.countByDeletedAtIsNull(getActorOrThrow());
     }
 
     /**
      * Count archived notes (not in trash)
      */
     public long countArchived() {
-        return noteRepository.countByDeletedAtIsNullAndArchivedAtIsNotNull();
+        return noteRepository.countByDeletedAtIsNullAndArchivedAtIsNotNull(getActorOrThrow());
     }
 
     /**
      * Count trashed notes
      */
     public long countTrashed() {
-        return noteRepository.countByDeletedAtIsNotNull();
+        return noteRepository.countByDeletedAtIsNotNull(getActorOrThrow());
     }
 
     /**
      * Count non-deleted notes linked to a tag
      */
     public long countActiveByTagId(UUID tagId) {
-        return noteRepository.countActiveByTagId(tagId);
+        return noteRepository.countActiveByTagId(getActorOrThrow(), tagId);
     }
 
     // Internal method for getting entity (used by other services)
@@ -376,27 +427,9 @@ public class NoteService {
             .orElseThrow(() -> new NoteNotFoundException(id.toString()));
     }
 
-    /**
-     * Apply a style DTO onto an embedded style. A null source resets to defaults.
-     */
-    private void applyStyle(NoteTextStyleDto source, NoteTextStyle target) {
-        if (source == null) {
-            target.reset();
-            return;
-        }
-
-        target.setFontSize(source.getFontSize());
-        target.setBold(source.isBold());
-        target.setItalic(source.isItalic());
-        target.setUnderline(source.isUnderline());
-    }
-
     private NoteDto toDtoWithTags(Note note) {
         List<Tag> tags = noteTagService.findTagsByNote(note.getId());
-        NoteDto dto = noteMapper.toDto(note);
-        dto.setTags(tagMapper.toDtoList(tags));
-
-        return dto;
+        return noteMapper.toDto(note, tagMapper.toDtoList(tags));
     }
 
     private List<NoteDto> toDtoListWithTags(List<Note> notes) {
@@ -409,11 +442,7 @@ public class NoteService {
         );
 
         return notes.stream()
-            .map(note -> {
-                NoteDto dto = noteMapper.toDto(note);
-                dto.setTags(tagMapper.toDtoList(tagsByNoteId.getOrDefault(note.getId(), List.of())));
-                return dto;
-            })
+            .map(note -> noteMapper.toDto(note, tagMapper.toDtoList(tagsByNoteId.getOrDefault(note.getId(), List.of()))))
             .toList();
     }
 }

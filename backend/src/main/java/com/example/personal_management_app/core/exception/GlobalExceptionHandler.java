@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -273,6 +274,15 @@ public class GlobalExceptionHandler {
 //        systemLogService.logError("No handler found for request: " + ex.getMessage(), context);
 
         return RestApiResponse.notFound(HttpRequestUtils.getRequestPath(request), SystemError.NOT_FOUND_ENDPOINT.getErrorMessage());
+    }
+
+    @ExceptionHandler(OptimisticLockingFailureException.class)
+    public ResponseEntity<RestApiResponse<Void>> handleOptimisticLock(OptimisticLockingFailureException ex,
+                                                                      WebRequest request) {
+        log.debug("The resource has changed: {}", ex.getMessage());
+
+        return RestApiResponse.conflict(HttpRequestUtils.getRequestPath(request),
+                "The resource has changed. Reload it before retrying.");
     }
 
     @ExceptionHandler(AccessDeniedException.class)

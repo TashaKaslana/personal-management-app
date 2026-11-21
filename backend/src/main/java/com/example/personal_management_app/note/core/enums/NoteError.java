@@ -7,6 +7,8 @@ import lombok.Getter;
  */
 @Getter
 public enum NoteError {
+    ACCESS_DENIED("note.access_denied", "Note access denied"),
+    STALE_VERSION("note.stale_version", "The note has changed"),
     NOTE_NOT_FOUND("note.not_found", "Note not found"),
     TAG_ALREADY_ASSIGNED("note.tag_already_assigned", "Tag already assigned to note"),
     TAG_NOT_ASSIGNED("note.tag_not_assigned", "Tag not assigned to note");
