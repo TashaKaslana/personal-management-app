@@ -1,5 +1,7 @@
 package com.example.personal_management_app.note.core.infrastructure.persistence.repositories;
 
+import java.util.Optional;
+
 import com.example.personal_management_app.note.core.infrastructure.persistence.entities.Note;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -10,6 +12,15 @@ import java.util.List;
 import java.util.UUID;
 
 public interface NoteRepository extends JpaRepository<Note, UUID> {
+
+    @Query("select n.id from Note n where n.createdBy is not null and n.deletedAt is null and n.reminderAt <= :now order by n.reminderAt")
+    List<UUID> findDueReminderIds(@Param("now") OffsetDateTime now);
+
+    @Query(value = """
+            select * from notes where id = :id and deleted_at is null and reminder_at <= :now
+            for update skip locked
+            """, nativeQuery = true)
+    Optional<Note> lockDueReminder(@Param("id") UUID id, @Param("now") OffsetDateTime now);
 
     // --- Active (not trashed) notes ---
 

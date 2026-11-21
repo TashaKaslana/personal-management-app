@@ -1,4 +1,4 @@
-package com.example.personal_management_app.note.core.enums;
+package com.example.personal_management_app.note.reminder.enums;
 
 /**
  * How often a note reminder repeats after it fires

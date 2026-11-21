@@ -7,7 +7,6 @@ import com.example.personal_management_app.note.core.dtos.NoteDto;
 import com.example.personal_management_app.note.core.dtos.SetArchiveStatusRequest;
 import com.example.personal_management_app.note.core.dtos.SetNoteTagsRequest;
 import com.example.personal_management_app.note.core.dtos.SetPinStatusRequest;
-import com.example.personal_management_app.note.core.dtos.SetReminderRequest;
 import com.example.personal_management_app.note.core.service.NoteService;
 import com.example.personal_management_app.note.core.service.NoteTagService;
 import com.example.personal_management_app.note.tag.dtos.TagDto;
@@ -16,7 +15,16 @@ import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.UUID;
@@ -110,7 +118,7 @@ public class NoteController {
         return RestApiResponse.success(updatedNote, "Note updated successfully");
     }
 
-    // --- Lifecycle: pin / archive / reminder ---
+    // --- Lifecycle: pin / archive ---
 
     @PatchMapping("/{id}/pin")
     public ResponseEntity<RestApiResponse<NoteDto>> setNotePinned(
@@ -126,20 +134,6 @@ public class NoteController {
             @Valid @RequestBody SetArchiveStatusRequest request) {
         NoteDto note = noteService.setArchived(id, request.getArchived());
         return RestApiResponse.success(note, "Note archive status updated successfully");
-    }
-
-    @PutMapping("/{id}/reminder")
-    public ResponseEntity<RestApiResponse<NoteDto>> setNoteReminder(
-            @PathVariable UUID id,
-            @Valid @RequestBody SetReminderRequest request) {
-        NoteDto note = noteService.setReminder(id, request.getAt(), request.getRepeat());
-        return RestApiResponse.success(note, "Note reminder set successfully");
-    }
-
-    @DeleteMapping("/{id}/reminder")
-    public ResponseEntity<RestApiResponse<NoteDto>> clearNoteReminder(@PathVariable UUID id) {
-        NoteDto note = noteService.clearReminder(id);
-        return RestApiResponse.success(note, "Note reminder cleared successfully");
     }
 
     // --- Lifecycle: trash ---

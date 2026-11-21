@@ -2,7 +2,7 @@ package com.example.personal_management_app.note.core.dtos;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.Data;
-import com.example.personal_management_app.note.core.enums.ReminderRepeat;
+import com.example.personal_management_app.note.reminder.enums.ReminderRepeat;
 
 import java.time.OffsetDateTime;
 import java.util.List;
