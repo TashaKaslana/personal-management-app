@@ -14,9 +14,7 @@ data class UserSession(
 
 @Singleton
 class SessionManager @Inject constructor() {
-    private val _sessionState = MutableStateFlow<UserSession?>(
-        UserSession(userId = "user_01", token = "dev_token", username = "BiOwO")
-    )
+    private val _sessionState = MutableStateFlow<UserSession?>(null)
     val sessionState: StateFlow<UserSession?> = _sessionState.asStateFlow()
 
     fun updateSession(session: UserSession) {

@@ -1,14 +1,11 @@
 package com.example.personal_management_app.repositories
 
-import android.content.Context
 import com.example.personal_management_app.data.local.dao.TagDao
 import com.example.personal_management_app.data.local.dao.UserDao
 import com.example.personal_management_app.data.local.entities.UserEntity
 import com.example.personal_management_app.dtos.AuthResult
 import com.example.personal_management_app.entities.ProfileEntity
 import com.example.personal_management_app.entities.TagEntity
-import com.example.personal_management_app.utils.exportDatabase
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import java.util.UUID
@@ -18,8 +15,7 @@ import javax.inject.Singleton
 @Singleton
 class UserRepository @Inject constructor(
     private val userDao: UserDao,
-    private val tagDao: TagDao,
-    @ApplicationContext private val context: Context
+    private val tagDao: TagDao
 ) {
     fun login(email: String, password: String): AuthResult {
         val user = userDao.getUserByEmail(email.trim())
@@ -66,8 +62,6 @@ class UserRepository @Inject constructor(
         )
         // Note: ZERO notes are created. Brand new account is completely clean!
 
-        exportDatabase(context)
-
         return AuthResult.Success(
             user = user.toProfileEntity(),
             token = UUID.randomUUID().toString()
@@ -78,7 +72,6 @@ class UserRepository @Inject constructor(
         val user = userDao.getUserById(userId) ?: return false
         if (user.password != currentPassword) return false
         userDao.updatePassword(userId, newPassword)
-        exportDatabase(context)
         return true
     }
 
@@ -100,14 +93,12 @@ class UserRepository @Inject constructor(
         val user = userDao.getUserById(userId) ?: return false
         val avatar = if (keepExistingAvatarIfNull && newAvatar == null) user.avatar else newAvatar
         userDao.updateProfile(userId, newName, newUsername, avatar)
-        exportDatabase(context)
         return true
     }
 
     fun updateAvatar(userId: String, avatarPath: String?): Boolean {
         val user = userDao.getUserById(userId) ?: return false
         userDao.updateAvatar(userId, avatarPath)
-        exportDatabase(context)
         return true
     }
 }

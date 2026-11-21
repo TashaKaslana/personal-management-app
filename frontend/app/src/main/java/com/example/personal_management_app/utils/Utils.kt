@@ -103,7 +103,7 @@ fun loadAvatarBitmap(context: Context, pathOrUri: String?): ImageBitmap? {
 }
 
 /**
- * Extracts initials from a user's display name (e.g., "Nguyễn Minh Đức" -> "NMD").
+ * Extracts initials from a user's display name (e.g., "John Doe" -> "JD").
  */
 fun getInitials(name: String): String {
     val trimmed = name.trim()
@@ -149,36 +149,5 @@ fun NoteEntity.matchesQuery(query: String): Boolean {
     val fullText = "$title $plainContent ${tags.joinToString(" ")}"
     return tokens.all { token ->
         fullText.matchesSearch(token)
-    }
-}
-
-/**
- * Automatically exports SQLite database file directly into BlueStacks SharedFolder
- * (which maps directly to Windows: C:\ProgramData\BlueStacks_nxt\Engine\UserData\SharedFolder\)
- * as well as external storage, allowing real-time viewing in DataGrip with ZERO manual scripts!
- */
-fun exportDatabase(context: Context) {
-    runCatching {
-        val dbFile = context.getDatabasePath("personal_management_app.db")
-        if (dbFile.exists() && dbFile.length() > 0) {
-            // 1. BlueStacks Shared Folder -> Maps to Windows C:\ProgramData\BlueStacks_nxt\Engine\UserData\SharedFolder
-            val bstSharedDir = File("/sdcard/windows/BstSharedFolder")
-            if (bstSharedDir.exists() && bstSharedDir.canWrite()) {
-                dbFile.copyTo(File(bstSharedDir, "personal_management_app.db"), overwrite = true)
-            }
-
-            // 2. Standard external storage
-            val extDir = context.getExternalFilesDir(null)
-            if (extDir != null) {
-                extDir.mkdirs()
-                dbFile.copyTo(File(extDir, "personal_management_app.db"), overwrite = true)
-            }
-
-            // 3. Download directory
-            val downloadDir = File("/sdcard/Download")
-            if (downloadDir.exists() && downloadDir.canWrite()) {
-                dbFile.copyTo(File(downloadDir, "personal_management_app.db"), overwrite = true)
-            }
-        }
     }
 }

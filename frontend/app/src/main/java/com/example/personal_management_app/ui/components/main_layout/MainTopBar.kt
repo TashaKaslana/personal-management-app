@@ -14,6 +14,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -99,6 +100,7 @@ fun MainTopBar(
                             navController.navigate("profile_screen")
                         }
                 ) {
+                    val currentName = profile?.name
                     if (avatarBitmap != null) {
                         Image(
                             bitmap = avatarBitmap,
@@ -108,14 +110,23 @@ fun MainTopBar(
                                 .clip(RoundedCornerShape(50)),
                             contentScale = ContentScale.Crop
                         )
-                    } else {
+                    } else if (!currentName.isNullOrBlank()) {
                         Box(contentAlignment = Alignment.Center) {
-                            val initials = getInitials(profile?.name ?: "NMD")
+                            val initials = getInitials(currentName)
                             Text(
                                 text = initials,
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color.DarkGray
+                            )
+                        }
+                    } else {
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(
+                                imageVector = Icons.Default.Person,
+                                contentDescription = "Tài khoản",
+                                tint = Color.DarkGray,
+                                modifier = Modifier.size(20.dp)
                             )
                         }
                     }

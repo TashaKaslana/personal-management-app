@@ -14,6 +14,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
@@ -26,29 +27,33 @@ class ProfileViewModel @Inject constructor(
     @OptIn(ExperimentalCoroutinesApi::class)
     val profileFlow: StateFlow<ProfileEntity?> = sessionManager.sessionState
         .flatMapLatest { session ->
-            val userId = session?.userId ?: "user_01"
-            userRepository.getProfileFlow(userId)
+            val userId = session?.userId
+            if (userId != null) {
+                userRepository.getProfileFlow(userId)
+            } else {
+                flowOf(null)
+            }
         }
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.Eagerly,
-            initialValue = userRepository.getProfile(sessionManager.sessionState.value?.userId ?: "user_01")
+            initialValue = sessionManager.sessionState.value?.userId?.let { userRepository.getProfile(it) }
         )
 
     fun getProfile(): ProfileEntity? {
-        val userId = sessionManager.sessionState.value?.userId ?: "user_01"
+        val userId = sessionManager.sessionState.value?.userId ?: return null
         return userRepository.getProfile(userId)
     }
 
     fun uploadAvatar(context: Context, uri: Uri): String? {
-        val userId = sessionManager.sessionState.value?.userId ?: "user_01"
+        val userId = sessionManager.sessionState.value?.userId ?: return null
         val savedPath = copyUriToAvatarStorage(context, uri, userId) ?: return null
         userRepository.updateAvatar(userId, savedPath)
         return savedPath
     }
 
     fun removeAvatar(context: Context) {
-        val userId = sessionManager.sessionState.value?.userId ?: "user_01"
+        val userId = sessionManager.sessionState.value?.userId ?: return
         deleteAvatarFile(context, userId)
         userRepository.updateAvatar(userId, null)
     }
@@ -63,7 +68,8 @@ class ProfileViewModel @Inject constructor(
         if (name.isBlank() || username.isBlank()) {
             return "Vui lòng nhập đầy đủ họ tên và tên đăng nhập!"
         }
-        val userId = sessionManager.sessionState.value?.userId ?: "user_01"
+        val userId = sessionManager.sessionState.value?.userId
+            ?: return "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!"
 
         if (newPassword.isNotEmpty() || confirmPassword.isNotEmpty()) {
             if (currentPassword.isBlank()) {
