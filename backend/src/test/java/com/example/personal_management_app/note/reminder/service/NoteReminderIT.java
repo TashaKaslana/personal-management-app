@@ -35,7 +35,7 @@ class NoteReminderIT {
     NoteService notes;
     @MockitoBean
     UserService users;
-    @MockitoBean
+    @MockitoBean(enforceOverride = true)
     JavaMailSender mail;
 
     @Test
