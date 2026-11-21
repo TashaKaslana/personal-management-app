@@ -46,6 +46,7 @@ fun copyUriToNoteImageStorage(context: Context, source: Uri): String? {
 fun copyUriToAvatarStorage(context: Context, source: Uri, userId: String): String? {
     return runCatching {
         val dir = File(context.filesDir, "avatars").apply { mkdirs() }
+        // Remove previous avatar files for this user
         dir.listFiles()?.filter { it.name.startsWith("avatar_${userId}_") }?.forEach {
             it.delete()
         }
@@ -53,7 +54,7 @@ fun copyUriToAvatarStorage(context: Context, source: Uri, userId: String): Strin
             ?.substringAfterLast('/')
             ?.takeIf { it.isNotBlank() && it != "*" }
             ?: "jpg"
-        val target = File(dir, "avatar_${userId}_${System.currentTimeMillis()}.$extension")
+        val target = File(dir, "avatar_${userId}_${UUID.randomUUID()}.$extension")
         context.contentResolver.openInputStream(source)?.use { input ->
             target.outputStream().use { output -> input.copyTo(output) }
         } ?: error("Cannot open picked avatar image")
@@ -62,7 +63,7 @@ fun copyUriToAvatarStorage(context: Context, source: Uri, userId: String): Strin
 }
 
 /**
- * Deletes any stored avatar file for the given user.
+ * Deletes any existing avatar file for the given user from internal storage.
  */
 fun deleteAvatarFile(context: Context, userId: String) {
     runCatching {
@@ -76,7 +77,7 @@ fun deleteAvatarFile(context: Context, userId: String) {
 }
 
 /**
- * Loads an ImageBitmap from a local file path or URI string safely.
+ * Loads a bitmap from internal storage file path or content URI safely.
  */
 fun loadAvatarBitmap(context: Context, pathOrUri: String?): ImageBitmap? {
     if (pathOrUri.isNullOrBlank()) return null
