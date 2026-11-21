@@ -1,10 +1,12 @@
 package com.example.personal_management_app.note.core.service;
 
 import lombok.RequiredArgsConstructor;
+import com.example.personal_management_app.core.security.CurrentUserProvider;
+import org.springframework.security.access.AccessDeniedException;
 import com.example.personal_management_app.note.core.dtos.CreateNoteRequest;
 import com.example.personal_management_app.note.core.dtos.NoteDto;
 import com.example.personal_management_app.note.core.dtos.NoteTextStyleDto;
-import com.example.personal_management_app.note.core.enums.ReminderRepeat;
+import com.example.personal_management_app.note.reminder.enums.ReminderRepeat;
 import com.example.personal_management_app.note.core.exception.NoteNotFoundException;
 import com.example.personal_management_app.note.core.infrastructure.mapstruct.NoteMapper;
 import com.example.personal_management_app.note.core.infrastructure.persistence.entities.Note;
@@ -20,6 +22,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import org.springframework.transaction.annotation.Propagation;
 import java.util.UUID;
 
 /**
@@ -35,6 +39,7 @@ public class NoteService {
     public static final int TRASH_RETENTION_DAYS = 30;
 
     private final NoteRepository noteRepository;
+    private final CurrentUserProvider currentUserProvider;
     private final NoteTagService noteTagService;
     private final NoteSearchTextExtractor noteSearchTextExtractor;
     private final NoteMapper noteMapper;
@@ -147,6 +152,7 @@ public class NoteService {
     @Transactional
     public NoteDto updateNote(UUID id, CreateNoteRequest request) {
         Note note = getNoteEntity(id);
+        requireOwner(note);
 
         noteMapper.updateEntity(request, note);
         applyStyle(request.getTitleStyle(), note.getTitleStyle());
@@ -272,6 +278,7 @@ public class NoteService {
     @Transactional
     public NoteDto setReminder(UUID id, OffsetDateTime at, ReminderRepeat repeat) {
         Note note = getNoteEntity(id);
+        requireOwner(note);
 
         note.setReminderAt(at);
         note.setReminderRepeat(at != null ? (repeat != null ? repeat : ReminderRepeat.ONCE) : null);
@@ -286,12 +293,39 @@ public class NoteService {
     @Transactional
     public NoteDto clearReminder(UUID id) {
         Note note = getNoteEntity(id);
+        requireOwner(note);
 
         note.setReminderAt(null);
         note.setReminderRepeat(null);
         Note savedNote = noteRepository.save(note);
 
         return toDtoWithTags(savedNote);
+    }
+
+    public List<UUID> findDueReminderIds(OffsetDateTime now) {
+        return noteRepository.findDueReminderIds(now);
+    }
+
+    @Transactional(propagation = Propagation.MANDATORY)
+    public Optional<NoteDto> lockDueReminder(UUID id, OffsetDateTime now) {
+        return noteRepository.lockDueReminder(id, now).map(noteMapper::toDto);
+    }
+
+    /** Advance the occurrence while the delivery transaction still owns the note lock. */
+    @Transactional(propagation = Propagation.MANDATORY)
+    public void advanceLockedReminder(UUID id, OffsetDateTime next) {
+        Note note = getNoteEntity(id);
+        note.setReminderAt(next);
+        if (next == null) {
+            note.setReminderRepeat(null);
+        }
+    }
+
+    private void requireOwner(Note note) {
+        if (note.getCreatedBy() != null && currentUserProvider.getCurrentUserId()
+                .filter(note.getCreatedBy()::equals).isEmpty()) {
+            throw new AccessDeniedException("Only the note owner can change this note or its reminder");
+        }
     }
 
     /**

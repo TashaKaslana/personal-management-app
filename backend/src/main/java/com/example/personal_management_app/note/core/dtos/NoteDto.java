@@ -1,7 +1,7 @@
 package com.example.personal_management_app.note.core.dtos;
 
 import lombok.Data;
-import com.example.personal_management_app.note.core.enums.ReminderRepeat;
+import com.example.personal_management_app.note.reminder.enums.ReminderRepeat;
 import com.example.personal_management_app.note.tag.dtos.TagDto;
 
 import java.time.OffsetDateTime;

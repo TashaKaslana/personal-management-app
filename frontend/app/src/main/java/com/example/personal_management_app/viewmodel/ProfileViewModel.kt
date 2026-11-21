@@ -41,7 +41,7 @@ class ProfileViewModel @Inject constructor(
         )
 
     fun getProfile(): ProfileEntity? {
-        val userId = sessionManager.sessionState.value?.userId ?: return null
+        val userId = currentUserId ?: return null
         return userRepository.getProfile(userId)
     }
 
@@ -63,8 +63,11 @@ class ProfileViewModel @Inject constructor(
         username: String,
         currentPassword: String,
         newPassword: String,
-        confirmPassword: String
+        confirmPassword: String,
+        avatar: String? = null
     ): String? {
+        val userId = currentUserId ?: return "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!"
+
         if (name.isBlank() || username.isBlank()) {
             return "Vui lòng nhập đầy đủ họ tên và tên đăng nhập!"
         }
@@ -85,7 +88,7 @@ class ProfileViewModel @Inject constructor(
                 return "Mật khẩu hiện tại không đúng!"
             }
         }
-        if (!userRepository.updateProfile(userId, name, username)) {
+        if (!userRepository.updateProfile(userId, name, username, avatar, keepExistingAvatarIfNull = true)) {
             return "Không tìm thấy người dùng!"
         }
         return null

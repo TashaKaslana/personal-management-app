@@ -1,12 +1,11 @@
 package com.example.personal_management_app.ui.screen.profile
 
-import android.graphics.BitmapFactory
-import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -22,6 +21,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -29,9 +29,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -111,7 +111,6 @@ fun ProfileScreen(
     var newPasswordInput by remember { mutableStateOf("") }
     var confirmPasswordInput by remember { mutableStateOf("") }
 
-    var selectedImageUri by remember { mutableStateOf<Uri?>(null) }
     var statusMessage by remember { mutableStateOf<String?>(null) }
     var isErrorState by remember { mutableStateOf(false) }
 
@@ -181,10 +180,11 @@ fun ProfileScreen(
                     }
                 },
                 onRemoveImage = {
-                    selectedImageUri = null
-                    viewModel.removeAvatar(context)
+                    val success = viewModel.removeAvatar(context)
+                    if (success) {
+                        viewModel.removeAvatar(context)
                     statusMessage = "Đã xóa ảnh đại diện, trở về mặc định."
-                    isErrorState = false
+                    isErrorState = false}
                 }
             )
 

@@ -17,7 +17,7 @@ public class AuditorAwareImpl implements AuditorAware<UUID> {
     @Override
     @NonNull
     public Optional<UUID> getCurrentAuditor() {
-        return currentUserProvider.getCurrentUserId();
+        return currentUserProvider.getCurrentUserId().filter(id -> !new UUID(0, 0).equals(id));
     }
 }
 

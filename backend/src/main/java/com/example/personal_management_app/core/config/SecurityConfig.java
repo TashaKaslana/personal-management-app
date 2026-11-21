@@ -1,5 +1,11 @@
 package com.example.personal_management_app.core.config;
 
+import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
+
+import com.example.personal_management_app.core.security.BearerIdentityFilter;
+
+import com.example.personal_management_app.core.services.JwtService;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -20,8 +26,11 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http,
+            JwtService tokens) {
         http
+                .addFilterBefore(new BearerIdentityFilter(tokens),
+                        AnonymousAuthenticationFilter.class)
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth

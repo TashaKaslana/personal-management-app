@@ -1,5 +1,7 @@
 package com.example.personal_management_app.core.services;
 
+import java.util.UUID;
+
 import com.example.personal_management_app.user.core.infrastructure.persistence.entities.User;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
@@ -33,5 +35,14 @@ public class JwtService {
                 .expiration(new Date(now.getTime() + expirationMs))
                 .signWith(secretKey)
                 .compact();
+    }
+
+    public UUID verifySubject(String token) {
+        String subject = Jwts.parser().verifyWith(secretKey).build()
+                .parseSignedClaims(token).getPayload().getSubject();
+        if (subject == null) {
+            throw new IllegalArgumentException("Missing token subject");
+        }
+        return UUID.fromString(subject);
     }
 }
