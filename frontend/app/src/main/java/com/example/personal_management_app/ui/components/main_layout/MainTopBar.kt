@@ -59,7 +59,6 @@ fun MainTopBar(
     val context = LocalContext.current
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
-
     val profileState by viewModel.currentProfile.collectAsStateWithLifecycle()
     val profile = profileState ?: viewModel.getProfile()
 
@@ -129,6 +128,7 @@ fun MainTopBar(
                         }
                 ) {
                     Box(contentAlignment = Alignment.Center) {
+                        val currentName = profile?.name
                         if (avatarBitmap != null) {
                             Image(
                                 bitmap = avatarBitmap,
@@ -136,8 +136,8 @@ fun MainTopBar(
                                 contentScale = ContentScale.Crop,
                                 modifier = Modifier.fillMaxSize()
                             )
-                        } else if (!profile?.name.isNullOrBlank()) {
-                            val initials = getInitials(profile.name)
+                        } else if (!currentName.isNullOrBlank()) {
+                            val initials = getInitials(currentName)
                             Text(
                                 text = initials,
                                 fontSize = 12.sp,
@@ -149,7 +149,7 @@ fun MainTopBar(
                                 imageVector = Icons.Default.Person,
                                 contentDescription = "Tài khoản",
                                 tint = Color.DarkGray,
-                                modifier = Modifier.size(18.dp)
+                                modifier = Modifier.size(20.dp)
                             )
                         }
                     }
