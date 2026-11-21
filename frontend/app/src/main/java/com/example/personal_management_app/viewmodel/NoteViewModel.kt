@@ -22,6 +22,11 @@ class NoteViewModel @Inject constructor(
 
     init {
         loadNotes()
+        viewModelScope.launch {
+            repository.getNotesFlow().collect { list ->
+                _notes.value = list
+            }
+        }
     }
 
     fun loadNotes() {
@@ -43,10 +48,7 @@ class NoteViewModel @Inject constructor(
         selectedTag: String? = null
     ): List<NoteEntity> {
         return _notes.value.filter { note ->
-            (note.archivedAt != null) == archived &&
-            note.deletedAt == null &&
-            (selectedTag.isNullOrBlank() || note.tags.contains(selectedTag)) &&
-            note.matchesQuery(query)
+            (note.archivedAt != null) == archived && note.matchesQuery(query)
         }
     }
 
@@ -55,11 +57,7 @@ class NoteViewModel @Inject constructor(
         selectedTag: String? = null
     ): List<NoteEntity> {
         return _notes.value.filter { note ->
-            note.reminder != null &&
-            note.archivedAt == null &&
-            note.deletedAt == null &&
-            (selectedTag.isNullOrBlank() || note.tags.contains(selectedTag)) &&
-            note.matchesQuery(query)
+            note.reminder != null && note.archivedAt == null && note.matchesQuery(query)
         }.sortedBy { it.reminder?.atMillis }
     }
 

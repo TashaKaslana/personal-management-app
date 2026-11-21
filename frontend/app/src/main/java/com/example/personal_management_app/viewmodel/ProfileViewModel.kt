@@ -24,11 +24,8 @@ class ProfileViewModel @Inject constructor(
     private val userRepository: UserRepository
 ) : ViewModel() {
 
-    val currentUserId: String?
-        get() = sessionManager.sessionState.value?.userId
-
     @OptIn(ExperimentalCoroutinesApi::class)
-    val currentProfile: StateFlow<ProfileEntity?> = sessionManager.sessionState
+    val profileFlow: StateFlow<ProfileEntity?> = sessionManager.sessionState
         .flatMapLatest { session ->
             val userId = session?.userId
             if (userId != null) {
@@ -40,7 +37,7 @@ class ProfileViewModel @Inject constructor(
         .stateIn(
             scope = viewModelScope,
             started = SharingStarted.Eagerly,
-            initialValue = currentUserId?.let { userRepository.getProfile(it) }
+            initialValue = sessionManager.sessionState.value?.userId?.let { userRepository.getProfile(it) }
         )
 
     fun getProfile(): ProfileEntity? {
@@ -48,16 +45,17 @@ class ProfileViewModel @Inject constructor(
         return userRepository.getProfile(userId)
     }
 
-    fun uploadAvatar(context: Context, uri: Uri): Boolean {
-        val userId = currentUserId ?: return false
-        val savedPath = copyUriToAvatarStorage(context, uri, userId) ?: return false
-        return userRepository.updateAvatar(userId, savedPath)
+    fun uploadAvatar(context: Context, uri: Uri): String? {
+        val userId = sessionManager.sessionState.value?.userId ?: return null
+        val savedPath = copyUriToAvatarStorage(context, uri, userId) ?: return null
+        userRepository.updateAvatar(userId, savedPath)
+        return savedPath
     }
 
-    fun removeAvatar(context: Context): Boolean {
-        val userId = currentUserId ?: return false
+    fun removeAvatar(context: Context) {
+        val userId = sessionManager.sessionState.value?.userId ?: return
         deleteAvatarFile(context, userId)
-        return userRepository.updateAvatar(userId, null)
+        userRepository.updateAvatar(userId, null)
     }
 
     fun updateProfile(
@@ -73,6 +71,8 @@ class ProfileViewModel @Inject constructor(
         if (name.isBlank() || username.isBlank()) {
             return "Vui lòng nhập đầy đủ họ tên và tên đăng nhập!"
         }
+        val userId = sessionManager.sessionState.value?.userId
+            ?: return "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!"
 
         if (newPassword.isNotEmpty() || confirmPassword.isNotEmpty()) {
             if (currentPassword.isBlank()) {

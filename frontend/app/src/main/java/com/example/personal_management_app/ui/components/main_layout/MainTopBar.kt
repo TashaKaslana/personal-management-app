@@ -34,8 +34,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalFocusManager
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
@@ -54,14 +52,10 @@ fun MainTopBar(
     onSearchQueryChange: (String) -> Unit = {},
     placeholderText: String = "Tìm kiếm ghi chú",
     onMenuClick: () -> Unit = {},
-    viewModel: ProfileViewModel = hiltViewModel()
+    profileViewModel: ProfileViewModel = hiltViewModel()
 ) {
+    val profile by profileViewModel.profileFlow.collectAsStateWithLifecycle()
     val context = LocalContext.current
-    val keyboardController = LocalSoftwareKeyboardController.current
-    val focusManager = LocalFocusManager.current
-    val profileState by viewModel.currentProfile.collectAsStateWithLifecycle()
-    val profile = profileState ?: viewModel.getProfile()
-
     val avatarBitmap = remember(profile?.avatar) {
         loadAvatarBitmap(context, profile?.avatar)
     }
@@ -93,16 +87,13 @@ fun MainTopBar(
             ) {
                 if (searchQuery.isNotEmpty()) {
                     IconButton(
-                        onClick = {
-                            onSearchQueryChange("")
-                            focusManager.clearFocus()
-                        },
-                        modifier = Modifier.size(32.dp)
+                        onClick = { onSearchQueryChange("") },
+                        modifier = Modifier.size(28.dp)
                     ) {
                         Icon(
                             imageVector = Icons.Default.Close,
                             contentDescription = "Xóa tìm kiếm",
-                            tint = Color.Gray,
+                            tint = Color.DarkGray,
                             modifier = Modifier.size(18.dp)
                         )
                     }
@@ -110,10 +101,7 @@ fun MainTopBar(
                     Icon(
                         imageVector = Icons.Default.Search,
                         contentDescription = "Search Icon",
-                        tint = Color.DarkGray,
-                        modifier = Modifier
-                            .padding(end = 4.dp)
-                            .size(22.dp)
+                        tint = Color.DarkGray
                     )
                 }
 
@@ -127,16 +115,18 @@ fun MainTopBar(
                             navController.navigate("profile_screen")
                         }
                 ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        val currentName = profile?.name
-                        if (avatarBitmap != null) {
-                            Image(
-                                bitmap = avatarBitmap,
-                                contentDescription = "Ảnh đại diện",
-                                contentScale = ContentScale.Crop,
-                                modifier = Modifier.fillMaxSize()
-                            )
-                        } else if (!currentName.isNullOrBlank()) {
+                    val currentName = profile?.name
+                    if (avatarBitmap != null) {
+                        Image(
+                            bitmap = avatarBitmap,
+                            contentDescription = "Ảnh đại diện",
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .clip(RoundedCornerShape(50)),
+                            contentScale = ContentScale.Crop
+                        )
+                    } else if (!currentName.isNullOrBlank()) {
+                        Box(contentAlignment = Alignment.Center) {
                             val initials = getInitials(currentName)
                             Text(
                                 text = initials,
@@ -144,7 +134,9 @@ fun MainTopBar(
                                 fontWeight = FontWeight.Bold,
                                 color = Color.DarkGray
                             )
-                        } else {
+                        }
+                    } else {
+                        Box(contentAlignment = Alignment.Center) {
                             Icon(
                                 imageVector = Icons.Default.Person,
                                 contentDescription = "Tài khoản",

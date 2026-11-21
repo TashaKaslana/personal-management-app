@@ -1,7 +1,12 @@
 package com.example.personal_management_app.entities
 
+import androidx.room.Entity
+import androidx.room.PrimaryKey
+
+@Entity(tableName = "tags")
 data class TagEntity(
-    val id: String,
+    @PrimaryKey val id: String,
+    val userId: String = "",
     val name: String,
     val color: String
 )

@@ -4,6 +4,7 @@ import android.content.Context
 import com.example.personal_management_app.entities.NoteEntity
 import com.example.personal_management_app.entities.NoteReminder
 import com.example.personal_management_app.entities.ReminderRepeat
+import com.example.personal_management_app.ui.components.note.getNotePlainText
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.util.Calendar
 import javax.inject.Inject
@@ -28,11 +29,14 @@ class ReminderScheduler @Inject constructor(
             alarmManager.cancelAlarm(context, note.id)
             return
         }
+        val plainDescription = getNotePlainText(note.content).ifBlank {
+            "Bạn có một lời nhắc ghi chú"
+        }
         alarmManager.schedule(
             context,
             note.id,
             note.title.ifBlank { "Nhắc nhở" },
-            note.content,
+            plainDescription,
             trigger
         )
     }
