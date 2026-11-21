@@ -6,8 +6,12 @@
 
 ## 2. Domain & Sub-Domain Split
 Each `<domain>/` is divided into:
-- **`<domain>/core/`**: The primary aggregate/entity of the domain (e.g., `note/core/` owns `Note` and its join/supporting entities like `NoteTag` and `NoteTextStyle`).
-- **`<domain>/<sub-domain>/`**: Dependent or supporting entities (1-to-N or N-to-N) closely tied to this domain (e.g., `note/tag/`).
+- **`<domain>/core/`**: The primary aggregate/entity and its core CRUD operations (e.g., `note/core/` owns `Note`, `NoteTag`, and `NoteTextStyle`). Keep `core/` focused—do not dump unrelated workflows or heavy external integrations here.
+- **`<domain>/<sub-domain>/`**: Either a dependent/supporting entity (e.g., `note/tag/`) **or** a distinct, domain-specific capability/workflow (e.g., `note/reminder/`, `note/export/`) that has its own endpoints, business rules, or `infrastructure/` adapters.
+
+**Sub-domain vs. Top-level Domain:**
+- Create a **sub-domain** (`<domain>/<feature>/`) when the capability only makes sense for that parent domain.
+- Create a **top-level domain** (`<feature>/`) when the capability is reusable across multiple domains (e.g., a generic `reminder/` or `notification/` module) and communicates with other domains via IDs, services, or events.
 
 ## 3. Standard Internal Layout
 Both `<domain>/core/` and every `<domain>/<sub-domain>/` follow the exact same package structure:
@@ -24,6 +28,7 @@ Both `<domain>/core/` and every `<domain>/<sub-domain>/` follow the exact same p
     ├── persistence/       # Database layer
     │   ├── entities/      # JPA entities (e.g., Note, NoteTag)
     │   ├── key/           # Composite primary keys (e.g., NoteTagId)
+    │   ├── projections/   # Interface/class projections for native SQL & JPQL queries
     │   └── repositories/  # Spring Data repositories (e.g., NoteRepository)
     └── [storage|client]/  # (Optional) External APIs, S3/Cloudinary, or other external services
 ```
