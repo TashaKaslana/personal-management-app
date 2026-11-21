@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import com.example.personal_management_app.entities.TagEntity
 import com.example.personal_management_app.entities.tagColors
 import com.example.personal_management_app.repositories.TagRepository
+import com.example.personal_management_app.utils.matchesSearch
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 
@@ -15,7 +16,7 @@ class TagViewModel @Inject constructor(
 
     fun filter(query: String): List<TagEntity> {
         return tags.value.filter { tag ->
-            query.isBlank() || tag.name.contains(query, ignoreCase = true)
+            query.isBlank() || tag.name.matchesSearch(query)
         }
     }
 

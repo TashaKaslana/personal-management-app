@@ -1,5 +1,6 @@
 package com.example.personal_management_app.ui.components
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -9,15 +10,19 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.personal_management_app.entities.ProfileEntity
 import com.example.personal_management_app.ui.theme.FabContainer
+import com.example.personal_management_app.utils.loadAvatarBitmap
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -27,8 +32,13 @@ fun ProfileCard(
     onEditAvatarClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
     val dateFormat = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
     val formattedCreatedAt = dateFormat.format(profile.createdAt)
+
+    val avatarBitmap = remember(profile.avatar) {
+        loadAvatarBitmap(context, profile.avatar)
+    }
 
     Card(
         shape = RoundedCornerShape(16.dp),
@@ -55,12 +65,21 @@ fun ProfileCard(
                         .background(FabContainer),
                     contentAlignment = Alignment.Center
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Person,
-                        contentDescription = "Avatar",
-                        modifier = Modifier.size(38.dp),
-                        tint = Color.DarkGray
-                    )
+                    if (avatarBitmap != null) {
+                        Image(
+                            bitmap = avatarBitmap,
+                            contentDescription = "Avatar",
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    } else {
+                        Icon(
+                            imageVector = Icons.Default.Person,
+                            contentDescription = "Avatar",
+                            modifier = Modifier.size(38.dp),
+                            tint = Color.DarkGray
+                        )
+                    }
                 }
 
                 Surface(
@@ -80,7 +99,6 @@ fun ProfileCard(
                 }
             }
 
-
             Surface(
                 shape = RoundedCornerShape(12.dp),
                 color = Color.LightGray.copy(alpha = 0.4f)
@@ -93,7 +111,6 @@ fun ProfileCard(
                     modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
                 )
             }
-
 
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,

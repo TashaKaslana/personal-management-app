@@ -4,6 +4,7 @@ import com.example.personal_management_app.dtos.NoteTextStyle
 import com.example.personal_management_app.entities.NoteEntity
 import com.example.personal_management_app.entities.NoteReminder
 import com.example.personal_management_app.entities.ReminderRepeat
+import com.example.personal_management_app.utils.matchesQuery
 import java.util.Calendar
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -206,12 +207,7 @@ class NoteRepository @Inject constructor() {
     fun getTrashItems(query: String = ""): List<NoteEntity> {
         purgeExpiredTrash()
         return notes.filter { note ->
-            note.deletedAt != null && (
-                query.isBlank() ||
-                    note.title.contains(query, ignoreCase = true) ||
-                    note.content.contains(query, ignoreCase = true) ||
-                    note.tags.any { it.contains(query, ignoreCase = true) }
-                )
+            note.deletedAt != null && note.matchesQuery(query)
         }
     }
 
