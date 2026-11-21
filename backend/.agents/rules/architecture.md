@@ -20,9 +20,12 @@ Both `<domain>/core/` and every `<domain>/<sub-domain>/` follow the exact same p
 <domain>/<core | sub-domain>/
 ├── controller/            # REST endpoints and request validation
 ├── dtos/                  # Request/response payloads and cross-domain DTOs
+├── events/                # (Optional) Domain events published by this module
 ├── enums/                 # Domain-specific enums
 ├── exception/             # Domain-specific exceptions and the handler
-├── service/               # Business logic and public module facade
+├── service/               # Business logic, public facades, and internal sub-packages (e.g., processor/, validator/)
+├── scheduling/            # (Optional) Scheduled job entry points (thin triggers)
+├── listener/              # (Optional) Event or message queue consumers (thin triggers)
 └── infrastructure/        # Private technical adapters for this module ONLY
     ├── mapstruct/         # MapStruct mappers (e.g., NoteMapper)
     ├── persistence/       # Database layer
@@ -30,7 +33,7 @@ Both `<domain>/core/` and every `<domain>/<sub-domain>/` follow the exact same p
     │   ├── key/           # Composite primary keys (e.g., NoteTagId)
     │   ├── projections/   # Interface/class projections for native SQL & JPQL queries
     │   └── repositories/  # Spring Data repositories (e.g., NoteRepository)
-    └── [storage|client]/  # (Optional) External APIs, S3/Cloudinary, or other external services
+    └── [config|messaging|storage|client]/ # (Optional) Module bean configs (e.g., schedulers), broker/queue setup, S3/Cloudinary, external APIs
 ```
 
 ## 4. Dependency & Boundary Rules
