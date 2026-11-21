@@ -2,7 +2,17 @@ package com.example.personal_management_app.core.services;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.quartz.*;
+import java.time.Duration;
+import org.quartz.Job;
+import org.quartz.JobBuilder;
+import org.quartz.JobDetail;
+import org.quartz.Scheduler;
+import org.quartz.SchedulerException;
+import org.quartz.SchedulerMetaData;
+import org.quartz.SimpleScheduleBuilder;
+import org.quartz.Trigger;
+import org.quartz.TriggerBuilder;
+import org.quartz.TriggerKey;
 import org.springframework.stereotype.Service;
 
 /**
@@ -12,7 +22,7 @@ import org.springframework.stereotype.Service;
 @Service
 @AllArgsConstructor
 @Slf4j
-public class SharedQuartzSchedulerService {
+public class SchedulerService {
 
     private final Scheduler scheduler; // Single shared instance from OptimizedQuartzConfig
 
@@ -65,5 +75,23 @@ public class SharedQuartzSchedulerService {
             log.error("Error getting scheduler stats: {}", e.getMessage(), e);
             return null;
         }
+    }
+
+    public static JobDetail recurringJob(String group, String name, Class<? extends Job> type) {
+        return JobBuilder.newJob(type).withIdentity(name, group).storeDurably().build();
+    }
+
+    public static Trigger recurringTrigger(JobDetail job, Duration interval) {
+        if (interval.toMillis() < 1) {
+            throw new IllegalArgumentException("Quartz interval must be at least one millisecond");
+        }
+        return TriggerBuilder.newTrigger()
+                .withIdentity(job.getKey().getName(), job.getKey().getGroup())
+                .forJob(job)
+                .withSchedule(SimpleScheduleBuilder.simpleSchedule()
+                        .withIntervalInMilliseconds(interval.toMillis())
+                        .repeatForever()
+                        .withMisfireHandlingInstructionNextWithRemainingCount())
+                .build();
     }
 }

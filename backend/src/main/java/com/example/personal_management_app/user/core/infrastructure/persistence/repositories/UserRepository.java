@@ -14,6 +14,9 @@ import java.util.UUID;
 
 public interface UserRepository extends JpaRepository<User, UUID> {
 
+    @Query("select u.email from User u where u.id = :id and u.deletedAt is null")
+    Optional<String> findActiveEmail(@Param("id") UUID id);
+
     // Find by email
     @Query("SELECT u FROM User u WHERE u.email = :email AND u.deletedAt IS NULL")
     Optional<User> findByEmail(@Param("email") String email);
