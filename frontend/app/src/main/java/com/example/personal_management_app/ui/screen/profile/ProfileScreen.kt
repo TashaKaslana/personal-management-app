@@ -10,11 +10,12 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -50,8 +51,7 @@ fun ProfileScreen(
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
-    val profileState by viewModel.currentProfile.collectAsStateWithLifecycle()
-    val profile = profileState ?: viewModel.getProfile()
+    val profile by viewModel.profileFlow.collectAsStateWithLifecycle()
 
     if (profile == null) {
         Scaffold(
@@ -59,63 +59,42 @@ fun ProfileScreen(
                 TopAppBar(
                     title = {
                         Text(
-                            text = "Trang cá nhân",
-                            fontSize = 18.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = Color(0xFF1F1F1F)
+                            text = "Hồ sơ cá nhân",
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 20.sp
                         )
                     },
                     navigationIcon = {
                         IconButton(onClick = { navController.popBackStack() }) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = "Quay lại",
-                                tint = Color(0xFF444746)
-                            )
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Quay lại")
                         }
                     },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = Color.White
-                    )
+                    colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
                 )
             }
-        ) { innerPadding ->
+        ) { paddingValues ->
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(innerPadding)
-                    .padding(24.dp),
+                    .padding(paddingValues),
                 contentAlignment = Alignment.Center
             ) {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.spacedBy(14.dp)
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Person,
-                        contentDescription = null,
-                        tint = Color.Gray,
-                        modifier = Modifier.size(64.dp)
-                    )
                     Text(
-                        text = "Bạn chưa đăng nhập hoặc phiên đăng nhập đã hết hạn.",
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = Color.DarkGray,
-                        textAlign = TextAlign.Center
-                    )
-                    Text(
-                        text = "Vui lòng đăng nhập lại để xem và quản lý trang cá nhân.",
-                        fontSize = 13.sp,
+                        text = "Phiên đăng nhập đã hết hạn hoặc chưa đăng nhập.",
                         color = Color.Gray,
-                        textAlign = TextAlign.Center
+                        fontSize = 15.sp
                     )
                     Button(
                         onClick = {
                             navController.navigate("login_screen") {
                                 popUpTo(0) { inclusive = true }
                             }
-                        }
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                     ) {
                         Text("Đăng nhập lại")
                     }
@@ -125,8 +104,9 @@ fun ProfileScreen(
         return
     }
 
-    var nameInput by remember(profile.id) { mutableStateOf(profile.name) }
-    var usernameInput by remember(profile.id) { mutableStateOf(profile.username) }
+    val currentProfile = profile!!
+    var nameInput by remember(currentProfile.id) { mutableStateOf(currentProfile.name) }
+    var usernameInput by remember(currentProfile.id) { mutableStateOf(currentProfile.username) }
     var currentPasswordInput by remember { mutableStateOf("") }
     var newPasswordInput by remember { mutableStateOf("") }
     var confirmPasswordInput by remember { mutableStateOf("") }
@@ -134,13 +114,18 @@ fun ProfileScreen(
     var statusMessage by remember { mutableStateOf<String?>(null) }
     var isErrorState by remember { mutableStateOf(false) }
 
-    LaunchedEffect(profile.name, profile.username) {
-        nameInput = profile.name
-        usernameInput = profile.username
-    }
-
-    val avatarBitmap = remember(profile.avatar) {
-        loadAvatarBitmap(context, profile.avatar)
+    val avatarBitmap = remember(currentProfile.avatar, selectedImageUri) {
+        if (selectedImageUri != null) {
+            try {
+                context.contentResolver.openInputStream(selectedImageUri!!)?.use { stream ->
+                    BitmapFactory.decodeStream(stream)?.asImageBitmap()
+                }
+            } catch (e: Exception) {
+                loadAvatarBitmap(context, currentProfile.avatar)
+            }
+        } else {
+            loadAvatarBitmap(context, currentProfile.avatar)
+        }
     }
 
     Scaffold(
@@ -182,23 +167,24 @@ fun ProfileScreen(
                 name = nameInput,
                 username = usernameInput,
                 avatarBitmap = avatarBitmap,
-                hasCustomAvatar = !profile.avatar.isNullOrBlank(),
+                hasCustomAvatar = avatarBitmap != null || !currentProfile.avatar.isNullOrBlank(),
                 onPickImage = { uri ->
-                    val success = viewModel.uploadAvatar(context, uri)
-                    if (success) {
-                        statusMessage = "Cập nhật ảnh đại diện thành công!"
+                    selectedImageUri = uri
+                    val saved = viewModel.uploadAvatar(context, uri)
+                    if (saved != null) {
+                        statusMessage = "Đã tải lên và lưu ảnh đại diện mới thành công!"
                         isErrorState = false
                     } else {
-                        statusMessage = "Không thể tải ảnh lên. Vui lòng thử lại!"
+                        statusMessage = "Không thể lưu ảnh đại diện!"
                         isErrorState = true
                     }
                 },
                 onRemoveImage = {
                     val success = viewModel.removeAvatar(context)
                     if (success) {
-                        statusMessage = "Đã xóa ảnh đại diện, trở về mặc định."
-                        isErrorState = false
-                    }
+                        viewModel.removeAvatar(context)
+                    statusMessage = "Đã xóa ảnh đại diện, trở về mặc định."
+                    isErrorState = false}
                 }
             )
 

@@ -119,7 +119,6 @@ fun getInitials(name: String): String {
 
 /**
  * Removes Vietnamese accents/diacritics for accent-insensitive searching.
- * (e.g., "Ghi chú" -> "Ghi chu", "Đã ghim" -> "Da ghim")
  */
 fun String.removeAccents(): String {
     val normalized = Normalizer.normalize(this, Normalizer.Form.NFD)
@@ -143,12 +142,12 @@ fun String.matchesSearch(query: String): Boolean {
 
 /**
  * Checks if a note matches the search query across title, content, and tags.
- * Supports multi-word matching (each word must match at least one part of the note).
  */
 fun NoteEntity.matchesQuery(query: String): Boolean {
     if (query.isBlank()) return true
     val tokens = query.trim().split("\\s+".toRegex()).filter { it.isNotBlank() }
-    val fullText = "$title $content ${tags.joinToString(" ")}"
+    val plainContent = com.example.personal_management_app.ui.components.note.getNotePlainText(content)
+    val fullText = "$title $plainContent ${tags.joinToString(" ")}"
     return tokens.all { token ->
         fullText.matchesSearch(token)
     }

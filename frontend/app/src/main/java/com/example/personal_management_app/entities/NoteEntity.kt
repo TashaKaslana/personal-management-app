@@ -1,10 +1,13 @@
 package com.example.personal_management_app.entities
 
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 import com.example.personal_management_app.dtos.NoteTextStyle
 
-
+@Entity(tableName = "notes")
 data class NoteEntity(
-    val id: String,
+    @PrimaryKey val id: String,
+    val userId: String = "",
     val title: String,
     val titleStyle: NoteTextStyle,
     val content: String,

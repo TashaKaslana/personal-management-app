@@ -5,7 +5,9 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.sp
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class NoteTextStyle(
     val fontSize: Float = 16f,
     val bold: Boolean = false,
