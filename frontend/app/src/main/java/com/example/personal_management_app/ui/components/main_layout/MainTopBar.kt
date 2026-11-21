@@ -34,6 +34,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
@@ -55,6 +57,8 @@ fun MainTopBar(
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
     val context = LocalContext.current
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val focusManager = LocalFocusManager.current
     val profileState by viewModel.currentProfile.collectAsStateWithLifecycle()
     val profile = profileState ?: viewModel.getProfile()
 
@@ -124,6 +128,7 @@ fun MainTopBar(
                         }
                 ) {
                     Box(contentAlignment = Alignment.Center) {
+                        val currentName = profile?.name
                         if (avatarBitmap != null) {
                             Image(
                                 bitmap = avatarBitmap,
@@ -131,13 +136,20 @@ fun MainTopBar(
                                 contentScale = ContentScale.Crop,
                                 modifier = Modifier.fillMaxSize()
                             )
-                        } else {
-                            val initials = getInitials(profile?.name ?: "NMD")
+                        } else if (!currentName.isNullOrBlank()) {
+                            val initials = getInitials(currentName)
                             Text(
                                 text = initials,
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color.DarkGray
+                            )
+                        } else {
+                            Icon(
+                                imageVector = Icons.Default.Person,
+                                contentDescription = "Tài khoản",
+                                tint = Color.DarkGray,
+                                modifier = Modifier.size(20.dp)
                             )
                         }
                     }

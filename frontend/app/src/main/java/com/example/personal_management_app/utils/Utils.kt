@@ -6,6 +6,7 @@ import android.net.Uri
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
+import com.example.personal_management_app.entities.NoteEntity
 import java.io.File
 import java.text.Normalizer
 import java.util.UUID
@@ -53,7 +54,7 @@ fun copyUriToAvatarStorage(context: Context, source: Uri, userId: String): Strin
             ?.substringAfterLast('/')
             ?.takeIf { it.isNotBlank() && it != "*" }
             ?: "jpg"
-        val target = File(dir, "avatar_${userId}_${System.currentTimeMillis()}.$extension")
+        val target = File(dir, "avatar_${userId}_${UUID.randomUUID()}.$extension")
         context.contentResolver.openInputStream(source)?.use { input ->
             target.outputStream().use { output -> input.copyTo(output) }
         } ?: error("Cannot open picked avatar image")
@@ -62,7 +63,7 @@ fun copyUriToAvatarStorage(context: Context, source: Uri, userId: String): Strin
 }
 
 /**
- * Deletes any stored avatar file for the given user.
+ * Deletes any existing avatar file for the given user from internal storage.
  */
 fun deleteAvatarFile(context: Context, userId: String) {
     runCatching {
@@ -76,7 +77,7 @@ fun deleteAvatarFile(context: Context, userId: String) {
 }
 
 /**
- * Loads an ImageBitmap from a local file path or URI string safely.
+ * Loads a bitmap from internal storage file path or content URI safely.
  */
 fun loadAvatarBitmap(context: Context, pathOrUri: String?): ImageBitmap? {
     if (pathOrUri.isNullOrBlank()) return null
@@ -103,7 +104,7 @@ fun loadAvatarBitmap(context: Context, pathOrUri: String?): ImageBitmap? {
 }
 
 /**
- * Extracts initials from a user's display name (e.g., "Nguyễn Minh Đức" -> "NMD").
+ * Extracts initials from a user's display name (e.g., "John Doe" -> "JD").
  */
 fun getInitials(name: String): String {
     val trimmed = name.trim()
@@ -113,5 +114,42 @@ fun getInitials(name: String): String {
         words.take(3).map { it.first().uppercaseChar() }.joinToString("")
     } else {
         trimmed.take(2).uppercase()
+    }
+}
+
+/**
+ * Removes Vietnamese accents/diacritics for accent-insensitive searching.
+ * (e.g., "Ghi chú" -> "Ghi chu", "Đã ghim" -> "Da ghim")
+ */
+fun String.removeAccents(): String {
+    val normalized = Normalizer.normalize(this, Normalizer.Form.NFD)
+    return normalized.replace("\\p{InCombiningDiacriticalMarks}+".toRegex(), "")
+        .replace('đ', 'd')
+        .replace('Đ', 'D')
+}
+
+/**
+ * Checks if a string contains the search query, with support for case-insensitive
+ * and Vietnamese accent-insensitive matching.
+ */
+fun String.matchesSearch(query: String): Boolean {
+    if (query.isBlank()) return true
+    val cleanQuery = query.trim()
+    if (this.contains(cleanQuery, ignoreCase = true)) return true
+    val targetNorm = this.removeAccents()
+    val queryNorm = cleanQuery.removeAccents()
+    return targetNorm.contains(queryNorm, ignoreCase = true)
+}
+
+/**
+ * Checks if a note matches the search query across title, content, and tags.
+ * Supports multi-word matching (each word must match at least one part of the note).
+ */
+fun NoteEntity.matchesQuery(query: String): Boolean {
+    if (query.isBlank()) return true
+    val tokens = query.trim().split("\\s+".toRegex()).filter { it.isNotBlank() }
+    val fullText = "$title $content ${tags.joinToString(" ")}"
+    return tokens.all { token ->
+        fullText.matchesSearch(token)
     }
 }
