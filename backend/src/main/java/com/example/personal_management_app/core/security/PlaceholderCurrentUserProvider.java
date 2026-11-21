@@ -1,5 +1,7 @@
 package com.example.personal_management_app.core.security;
 
+import org.springframework.security.core.context.SecurityContextHolder;
+
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -12,6 +14,10 @@ public class PlaceholderCurrentUserProvider implements CurrentUserProvider {
 
     @Override
     public Optional<UUID> getCurrentUserId() {
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.isAuthenticated() && authentication.getPrincipal() instanceof UUID id) {
+            return Optional.of(id);
+        }
         return Optional.of(PLACEHOLDER_USER_ID);
     }
 }
