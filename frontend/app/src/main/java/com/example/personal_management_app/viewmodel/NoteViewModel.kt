@@ -20,11 +20,19 @@ class NoteViewModel @Inject constructor(
     private val _notes = MutableStateFlow<List<NoteEntity>>(emptyList())
     val notes = _notes.asStateFlow()
 
+    private val _trashNotes = MutableStateFlow<List<NoteEntity>>(emptyList())
+    val trashNotes = _trashNotes.asStateFlow()
+
     init {
         loadNotes()
         viewModelScope.launch {
             repository.getNotesFlow().collect { list ->
                 _notes.value = list
+            }
+        }
+        viewModelScope.launch {
+            repository.getTrashFlow().collect { list ->
+                _trashNotes.value = list
             }
         }
     }
@@ -42,20 +50,13 @@ class NoteViewModel @Inject constructor(
         }
     }
 
-    fun filterNotes(
-        archived: Boolean,
-        query: String = "",
-        selectedTag: String? = null
-    ): List<NoteEntity> {
+    fun filterNotes(archived: Boolean, query: String = ""): List<NoteEntity> {
         return _notes.value.filter { note ->
             (note.archivedAt != null) == archived && note.matchesQuery(query)
         }
     }
 
-    fun filterReminders(
-        query: String = "",
-        selectedTag: String? = null
-    ): List<NoteEntity> {
+    fun filterReminders(query: String = ""): List<NoteEntity> {
         return _notes.value.filter { note ->
             note.reminder != null && note.archivedAt == null && note.matchesQuery(query)
         }.sortedBy { it.reminder?.atMillis }
@@ -66,7 +67,12 @@ class NoteViewModel @Inject constructor(
     }
 
     fun filterTrash(query: String = ""): List<NoteEntity> {
-        return repository.getTrashItems(query)
+        val list = _trashNotes.value
+        return if (query.isBlank()) {
+            list
+        } else {
+            list.filter { it.matchesQuery(query) }
+        }
     }
 
     fun restoreNote(noteId: String) {
@@ -79,6 +85,7 @@ class NoteViewModel @Inject constructor(
     fun deleteNoteForever(noteId: String) {
         viewModelScope.launch {
             repository.deleteForever(noteId)
+            reminderScheduler.cancel(noteId)
             loadNotes()
         }
     }
@@ -100,27 +107,7 @@ class NoteViewModel @Inject constructor(
     fun deleteNote(noteId: String) {
         viewModelScope.launch {
             repository.delete(noteId)
-            loadNotes()
-        }
-    }
-
-    fun setArchive(noteId: String, isArchived: Boolean) {
-        viewModelScope.launch {
-            val note = repository.get(noteId) ?: return@launch
-            val updated = note.copy(
-                archivedAt = if (isArchived) System.currentTimeMillis() else null,
-                isPinned = if (isArchived) false else note.isPinned
-            )
-            repository.update(updated)
-            loadNotes()
-        }
-    }
-
-    fun togglePin(noteId: String) {
-        viewModelScope.launch {
-            val note = repository.get(noteId) ?: return@launch
-            val updated = note.copy(isPinned = !note.isPinned)
-            repository.update(updated)
+            reminderScheduler.cancel(noteId)
             loadNotes()
         }
     }

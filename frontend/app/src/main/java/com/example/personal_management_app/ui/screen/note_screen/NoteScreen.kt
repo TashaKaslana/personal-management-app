@@ -6,21 +6,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.staggeredgrid.LazyVerticalStaggeredGrid
 import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridCells
-import androidx.compose.foundation.lazy.staggeredgrid.StaggeredGridItemSpan
 import androidx.compose.foundation.lazy.staggeredgrid.items
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -40,8 +33,6 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.example.personal_management_app.dtos.toCompose
-import com.example.personal_management_app.entities.NoteEntity
-import com.example.personal_management_app.ui.components.EmptySearchState
 import com.example.personal_management_app.ui.components.main_layout.MainTopBar
 import com.example.personal_management_app.ui.components.note.NoteContentPreview
 import com.example.personal_management_app.ui.components.note.NoteHeading
@@ -65,7 +56,6 @@ fun NoteScreen(
     val notes by viewModel.notes.collectAsStateWithLifecycle()
     val tags by tagViewModel.tags.collectAsStateWithLifecycle()
     val tagColors = remember(tags) { tags.associate { it.name to it.color } }
-
     LaunchedEffect(tags) { viewModel.loadNotes() }
 
     val notesList = remember(notes, searchQuery) {
@@ -90,7 +80,7 @@ fun NoteScreen(
                 .padding(innerPadding)
                 .padding(horizontal = 16.dp)
         ) {
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             if (notesList.isEmpty()) {
                 Box(

@@ -10,10 +10,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Menu
@@ -35,7 +32,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -63,17 +59,7 @@ fun MainTopBar(
     OutlinedTextField(
         value = searchQuery,
         onValueChange = onSearchQueryChange,
-        placeholder = { Text(placeholderText, color = Color.Gray, fontSize = 14.sp) },
-        singleLine = true,
-        keyboardOptions = KeyboardOptions(
-            imeAction = ImeAction.Search
-        ),
-        keyboardActions = KeyboardActions(
-            onSearch = {
-                keyboardController?.hide()
-                focusManager.clearFocus()
-            }
-        ),
+        placeholder = { Text(placeholderText, color = Color.Gray) },
         leadingIcon = {
             IconButton(onClick = onMenuClick) {
                 Icon(Icons.Default.Menu, contentDescription = "Menu Drawer", tint = Color.DarkGray)
@@ -83,7 +69,7 @@ fun MainTopBar(
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(4.dp),
-                modifier = Modifier.padding(end = 6.dp)
+                modifier = Modifier.padding(end = 8.dp)
             ) {
                 if (searchQuery.isNotEmpty()) {
                     IconButton(
@@ -106,11 +92,10 @@ fun MainTopBar(
                 }
 
                 Surface(
-                    shape = CircleShape,
+                    shape = RoundedCornerShape(50),
                     color = Color(0xFFD7CCC8),
                     modifier = Modifier
                         .size(32.dp)
-                        .clip(CircleShape)
                         .clickable {
                             navController.navigate("profile_screen")
                         }
