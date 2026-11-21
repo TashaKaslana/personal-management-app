@@ -48,6 +48,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.example.personal_management_app.dtos.toCompose
+import com.example.personal_management_app.ui.components.EmptySearchState
 import com.example.personal_management_app.ui.components.main_layout.MainTopBar
 import com.example.personal_management_app.ui.components.tag.TagChip
 import com.example.personal_management_app.ui.layouts.MainLayout
@@ -124,20 +125,27 @@ fun ReminderScreen(
                 .padding(innerPadding)
                 .padding(horizontal = 16.dp)
         ) {
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(
-                text = "SẮP TỚI",
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.Gray,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-            LazyVerticalStaggeredGrid(
-                columns = StaggeredGridCells.Fixed(2),
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                verticalItemSpacing = 10.dp,
-                modifier = Modifier.fillMaxSize()
-            ) {
+            if (reminderList.isEmpty()) {
+                EmptySearchState(
+                    query = searchQuery,
+                    onClear = { searchQuery = "" },
+                    emptyMessage = if (searchQuery.isNotBlank()) "Không tìm thấy lời nhắc phù hợp" else "Chưa có lời nhắc nào"
+                )
+            } else {
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = if (searchQuery.isNotBlank()) "KẾT QUẢ TÌM KIẾM (${reminderList.size})" else "SẮP TỚI",
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Gray,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+                LazyVerticalStaggeredGrid(
+                    columns = StaggeredGridCells.Fixed(2),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    verticalItemSpacing = 10.dp,
+                    modifier = Modifier.fillMaxSize()
+                ) {
                 items(reminderList, key = { it.id }) { note ->
                     val contentColor = noteContentColor(note.backgroundColor)
                     NoteThemedSurface(
@@ -215,4 +223,5 @@ fun ReminderScreen(
             }
         }
     }
+}
 }

@@ -1,12 +1,22 @@
 package com.example.personal_management_app.viewmodel
 
+import android.content.Context
+import android.net.Uri
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.personal_management_app.core.service.SessionManager
 import com.example.personal_management_app.entities.ProfileEntity
 import com.example.personal_management_app.repositories.UserRepository
-import javax.inject.Inject
-
+import com.example.personal_management_app.utils.copyUriToAvatarStorage
+import com.example.personal_management_app.utils.deleteAvatarFile
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.stateIn
+import javax.inject.Inject
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
@@ -14,9 +24,40 @@ class ProfileViewModel @Inject constructor(
     private val userRepository: UserRepository
 ) : ViewModel() {
 
+    val currentUserId: String?
+        get() = sessionManager.sessionState.value?.userId
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val currentProfile: StateFlow<ProfileEntity?> = sessionManager.sessionState
+        .flatMapLatest { session ->
+            val userId = session?.userId
+            if (userId != null) {
+                userRepository.getProfileFlow(userId)
+            } else {
+                flowOf(null)
+            }
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.Eagerly,
+            initialValue = currentUserId?.let { userRepository.getProfile(it) }
+        )
+
     fun getProfile(): ProfileEntity? {
-        val userId = sessionManager.sessionState.value?.userId ?: return null
+        val userId = currentUserId ?: return null
         return userRepository.getProfile(userId)
+    }
+
+    fun uploadAvatar(context: Context, uri: Uri): Boolean {
+        val userId = currentUserId ?: return false
+        val savedPath = copyUriToAvatarStorage(context, uri, userId) ?: return false
+        return userRepository.updateAvatar(userId, savedPath)
+    }
+
+    fun removeAvatar(context: Context): Boolean {
+        val userId = currentUserId ?: return false
+        deleteAvatarFile(context, userId)
+        return userRepository.updateAvatar(userId, null)
     }
 
     fun updateProfile(
@@ -24,13 +65,14 @@ class ProfileViewModel @Inject constructor(
         username: String,
         currentPassword: String,
         newPassword: String,
-        confirmPassword: String
+        confirmPassword: String,
+        avatar: String? = null
     ): String? {
+        val userId = currentUserId ?: return "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!"
+
         if (name.isBlank() || username.isBlank()) {
             return "Vui lòng nhập đầy đủ họ tên và tên đăng nhập!"
         }
-        val userId = sessionManager.sessionState.value?.userId
-            ?: return "Phiên đăng nhập đã hết hạn!"
 
         if (newPassword.isNotEmpty() || confirmPassword.isNotEmpty()) {
             if (currentPassword.isBlank()) {
@@ -46,7 +88,7 @@ class ProfileViewModel @Inject constructor(
                 return "Mật khẩu hiện tại không đúng!"
             }
         }
-        if (!userRepository.updateProfile(userId, name, username)) {
+        if (!userRepository.updateProfile(userId, name, username, avatar, keepExistingAvatarIfNull = true)) {
             return "Không tìm thấy người dùng!"
         }
         return null

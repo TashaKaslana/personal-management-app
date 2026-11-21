@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import com.example.personal_management_app.ui.components.EmptySearchState
 import com.example.personal_management_app.ui.components.archiver.ArchiveCard
 import com.example.personal_management_app.ui.components.main_layout.MainTopBar
 import com.example.personal_management_app.ui.layouts.MainLayout
@@ -61,20 +62,28 @@ fun ArchiveScreen(
                 .padding(innerPadding)
                 .padding(horizontal = 16.dp, vertical = 12.dp)
         ) {
-            LazyVerticalStaggeredGrid(
-                columns = StaggeredGridCells.Fixed(2),
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                verticalItemSpacing = 10.dp,
-                modifier = Modifier.fillMaxSize()
-            ) {
-                items(archiveList, key = { it.id }) { archive ->
-                    ArchiveCard(
-                        note = archive,
-                        tagColors = tagColors,
-                        onClick = {
-                            navController.navigate("notes/${archive.id}/edit")
-                        }
-                    )
+            if (archiveList.isEmpty()) {
+                EmptySearchState(
+                    query = searchQuery,
+                    onClear = { searchQuery = "" },
+                    emptyMessage = if (searchQuery.isNotBlank()) "Không tìm thấy ghi chú lưu trữ phù hợp" else "Chưa có ghi chú nào được lưu trữ"
+                )
+            } else {
+                LazyVerticalStaggeredGrid(
+                    columns = StaggeredGridCells.Fixed(2),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    verticalItemSpacing = 10.dp,
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    items(archiveList, key = { it.id }) { archive ->
+                        ArchiveCard(
+                            note = archive,
+                            tagColors = tagColors,
+                            onClick = {
+                                navController.navigate("notes/${archive.id}/edit")
+                            }
+                        )
+                    }
                 }
             }
         }
