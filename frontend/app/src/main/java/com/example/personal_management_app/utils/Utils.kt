@@ -46,7 +46,6 @@ fun copyUriToNoteImageStorage(context: Context, source: Uri): String? {
 fun copyUriToAvatarStorage(context: Context, source: Uri, userId: String): String? {
     return runCatching {
         val dir = File(context.filesDir, "avatars").apply { mkdirs() }
-        // Remove previous avatar files for this user
         dir.listFiles()?.filter { it.name.startsWith("avatar_${userId}_") }?.forEach {
             it.delete()
         }
