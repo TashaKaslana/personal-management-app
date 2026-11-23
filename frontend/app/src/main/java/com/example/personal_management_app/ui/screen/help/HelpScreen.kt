@@ -1,4 +1,4 @@
-﻿package com.example.personal_management_app.ui.screen.help
+package com.example.personal_management_app.ui.screen.help
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
