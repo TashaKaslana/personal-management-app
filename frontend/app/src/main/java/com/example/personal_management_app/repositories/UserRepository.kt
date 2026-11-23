@@ -53,7 +53,6 @@ class UserRepository @Inject constructor(
 
         userDao.insertUser(user)
 
-        // Seed brand-new default tags for this new user:
         tagDao.insertAll(
             listOf(
                 TagEntity(id = UUID.randomUUID().toString(), userId = id, name = "Công việc", color = "0xFF64B5F6"),

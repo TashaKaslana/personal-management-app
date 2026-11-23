@@ -31,6 +31,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -50,8 +52,10 @@ fun MainTopBar(
     onMenuClick: () -> Unit = {},
     profileViewModel: ProfileViewModel = hiltViewModel()
 ) {
-    val profile by profileViewModel.profileFlow.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val focusManager = LocalFocusManager.current
+    val profile by profileViewModel.profileFlow.collectAsStateWithLifecycle()
     val avatarBitmap = remember(profile?.avatar) {
         loadAvatarBitmap(context, profile?.avatar)
     }
@@ -73,13 +77,16 @@ fun MainTopBar(
             ) {
                 if (searchQuery.isNotEmpty()) {
                     IconButton(
-                        onClick = { onSearchQueryChange("") },
-                        modifier = Modifier.size(28.dp)
+                        onClick = {
+                            onSearchQueryChange("")
+                            focusManager.clearFocus()
+                        },
+                        modifier = Modifier.size(32.dp)
                     ) {
                         Icon(
                             imageVector = Icons.Default.Close,
                             contentDescription = "Xóa tìm kiếm",
-                            tint = Color.DarkGray,
+                            tint = Color.Gray,
                             modifier = Modifier.size(18.dp)
                         )
                     }
@@ -87,7 +94,10 @@ fun MainTopBar(
                     Icon(
                         imageVector = Icons.Default.Search,
                         contentDescription = "Search Icon",
-                        tint = Color.DarkGray
+                        tint = Color.DarkGray,
+                        modifier = Modifier
+                            .padding(end = 4.dp)
+                            .size(22.dp)
                     )
                 }
 
@@ -96,6 +106,7 @@ fun MainTopBar(
                     color = Color(0xFFD7CCC8),
                     modifier = Modifier
                         .size(32.dp)
+                        .clip(RoundedCornerShape(50))
                         .clickable {
                             navController.navigate("profile_screen")
                         }

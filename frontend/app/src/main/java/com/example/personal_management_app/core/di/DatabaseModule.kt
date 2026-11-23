@@ -5,6 +5,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.sqlite.db.SupportSQLiteDatabase
 import com.example.personal_management_app.data.local.AppDatabase
+import com.example.personal_management_app.data.local.dao.FeedbackDao
 import com.example.personal_management_app.data.local.dao.NoteDao
 import com.example.personal_management_app.data.local.dao.TagDao
 import com.example.personal_management_app.data.local.dao.UserDao
@@ -66,4 +67,7 @@ object DatabaseModule {
 
     @Provides
     fun provideUserDao(database: AppDatabase): UserDao = database.userDao()
+
+    @Provides
+    fun provideFeedbackDao(database: AppDatabase): FeedbackDao = database.feedbackDao()
 }
