@@ -68,6 +68,8 @@ class ProfileViewModel @Inject constructor(
         newPassword: String,
         confirmPassword: String
     ): String? {
+        val userId = currentUserId ?: return "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!"
+
         if (name.isBlank() || username.isBlank()) {
             return "Vui lòng nhập đầy đủ họ tên và tên đăng nhập!"
         }
