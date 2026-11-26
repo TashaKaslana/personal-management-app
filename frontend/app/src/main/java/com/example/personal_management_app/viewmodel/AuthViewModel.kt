@@ -19,7 +19,7 @@ class AuthViewModel @Inject constructor(
         return sessionManager.sessionState
     }
 
-    fun login(email: String, password: String): String? {
+    suspend fun login(email: String, password: String): String? {
         if (email.isBlank() || password.isBlank()) {
             return "Vui lòng nhập đầy đủ email và mật khẩu!"
         }
@@ -35,7 +35,7 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    fun register(
+    suspend fun register(
         fullName: String,
         email: String,
         password: String,

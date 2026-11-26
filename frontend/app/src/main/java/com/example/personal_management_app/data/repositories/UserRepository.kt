@@ -1,75 +1,62 @@
 package com.example.personal_management_app.data.repositories
 
-import com.example.personal_management_app.data.local.dao.TagDao
 import com.example.personal_management_app.data.local.dao.UserDao
 import com.example.personal_management_app.data.local.entities.UserEntity
 import com.example.personal_management_app.dtos.AuthResult
 import com.example.personal_management_app.data.entities.ProfileEntity
-import com.example.personal_management_app.data.entities.TagEntity
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import java.util.UUID
+import com.example.personal_management_app.data.remote.*
+import java.io.IOException
+import java.time.Instant
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class UserRepository @Inject constructor(
     private val userDao: UserDao,
-    private val tagDao: TagDao
+    private val api: BackendApi
 ) {
-    fun login(email: String, password: String): AuthResult {
-        val user = userDao.getUserByEmail(email.trim())
-            ?: return AuthResult.WrongCredentials
-
-        if (user.password != password) {
-            return AuthResult.WrongCredentials
-        }
-
-        return AuthResult.Success(
-            user = user.toProfileEntity(),
-            token = UUID.randomUUID().toString()
-        )
+    suspend fun login(email: String, password: String): AuthResult {
+        val response = api.auth.login(LoginRequest(email.trim(), password))
+        if (response.code() == 401) return AuthResult.WrongCredentials
+        return cacheSession(response.payload())
     }
 
-    fun register(name: String, email: String, password: String): AuthResult {
-        if (userDao.getUserByEmail(email.trim()) != null) {
-            return AuthResult.EmailTaken
-        }
+    suspend fun register(name: String, email: String, password: String): AuthResult {
+        val response = api.auth.register(RegisterRequest(name.trim(), email.trim(), password))
+        if (response.code() == 409) return AuthResult.EmailTaken
+        return cacheSession(response.payload())
+    }
 
-        val id = UUID.randomUUID().toString()
-        val now = System.currentTimeMillis()
+    private fun cacheSession(auth: AuthResponse): AuthResult {
+        val user = cacheUser(auth.user ?: throw IOException("Missing user in auth response"))
+        val token = auth.token ?: throw IOException("Missing session token")
+        return AuthResult.Success(user.toProfileEntity(), token)
+    }
+
+    private fun cacheUser(dto: UserDto): UserEntity {
+        val id = dto.id ?: throw IOException("Missing user id")
         val user = UserEntity(
             id = id,
-            email = email.trim(),
-            password = password,
-            name = name.trim(),
-            username = email.trim().substringBefore("@"),
-            avatar = null,
-            role = "Student",
-            createdAt = now,
-            updatedAt = now,
-            deletedAt = null
+            email = dto.email.orEmpty(),
+            password = "",
+            name = dto.name.orEmpty(),
+            username = dto.username.orEmpty(),
+            avatar = userDao.getUserById(id)?.avatar ?: dto.avatarUrl,
+            role = dto.role?.name.orEmpty(),
+            createdAt = dto.createdAt?.let { Instant.parse(it).toEpochMilli() }
+                ?: System.currentTimeMillis(),
+            updatedAt = dto.updatedAt?.let { Instant.parse(it).toEpochMilli() }
+                ?: System.currentTimeMillis()
         )
-
         userDao.insertUser(user)
-
-        tagDao.insertAll(
-            listOf(
-                TagEntity(id = UUID.randomUUID().toString(), userId = id, name = "Công việc", color = "0xFF64B5F6"),
-                TagEntity(id = UUID.randomUUID().toString(), userId = id, name = "Du lịch", color = "0xFF4DB6AC")
-            )
-        )
-
-        return AuthResult.Success(
-            user = user.toProfileEntity(),
-            token = UUID.randomUUID().toString()
-        )
+        return user
     }
 
-    fun changePassword(userId: String, currentPassword: String, newPassword: String): Boolean {
-        val user = userDao.getUserById(userId) ?: return false
-        if (user.password != currentPassword) return false
-        userDao.updatePassword(userId, newPassword)
+    suspend fun changePassword(userId: String, currentPassword: String, newPassword: String): Boolean {
+        api.user.updateUserPassword(userId,
+            ChangePasswordRequest(currentPassword, newPassword)).payload()
         return true
     }
 
@@ -81,16 +68,14 @@ class UserRepository @Inject constructor(
         return userDao.getUserFlow(userId).map { it?.toProfileEntity() }
     }
 
-    fun updateProfile(
+    suspend fun updateProfile(
         userId: String,
         newName: String,
-        newUsername: String,
-        newAvatar: String? = null,
-        keepExistingAvatarIfNull: Boolean = true
+        newUsername: String
     ): Boolean {
-        val user = userDao.getUserById(userId) ?: return false
-        val avatar = if (keepExistingAvatarIfNull && newAvatar == null) user.avatar else newAvatar
-        userDao.updateProfile(userId, newName, newUsername, avatar)
+        cacheUser(api.user.updateUser(userId,
+            UpdateUserRequest(name = newName, username = newUsername))
+            .payload())
         return true
     }
 

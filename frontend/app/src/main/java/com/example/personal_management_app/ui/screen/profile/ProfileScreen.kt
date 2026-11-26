@@ -1,5 +1,7 @@
 package com.example.personal_management_app.ui.screen.profile
 
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 import android.graphics.BitmapFactory
 import android.net.Uri
 import androidx.compose.foundation.layout.Arrangement
@@ -43,6 +45,8 @@ import com.example.personal_management_app.ui.components.profile.ProfileInfoForm
 import com.example.personal_management_app.ui.components.profile.ProfileSecurityForm
 import com.example.personal_management_app.utils.loadAvatarBitmap
 import com.example.personal_management_app.viewmodel.ProfileViewModel
+import retrofit2.HttpException
+import java.io.IOException
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -50,6 +54,7 @@ fun ProfileScreen(
     navController: NavController,
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
+    val requestScope = rememberCoroutineScope()
     val context = LocalContext.current
     val profileState by viewModel.profileFlow.collectAsStateWithLifecycle()
     val currentProfile = profileState
@@ -121,7 +126,7 @@ fun ProfileScreen(
                 context.contentResolver.openInputStream(selectedImageUri!!)?.use { stream ->
                     BitmapFactory.decodeStream(stream)?.asImageBitmap()
                 }
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 loadAvatarBitmap(context, currentProfile.avatar)
             }
         } else {
@@ -216,23 +221,31 @@ fun ProfileScreen(
 
             ProfileActionButtons(
                 onSaveClick = {
-                    val error = viewModel.updateProfile(
-                        name = nameInput,
-                        username = usernameInput,
-                        currentPassword = currentPasswordInput,
-                        newPassword = newPasswordInput,
-                        confirmPassword = confirmPasswordInput
-                    )
+                    requestScope.launch {
+                        val error = try {
+                            viewModel.updateProfile(
+                            name = nameInput,
+                            username = usernameInput,
+                            currentPassword = currentPasswordInput,
+                            newPassword = newPasswordInput,
+                            confirmPassword = confirmPasswordInput
+                        )
+                        } catch (error: IOException) {
+                            error.localizedMessage ?: "Không thể kết nối máy chủ"
+                        } catch (error: HttpException) {
+                            "Yêu cầu thất bại (HTTP ${error.code()})"
+                        }
 
-                    if (error != null) {
-                        statusMessage = error
-                        isErrorState = true
-                    } else {
-                        statusMessage = "Cập nhật hồ sơ thành công!"
-                        isErrorState = false
-                        currentPasswordInput = ""
-                        newPasswordInput = ""
-                        confirmPasswordInput = ""
+                        if (error != null) {
+                            statusMessage = error
+                            isErrorState = true
+                        } else {
+                            statusMessage = "Cập nhật hồ sơ thành công!"
+                            isErrorState = false
+                            currentPasswordInput = ""
+                            newPasswordInput = ""
+                            confirmPasswordInput = ""
+                        }
                     }
                 },
                 onLogoutClick = {

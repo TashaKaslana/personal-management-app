@@ -1,5 +1,7 @@
 package com.example.personal_management_app.ui.screen.auth
 
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -17,6 +19,8 @@ import androidx.navigation.NavController
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import com.example.personal_management_app.ui.theme.Loginblue
 import com.example.personal_management_app.viewmodel.AuthViewModel
+import retrofit2.HttpException
+import java.io.IOException
 
 @Composable
 fun RegisterScreen(
@@ -24,6 +28,8 @@ fun RegisterScreen(
     navController: NavController,
     viewModel: AuthViewModel = hiltViewModel()
 ) {
+    val requestScope = rememberCoroutineScope()
+    var submitting by remember { mutableStateOf(false) }
     var fullName by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -158,12 +164,23 @@ fun RegisterScreen(
                 }
 
                 Button(
+                    enabled = !submitting,
                     onClick = {
-                        val error = viewModel.register(fullName, email, password, confirmPassword)
-                        errorMessage = error ?: ""
-                        if (error == null) {
-                            navController.navigate("home_screen") {
-                                popUpTo("login_screen") { inclusive = true }
+                        submitting = true
+                        requestScope.launch {
+                            val error = try {
+                                viewModel.register(fullName, email, password, confirmPassword)
+                            } catch (error: IOException) {
+                                error.localizedMessage ?: "Không thể kết nối máy chủ"
+                            } catch (error: HttpException) {
+                                "Yêu cầu thất bại (HTTP ${error.code()})"
+                            }
+                            submitting = false
+                            errorMessage = error ?: ""
+                            if (error == null) {
+                                navController.navigate("home_screen") {
+                                    popUpTo("login_screen") { inclusive = true }
+                                }
                             }
                         }
                     },

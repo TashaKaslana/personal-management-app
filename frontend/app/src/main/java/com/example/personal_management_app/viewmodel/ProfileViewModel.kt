@@ -61,7 +61,7 @@ class ProfileViewModel @Inject constructor(
         userRepository.updateAvatar(userId, null)
     }
 
-    fun updateProfile(
+    suspend fun updateProfile(
         name: String,
         username: String,
         currentPassword: String,
