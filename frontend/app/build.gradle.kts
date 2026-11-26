@@ -1,3 +1,5 @@
+import java.net.URI
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
@@ -15,6 +17,20 @@ android {
 
     defaultConfig {
         applicationId = "com.example.personal_management_app"
+        val envUrl = providers.fileContents(rootProject.layout.projectDirectory.file(".env")).asText.map { contents ->
+            contents.lineSequence().map { it.trim() }
+                .firstOrNull { it.startsWith("BACKEND_URL=") }
+                ?.substringAfter('=')?.trim()?.removeSurrounding("\"")?.removeSurrounding("'")
+                ?: "http://10.0.2.2:8080/"
+        }
+        val backendUrl = providers.gradleProperty("backendUrl")
+            .orElse(envUrl).orElse("http://10.0.2.2:8080/").get().trimEnd('/') + "/"
+        val uri = URI(backendUrl)
+        require(uri.scheme in listOf("http", "https") && uri.host != null &&
+            uri.userInfo == null && uri.query == null && uri.fragment == null) {
+            "BACKEND_URL must be an HTTP or HTTPS base URL"
+        }
+        buildConfigField("String", "BACKEND_URL", "\"$backendUrl\"")
         minSdk = 24
         targetSdk = 37
         versionCode = 1
@@ -36,10 +52,14 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
 dependencies {
+    implementation(libs.retrofit.v2110)
+    implementation(libs.converter.kotlinx.serialization.v2110)
+    implementation(libs.okhttp.v4120)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.compose.material3)
