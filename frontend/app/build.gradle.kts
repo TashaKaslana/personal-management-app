@@ -47,6 +47,7 @@ android {
         }
     }
     compileOptions {
+        isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
@@ -57,9 +58,10 @@ android {
 }
 
 dependencies {
-    implementation(libs.retrofit.v2110)
+    coreLibraryDesugaring(libs.desugar.jdk.libs)
+    implementation(libs.retrofit)
     implementation(libs.converter.kotlinx.serialization.v2110)
-    implementation(libs.okhttp.v4120)
+    implementation(libs.okhttp)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.compose.material3)

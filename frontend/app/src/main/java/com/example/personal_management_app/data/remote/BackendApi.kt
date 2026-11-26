@@ -11,22 +11,21 @@ import retrofit2.Retrofit
 import retrofit2.converter.kotlinx.serialization.asConverterFactory
 
 @Singleton
-class BackendApi @Inject constructor(sessionManager: SessionManager) {
-    private val client = OkHttpClient.Builder()
-        .addInterceptor { chain ->
-            val request = chain.request()
+class BackendApi @Inject constructor(private val sessionManager: SessionManager) {
+    private val client = OkHttpClient()
+
+    private val json = Json { ignoreUnknownKeys = true }
+
+    private val retrofit = Retrofit.Builder()
+        .baseUrl(BuildConfig.BACKEND_URL)
+        .callFactory { request ->
             val token = sessionManager.sessionState.value?.token
             val authenticated = if (token == null) request else request.newBuilder()
                 .header("Authorization", "Bearer $token")
                 .build()
-            chain.proceed(authenticated)
+            client.newCall(authenticated)
         }
-        .build()
-
-    private val retrofit = Retrofit.Builder()
-        .baseUrl(BuildConfig.BACKEND_URL)
-        .client(client)
-        .addConverterFactory(Json { ignoreUnknownKeys = true }.asConverterFactory("application/json".toMediaType()))
+        .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
         .build()
 
     val noteCollaborator: NoteCollaboratorApi = retrofit.create(NoteCollaboratorApi::class.java)
