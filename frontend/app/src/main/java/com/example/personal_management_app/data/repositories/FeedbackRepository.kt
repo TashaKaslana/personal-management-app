@@ -1,8 +1,8 @@
-package com.example.personal_management_app.repositories
+package com.example.personal_management_app.data.repositories
 
 import com.example.personal_management_app.core.service.SessionManager
 import com.example.personal_management_app.data.local.dao.FeedbackDao
-import com.example.personal_management_app.entities.FeedbackEntity
+import com.example.personal_management_app.data.entities.FeedbackEntity
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flatMapLatest

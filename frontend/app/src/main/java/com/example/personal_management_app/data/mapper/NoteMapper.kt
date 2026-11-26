@@ -1,7 +1,7 @@
-package com.example.personal_management_app.mapper
+package com.example.personal_management_app.data.mapper
 
 import com.example.personal_management_app.dtos.NoteEditDto
-import com.example.personal_management_app.entities.NoteEntity
+import com.example.personal_management_app.data.entities.NoteEntity
 import javax.inject.Inject
 import javax.inject.Singleton
 

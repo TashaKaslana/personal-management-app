@@ -1,7 +1,7 @@
 package com.example.personal_management_app.ui.components.reminder
 
-import com.example.personal_management_app.entities.NoteReminder
-import com.example.personal_management_app.entities.ReminderRepeat
+import com.example.personal_management_app.data.entities.NoteReminder
+import com.example.personal_management_app.data.entities.ReminderRepeat
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date

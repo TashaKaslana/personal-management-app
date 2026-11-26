@@ -1,7 +1,7 @@
-package com.example.personal_management_app.repositories
+package com.example.personal_management_app.data.repositories
 
 import android.content.Context
-import com.example.personal_management_app.entities.SettingEntity
+import com.example.personal_management_app.data.entities.SettingEntity
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

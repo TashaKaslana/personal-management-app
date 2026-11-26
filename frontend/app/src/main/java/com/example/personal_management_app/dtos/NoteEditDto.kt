@@ -1,6 +1,6 @@
 package com.example.personal_management_app.dtos
 
-import com.example.personal_management_app.entities.NoteReminder
+import com.example.personal_management_app.data.entities.NoteReminder
 
 data class NoteEditDto(
     val id: String,

@@ -4,7 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import com.example.personal_management_app.entities.FeedbackEntity
+import com.example.personal_management_app.data.entities.FeedbackEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao

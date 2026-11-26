@@ -1,11 +1,11 @@
-package com.example.personal_management_app.repositories
+package com.example.personal_management_app.data.repositories
 
 import com.example.personal_management_app.data.local.dao.TagDao
 import com.example.personal_management_app.data.local.dao.UserDao
 import com.example.personal_management_app.data.local.entities.UserEntity
 import com.example.personal_management_app.dtos.AuthResult
-import com.example.personal_management_app.entities.ProfileEntity
-import com.example.personal_management_app.entities.TagEntity
+import com.example.personal_management_app.data.entities.ProfileEntity
+import com.example.personal_management_app.data.entities.TagEntity
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import java.util.UUID

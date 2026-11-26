@@ -26,7 +26,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.personal_management_app.dtos.toCompose
-import com.example.personal_management_app.entities.NoteEntity
+import com.example.personal_management_app.data.entities.NoteEntity
 import com.example.personal_management_app.ui.components.note.NoteContentPreview
 import com.example.personal_management_app.ui.components.note.NoteHeading
 import com.example.personal_management_app.ui.components.note.NoteThemedSurface

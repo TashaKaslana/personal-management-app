@@ -39,7 +39,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import com.example.personal_management_app.entities.NoteEntity
+import com.example.personal_management_app.data.entities.NoteEntity
 import com.example.personal_management_app.ui.components.TrashCard
 import com.example.personal_management_app.ui.components.main_layout.MainTopBar
 import com.example.personal_management_app.ui.layouts.MainLayout

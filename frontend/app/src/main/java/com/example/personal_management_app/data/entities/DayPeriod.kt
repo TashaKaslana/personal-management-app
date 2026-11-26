@@ -1,4 +1,4 @@
-package com.example.personal_management_app.entities
+package com.example.personal_management_app.data.entities
 
 enum class DayPeriod(val title: String, val hourRangeText: String) {
     MORNING("Buổi sáng", "05:00 - 12:59"),

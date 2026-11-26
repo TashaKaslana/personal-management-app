@@ -5,7 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
-import com.example.personal_management_app.entities.TagEntity
+import com.example.personal_management_app.data.entities.TagEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao

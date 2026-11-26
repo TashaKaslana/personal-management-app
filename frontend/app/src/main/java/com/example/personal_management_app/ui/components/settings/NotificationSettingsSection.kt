@@ -20,9 +20,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.personal_management_app.entities.DayPeriod
-import com.example.personal_management_app.entities.NoteEntity
-import com.example.personal_management_app.entities.SettingEntity
+import com.example.personal_management_app.data.entities.DayPeriod
+import com.example.personal_management_app.data.entities.NoteEntity
+import com.example.personal_management_app.data.entities.SettingEntity
 import com.example.personal_management_app.ui.components.reminder.label
 import com.example.personal_management_app.ui.theme.Loginblue
 

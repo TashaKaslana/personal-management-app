@@ -2,7 +2,7 @@ package com.example.personal_management_app.data.local.entities
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.example.personal_management_app.entities.ProfileEntity
+import com.example.personal_management_app.data.entities.ProfileEntity
 import java.util.Date
 
 @Entity(tableName = "users")

@@ -1,9 +1,9 @@
 package com.example.personal_management_app.viewmodel
 
 import androidx.lifecycle.ViewModel
-import com.example.personal_management_app.entities.TagEntity
-import com.example.personal_management_app.entities.tagColors
-import com.example.personal_management_app.repositories.TagRepository
+import com.example.personal_management_app.data.entities.TagEntity
+import com.example.personal_management_app.data.entities.tagColors
+import com.example.personal_management_app.data.repositories.TagRepository
 import com.example.personal_management_app.utils.matchesSearch
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject

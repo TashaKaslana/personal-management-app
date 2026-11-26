@@ -5,8 +5,8 @@ import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.personal_management_app.core.service.SessionManager
-import com.example.personal_management_app.entities.ProfileEntity
-import com.example.personal_management_app.repositories.UserRepository
+import com.example.personal_management_app.data.entities.ProfileEntity
+import com.example.personal_management_app.data.repositories.UserRepository
 import com.example.personal_management_app.utils.copyUriToAvatarStorage
 import com.example.personal_management_app.utils.deleteAvatarFile
 import dagger.hilt.android.lifecycle.HiltViewModel

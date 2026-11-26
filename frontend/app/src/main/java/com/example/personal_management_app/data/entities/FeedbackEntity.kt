@@ -1,4 +1,4 @@
-package com.example.personal_management_app.entities
+package com.example.personal_management_app.data.entities
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

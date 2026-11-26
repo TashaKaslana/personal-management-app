@@ -1,9 +1,9 @@
-package com.example.personal_management_app.repositories
+package com.example.personal_management_app.data.repositories
 
 import com.example.personal_management_app.core.service.SessionManager
 import com.example.personal_management_app.data.local.dao.NoteDao
-import com.example.personal_management_app.entities.NoteEntity
-import com.example.personal_management_app.entities.NoteReminder
+import com.example.personal_management_app.data.entities.NoteEntity
+import com.example.personal_management_app.data.entities.NoteReminder
 import com.example.personal_management_app.utils.matchesQuery
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow

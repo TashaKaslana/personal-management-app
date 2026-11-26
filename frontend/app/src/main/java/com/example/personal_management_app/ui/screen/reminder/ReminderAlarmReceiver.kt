@@ -14,7 +14,7 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import com.example.personal_management_app.MainActivity
 import com.example.personal_management_app.R
-import com.example.personal_management_app.repositories.NoteRepository
+import com.example.personal_management_app.data.repositories.NoteRepository
 import com.example.personal_management_app.ui.components.note.getNotePlainText
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject

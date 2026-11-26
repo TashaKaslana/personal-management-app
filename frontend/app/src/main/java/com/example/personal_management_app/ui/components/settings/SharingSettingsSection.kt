@@ -3,7 +3,7 @@ package com.example.personal_management_app.ui.components.settings
 import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import com.example.personal_management_app.entities.SettingEntity
+import com.example.personal_management_app.data.entities.SettingEntity
 
 @Composable
 fun SharingSettingsSection(

@@ -1,9 +1,9 @@
 package com.example.personal_management_app.ui.screen.reminder
 
 import android.content.Context
-import com.example.personal_management_app.entities.NoteEntity
-import com.example.personal_management_app.entities.NoteReminder
-import com.example.personal_management_app.entities.ReminderRepeat
+import com.example.personal_management_app.data.entities.NoteEntity
+import com.example.personal_management_app.data.entities.NoteReminder
+import com.example.personal_management_app.data.entities.ReminderRepeat
 import com.example.personal_management_app.ui.components.note.getNotePlainText
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.util.Calendar

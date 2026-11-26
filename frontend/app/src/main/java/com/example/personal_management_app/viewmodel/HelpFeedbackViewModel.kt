@@ -3,7 +3,7 @@
 import android.os.Build
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.personal_management_app.repositories.FeedbackRepository
+import com.example.personal_management_app.data.repositories.FeedbackRepository
 import com.example.personal_management_app.utils.matchesSearch
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow

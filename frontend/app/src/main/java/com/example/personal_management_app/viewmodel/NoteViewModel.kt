@@ -2,8 +2,8 @@ package com.example.personal_management_app.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.personal_management_app.entities.NoteEntity
-import com.example.personal_management_app.repositories.NoteRepository
+import com.example.personal_management_app.data.entities.NoteEntity
+import com.example.personal_management_app.data.repositories.NoteRepository
 import com.example.personal_management_app.ui.screen.reminder.ReminderScheduler
 import com.example.personal_management_app.utils.matchesQuery
 import dagger.hilt.android.lifecycle.HiltViewModel

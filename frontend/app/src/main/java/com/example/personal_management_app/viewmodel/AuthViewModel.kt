@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import com.example.personal_management_app.core.service.SessionManager
 import com.example.personal_management_app.core.service.UserSession
 import com.example.personal_management_app.dtos.AuthResult
-import com.example.personal_management_app.repositories.UserRepository
+import com.example.personal_management_app.data.repositories.UserRepository
 import javax.inject.Inject;
 
 import dagger.hilt.android.lifecycle.HiltViewModel;

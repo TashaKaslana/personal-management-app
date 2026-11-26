@@ -6,7 +6,7 @@ import android.net.Uri
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.asImageBitmap
-import com.example.personal_management_app.entities.NoteEntity
+import com.example.personal_management_app.data.entities.NoteEntity
 import java.io.File
 import java.text.Normalizer
 import java.util.UUID

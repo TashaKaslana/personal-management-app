@@ -1,6 +1,6 @@
 package com.example.personal_management_app.dtos
 
-import com.example.personal_management_app.entities.ProfileEntity
+import com.example.personal_management_app.data.entities.ProfileEntity
 
 sealed interface AuthResult {
     data class Success(

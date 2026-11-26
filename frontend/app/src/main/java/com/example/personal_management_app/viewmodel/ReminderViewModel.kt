@@ -1,7 +1,7 @@
 package com.example.personal_management_app.viewmodel
 
 import androidx.lifecycle.ViewModel
-import com.example.personal_management_app.repositories.NoteRepository
+import com.example.personal_management_app.data.repositories.NoteRepository
 import com.example.personal_management_app.ui.screen.reminder.ReminderScheduler
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject

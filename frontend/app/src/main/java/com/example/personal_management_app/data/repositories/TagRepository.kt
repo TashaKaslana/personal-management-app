@@ -1,8 +1,8 @@
-package com.example.personal_management_app.repositories
+package com.example.personal_management_app.data.repositories
 
 import com.example.personal_management_app.core.service.SessionManager
 import com.example.personal_management_app.data.local.dao.TagDao
-import com.example.personal_management_app.entities.TagEntity
+import com.example.personal_management_app.data.entities.TagEntity
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi

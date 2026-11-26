@@ -2,8 +2,7 @@ package com.example.personal_management_app.data.local.converters
 
 import androidx.room.TypeConverter
 import com.example.personal_management_app.dtos.NoteTextStyle
-import com.example.personal_management_app.entities.NoteReminder
-import kotlinx.serialization.encodeToString
+import com.example.personal_management_app.data.entities.NoteReminder
 import kotlinx.serialization.json.Json
 import java.util.Date
 
