@@ -22,7 +22,7 @@ class TagViewModel @Inject constructor(
 
     fun noteCount(name: String): Int = repository.noteCount(name)
 
-    fun save(id: String?, name: String, color: String): String? {
+    suspend fun save(id: String?, name: String, color: String): String? {
         val trimmed = name.trim()
 
         if (trimmed.isBlank()) return "Tên nhãn không được để trống"

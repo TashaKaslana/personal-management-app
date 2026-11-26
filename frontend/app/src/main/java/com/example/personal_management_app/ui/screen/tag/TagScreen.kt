@@ -1,5 +1,7 @@
 package com.example.personal_management_app.ui.screen.tag
 
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -34,6 +36,8 @@ import com.example.personal_management_app.ui.components.tag.TagCard
 import com.example.personal_management_app.ui.components.tag.TagEditorDialog
 import com.example.personal_management_app.ui.layouts.MainLayout
 import com.example.personal_management_app.viewmodel.TagViewModel
+import retrofit2.HttpException
+import java.io.IOException
 
 @Composable
 fun TagScreen(
@@ -41,6 +45,7 @@ fun TagScreen(
     navController: NavController,
     viewModel: TagViewModel = hiltViewModel()
 ) {
+    val requestScope = rememberCoroutineScope()
     var searchQuery by remember { mutableStateOf("") }
     var editing by remember { mutableStateOf<TagEntity?>(null) }
     var showEditor by remember { mutableStateOf(false) }
@@ -122,12 +127,20 @@ fun TagScreen(
                 editorError = null
             },
             onSave = { name, color ->
-                val error = viewModel.save(editing?.id, name, color)
-                if (error == null) {
-                    showEditor = false
-                    editorError = null
-                } else {
-                    editorError = error
+                requestScope.launch {
+                    val error = try {
+                        viewModel.save(editing?.id, name, color)
+                    } catch (error: IOException) {
+                        error.localizedMessage ?: "Không thể kết nối máy chủ"
+                    } catch (error: HttpException) {
+                        "Yêu cầu thất bại (HTTP ${error.code()})"
+                    }
+                    if (error == null) {
+                        showEditor = false
+                        editorError = null
+                    } else {
+                        editorError = error
+                    }
                 }
             }
         )
