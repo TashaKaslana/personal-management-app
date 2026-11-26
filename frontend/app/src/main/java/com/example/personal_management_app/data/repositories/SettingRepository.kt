@@ -1,5 +1,9 @@
 package com.example.personal_management_app.data.repositories
 
+import com.example.personal_management_app.core.service.SessionManager
+import com.example.personal_management_app.data.remote.*
+import kotlinx.coroutines.*
+import kotlinx.serialization.json.*
 import android.content.Context
 import com.example.personal_management_app.data.entities.SettingEntity
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -11,9 +15,15 @@ import javax.inject.Singleton
 
 @Singleton
 class SettingRepository @Inject constructor(
-    @ApplicationContext context: Context
+    private val api: BackendApi,
+    private val requests: RepositoryRequests,
+    private val sessions: SessionManager,
+    @ApplicationContext private val context: Context
 ) {
-    private val sharedPrefs = context.getSharedPreferences("app_settings", Context.MODE_PRIVATE)
+    private val sharedPrefs get() = context.getSharedPreferences(
+        sessions.sessionState.value?.let { "app_settings_${it.userId}" } ?: "app_settings",
+        Context.MODE_PRIVATE
+    )
 
     private val _settings = MutableStateFlow(readSettings())
     val settings: StateFlow<SettingEntity> = _settings.asStateFlow()
@@ -35,8 +45,35 @@ class SettingRepository @Inject constructor(
         )
     }
 
-    fun updateSettings(transform: (SettingEntity) -> SettingEntity) {
-        val updated = transform(_settings.value)
+    private val json = Json { ignoreUnknownKeys = true; encodeDefaults = true }
+
+    init {
+        CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate).launch {
+            sessions.sessionState.collect { session ->
+                _settings.value = readSettings()
+                if (session != null) requests.submit { uid ->
+                    val values = api.userSettings.getSettings(uid).payload().settings.orEmpty()
+                    if (session == sessions.sessionState.value) persist(json.decodeFromJsonElement(JsonObject(values)))
+                }
+            }
+        }
+    }
+
+    suspend fun updateSettings(transform: (SettingEntity) -> SettingEntity) {
+        if (sessions.sessionState.value == null) {
+            persist(transform(_settings.value))
+            return
+        }
+        requests.execute { uid ->
+            val existing = api.userSettings.getSettings(uid).payload().settings.orEmpty()
+            val updated = transform(json.decodeFromJsonElement<SettingEntity>(JsonObject(existing)))
+            val values = existing + json.encodeToJsonElement(updated).jsonObject
+            api.userSettings.updateSettings(uid, UpdateUserSettingsRequest(values)).payload()
+            if (sessions.sessionState.value?.userId == uid) persist(updated)
+        }
+    }
+
+    private fun persist(updated: SettingEntity) {
         _settings.value = updated
         sharedPrefs.edit().apply {
             putBoolean("add_items_to_bottom", updated.addItemsToBottom)

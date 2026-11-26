@@ -1,5 +1,7 @@
 package com.example.personal_management_app.viewmodel
 
+import android.content.Context
+import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.personal_management_app.data.entities.DayPeriod
@@ -10,12 +12,15 @@ import com.example.personal_management_app.data.repositories.SettingRepository
 import com.example.personal_management_app.ui.components.reminder.label
 import com.example.personal_management_app.ui.screen.reminder.ReminderScheduler
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import retrofit2.HttpException
+import java.io.IOException
 import java.util.Calendar
 import javax.inject.Inject
 
@@ -28,6 +33,7 @@ data class SettingsUiState(
 
 @HiltViewModel
 class SettingViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val settingRepository: SettingRepository,
     private val noteRepository: NoteRepository,
     private val reminderScheduler: ReminderScheduler
@@ -77,7 +83,15 @@ class SettingViewModel @Inject constructor(
 
     fun updateSettings(transform: (SettingEntity) -> SettingEntity) {
         viewModelScope.launch {
-            settingRepository.updateSettings(transform)
+            try {
+                settingRepository.updateSettings(transform)
+            } catch (e: IOException) {
+                Toast.makeText(context, e.localizedMessage, Toast.LENGTH_LONG).show()
+                return@launch
+            } catch (e: HttpException) {
+                Toast.makeText(context, e.localizedMessage, Toast.LENGTH_LONG).show()
+                return@launch
+            }
             syncAlarms()
         }
     }

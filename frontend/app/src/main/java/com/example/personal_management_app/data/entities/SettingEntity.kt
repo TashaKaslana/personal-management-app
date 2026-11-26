@@ -1,5 +1,6 @@
 package com.example.personal_management_app.data.entities
 
+@kotlinx.serialization.Serializable
 data class SettingEntity(
     val addItemsToBottom: Boolean = false,
     val moveCheckedToBottom: Boolean = false,
