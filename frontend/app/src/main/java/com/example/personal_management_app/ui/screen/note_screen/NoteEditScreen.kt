@@ -1,5 +1,7 @@
 package com.example.personal_management_app.ui.screen.note_screen
 
+import kotlinx.coroutines.launch
+import androidx.compose.runtime.rememberCoroutineScope
 import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -55,6 +57,8 @@ import com.example.personal_management_app.ui.components.reminder.label
 import com.example.personal_management_app.ui.components.utils.ShowToastMessage
 import com.example.personal_management_app.viewmodel.NoteEditViewModel
 import com.example.personal_management_app.viewmodel.TagViewModel
+import retrofit2.HttpException
+import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -66,6 +70,8 @@ fun NoteEditScreen(
     viewModel: NoteEditViewModel = hiltViewModel(),
     tagViewModel: TagViewModel = hiltViewModel()
 ) {
+    val saveScope = rememberCoroutineScope()
+    var saving by remember { mutableStateOf(false) }
     val context = LocalContext.current
     val note = viewModel.note
     val readOnly = note?.archivedAt != null || note?.deletedAt != null
@@ -108,10 +114,19 @@ fun NoteEditScreen(
                                     if (note.deletedAt != null) "trash_screen" else "archive_screen"
                                 )
                             }
-                        } else {
-                            viewModel.upsertNote()
-                            if (!navController.popBackStack()) {
-                                navController.navigate("note_screen")
+                        } else if (!saving) {
+                            saving = true
+                            saveScope.launch {
+                                try {
+                                    viewModel.saveDraft()
+                                    if (!navController.popBackStack()) navController.navigate("note_screen")
+                                } catch (e: IOException) {
+                                    Toast.makeText(context, e.localizedMessage, Toast.LENGTH_LONG).show()
+                                } catch (e: HttpException) {
+                                    Toast.makeText(context, e.message(), Toast.LENGTH_LONG).show()
+                                } finally {
+                                    saving = false
+                                }
                             }
                         }
                     },
@@ -131,7 +146,7 @@ fun NoteEditScreen(
 
                 if (readOnly) {
                     if (note.deletedAt != null) {
-                        val deletedTime = note.deletedAt ?: System.currentTimeMillis()
+                        val deletedTime = note.deletedAt
                         val dateFormatted = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date(deletedTime))
                         val retentionMs = 30L * 24L * 60L * 60L * 1000L
                         val oneDayMs = 24L * 60L * 60L * 1000L

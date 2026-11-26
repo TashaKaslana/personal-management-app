@@ -38,7 +38,6 @@ import java.util.UUID
 class NoteEditViewModel @Inject constructor(
     private val mapper: NoteMapper,
     private val noteRepository: NoteRepository,
-    private val reminderScheduler: ReminderScheduler,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
     private val noteId: String? = savedStateHandle.get<String>("noteId")
@@ -59,7 +58,7 @@ class NoteEditViewModel @Inject constructor(
         private set
 
     var note: NoteEditDto? by mutableStateOf(
-        if (noteId != null) checkNotNull(mapper.toEditDto(noteRepository.get(noteId))) else newNote
+        if (noteId != null) mapper.toEditDto(noteRepository.get(noteId)) else newNote
     )
         private set
 
@@ -253,7 +252,6 @@ class NoteEditViewModel @Inject constructor(
         note = note?.copy(reminder = reminder)
         if (noteId != null) {
             noteRepository.setReminder(noteId, reminder)
-            noteRepository.get(noteId)?.let { reminderScheduler.apply(it) }
         }
     }
 
@@ -261,7 +259,6 @@ class NoteEditViewModel @Inject constructor(
         note = note?.copy(reminder = null)
         if (noteId != null) {
             noteRepository.setReminder(noteId, null)
-            reminderScheduler.cancel(noteId)
         }
     }
 
@@ -273,30 +270,22 @@ class NoteEditViewModel @Inject constructor(
 
         if (noteId != null) {
             noteRepository.setArchived(noteId, newArchivedAt)
-            noteRepository.get(noteId)?.let { reminderScheduler.apply(it) }
         }
     }
 
-    fun upsertNote() {
+    fun saveTagsIfExisting() {
+        if (noteId != null) mapper.toEntity(note)?.let(noteRepository::update)
+    }
+
+    suspend fun saveDraft() {
         val entity = mapper.toEntity(note) ?: return
-
-        if (entity.title == newNote.title && entity.content == newNote.content) {
-            return
-        }
-
-        if (noteId == null) {
-            noteRepository.insert(entity)
-        }
-
-        noteRepository.update(entity)
-        reminderScheduler.apply(entity)
+        if (noteId == null && entity.title == newNote.title && entity.content == newNote.content) return
+        noteRepository.saveDraft(entity, noteId == null)
     }
-
 
     fun delete() {
         if (noteId != null && noteId != newNote.id) {
             noteRepository.delete(noteId)
-            reminderScheduler.cancel(noteId)
         }
 
         note = note?.copy(deletedAt = System.currentTimeMillis())
@@ -312,7 +301,6 @@ class NoteEditViewModel @Inject constructor(
     fun deleteForever() {
         if (noteId != null && noteId != newNote.id) {
             noteRepository.deleteForever(noteId)
-            reminderScheduler.cancel(noteId)
             note = null
         }
     }

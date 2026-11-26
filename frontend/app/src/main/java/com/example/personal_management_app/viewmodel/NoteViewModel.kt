@@ -14,8 +14,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class NoteViewModel @Inject constructor(
-    private val repository: NoteRepository,
-    private val reminderScheduler: ReminderScheduler
+    private val repository: NoteRepository
 ) : ViewModel() {
     private val _notes = MutableStateFlow<List<NoteEntity>>(emptyList())
     val notes = _notes.asStateFlow()
@@ -85,7 +84,6 @@ class NoteViewModel @Inject constructor(
     fun deleteNoteForever(noteId: String) {
         viewModelScope.launch {
             repository.deleteForever(noteId)
-            reminderScheduler.cancel(noteId)
             loadNotes()
         }
     }
@@ -107,7 +105,6 @@ class NoteViewModel @Inject constructor(
     fun deleteNote(noteId: String) {
         viewModelScope.launch {
             repository.delete(noteId)
-            reminderScheduler.cancel(noteId)
             loadNotes()
         }
     }

@@ -44,7 +44,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.personal_management_app.ui.components.note.NotePanelType
 import com.example.personal_management_app.utils.toComposeColor
 import com.example.personal_management_app.viewmodel.NoteEditViewModel
 import com.example.personal_management_app.viewmodel.TagViewModel
@@ -160,7 +159,7 @@ fun NoteCardMenuAction(
                                     .fillMaxWidth()
                                     .clickable {
                                         viewModel?.toggleTag(tag.name)
-                                        viewModel?.upsertNote()
+                                        viewModel?.saveTagsIfExisting()
                                     }
                                     .padding(vertical = 8.dp)
                             ) {
@@ -191,7 +190,7 @@ fun NoteCardMenuAction(
             confirmButton = {
                 TextButton(onClick = {
                     viewModel?.clearTags()
-                    viewModel?.upsertNote()
+                    viewModel?.saveTagsIfExisting()
                     showTagDialog = false
                 }) {
                     Text("Bỏ nhãn")
